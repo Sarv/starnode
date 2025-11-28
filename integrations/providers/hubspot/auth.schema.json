@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "oauth2_authorization_code_method_1763800639459",
+      "authType": "oauth2_authorization_code",
+      "label": "OAuth 2.0 - Authorization Code",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "scopeSeparator": " ",
+        "pkceEnabled": false,
+        "authMethod": "client_secret_post",
+        "tokenRefreshEnabled": true,
+        "authorizationUrl": "https://google.com",
+        "tokenUrl": "https://{{company}}/token",
+        "scopes": [
+          "read"
+        ],
+        "additionalAuthParams": "",
+        "refreshTokenUrl": "{{domain}}/refresh",
+        "isDefault": true
+      },
+      "additionalFields": [
+        {
+          "name": "company",
+          "label": "Company Name",
+          "type": "string",
+          "required": true,
+          "placeholder": "Entery your company name"
+        },
+        {
+          "name": "domain",
+          "label": "Domain URL",
+          "type": "url",
+          "required": true,
+          "placeholder": "Domain of your panel"
+        }
+      ]
+    }
+  ]
+}

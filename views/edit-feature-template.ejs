@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <%- include('partials/sidebar') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="btn-back" onclick="goBack()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    <span>Back to Features</span>
+                </button>
+                <div class="topbar-divider"></div>
+                <h1 class="topbar-title" id="pageTitle"><%= topbarTitle %></h1>
+            </div>
+            <div class="topbar-right">
+                <button class="btn-secondary" onclick="cancelFeature()">Cancel</button>
+                <button class="btn-primary" onclick="saveFeature()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    Save Feature
+                </button>
+            </div>
+        </header>
+
+        <!-- Three-Pane Layout -->
+        <div class="editor-container">
+            <!-- Left Pane: Feature Details -->
+            <div class="pane pane-left">
+                <div class="pane-header">
+                    <h2 class="pane-title">Feature Details</h2>
+                </div>
+                <div class="pane-body">
+                    <form id="featureForm" class="form">
+                        <div class="form-group">
+                            <label for="featureId">Feature ID <span class="required">*</span></label>
+                            <input
+                                type="text"
+                                id="featureId"
+                                class="form-input"
+                                placeholder="fetch_contacts"
+                                pattern="^[a-z0-9_]+$"
+                                required>
+                            <small class="form-help">Lowercase letters, numbers, and underscores only</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="featureName">Feature Name <span class="required">*</span></label>
+                            <input
+                                type="text"
+                                id="featureName"
+                                class="form-input"
+                                placeholder="Fetch Contacts"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="featureCategory">Category <span class="required">*</span></label>
+                            <select id="featureCategory" class="form-select" required>
+                                <option value="">Select category...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="featureDescription">Description</label>
+                            <textarea
+                                id="featureDescription"
+                                class="form-textarea"
+                                placeholder="Describe what this feature does..."
+                                rows="4"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Middle Pane: Fields List -->
+            <div class="pane pane-middle">
+                <div class="pane-header">
+                    <h2 class="pane-title">Fields</h2>
+                    <button class="btn-add" onclick="createNewField()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Add Field
+                    </button>
+                </div>
+                <div class="pane-body">
+                    <div id="fieldsListEmpty" class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p class="empty-title">No fields yet</p>
+                        <p class="empty-text">Add fields to define the structure of this feature</p>
+                        <button class="btn-primary btn-sm" onclick="createNewField()">Add First Field</button>
+                    </div>
+                    <div id="fieldsList" class="fields-list" style="display: none;">
+                        <!-- Fields will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Pane: Field Details -->
+            <div class="pane pane-right">
+                <div class="pane-header">
+                    <h2 class="pane-title">Field Details</h2>
+                    <div class="pane-actions" id="fieldActions" style="display: none;">
+                        <button class="btn-secondary btn-sm" onclick="cancelFieldEdit()">Cancel</button>
+                        <button class="btn-primary btn-sm" onclick="saveCurrentField()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Save Field
+                        </button>
+                        <button class="btn-icon btn-danger" onclick="deleteCurrentField()" title="Delete Field">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="pane-body">
+                    <div id="fieldFormEmpty" class="empty-state">
+                        <div class="empty-icon">⚙️</div>
+                        <p class="empty-title">No field selected</p>
+                        <p class="empty-text">Select a field from the list or create a new one</p>
+                    </div>
+                    <form id="fieldForm" class="form" style="display: none;">
+                        <!-- Basic Info -->
+                        <div class="form-group">
+                            <label for="fieldKey">Field Key <span class="required">*</span></label>
+                            <input
+                                type="text"
+                                id="fieldKey"
+                                class="form-input"
+                                placeholder="contact_name"
+                                pattern="^[a-z0-9_]+$"
+                                required>
+                            <small class="form-help">Lowercase letters, numbers, and underscores only</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fieldLabel">Field Label <span class="required">*</span></label>
+                            <input
+                                type="text"
+                                id="fieldLabel"
+                                class="form-input"
+                                placeholder="Contact Name"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fieldType">Field Type <span class="required">*</span></label>
+                            <select id="fieldType" class="form-select" required>
+                                <option value="">Select type...</option>
+                                <option value="api">API Configuration</option>
+                                <option value="static">Static</option>
+                                <option value="dynamic">Dynamic</option>
+                                <option value="conditional">Conditional</option>
+                            </select>
+                            <small class="form-help" id="fieldTypeHelp"></small>
+                        </div>
+
+                        <div class="form-group" id="dataTypeGroup">
+                            <label for="fieldDataType">Data Type <span class="required">*</span></label>
+                            <select id="fieldDataType" class="form-select">
+                                <option value="">Select data type...</option>
+                                <option value="string">String</option>
+                                <option value="text">Text (Long)</option>
+                                <option value="number">Number</option>
+                                <option value="boolean">Boolean</option>
+                                <option value="email">Email</option>
+                                <option value="url">URL</option>
+                                <option value="html">HTML</option>
+                                <option value="date">Date</option>
+                                <option value="array">Array</option>
+                                <option value="object">Object</option>
+                                <option value="json">JSON</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="htmlTypeGroup">
+                            <label for="fieldHtmlType">HTML Input Type <span class="required">*</span></label>
+                            <select id="fieldHtmlType" class="form-select">
+                                <option value="">Select HTML type...</option>
+                                <optgroup label="Text Input">
+                                    <option value="text">Text</option>
+                                    <option value="textarea">Textarea</option>
+                                    <option value="password">Password</option>
+                                </optgroup>
+                                <optgroup label="Selection">
+                                    <option value="select">Select (Dropdown)</option>
+                                    <option value="checkbox">Checkbox (Multiple)</option>
+                                    <option value="radio">Radio (Single Choice)</option>
+                                </optgroup>
+                                <optgroup label="Numbers">
+                                    <option value="number">Number</option>
+                                    <option value="range">Range (Slider)</option>
+                                </optgroup>
+                                <optgroup label="Date & Time">
+                                    <option value="date">Date</option>
+                                    <option value="time">Time</option>
+                                    <option value="datetime-local">DateTime (Local)</option>
+                                    <option value="month">Month</option>
+                                    <option value="week">Week</option>
+                                </optgroup>
+                                <optgroup label="Contact & Media">
+                                    <option value="email">Email</option>
+                                    <option value="url">URL</option>
+                                    <option value="tel">Telephone</option>
+                                    <option value="file">File Upload</option>
+                                </optgroup>
+                                <optgroup label="Other">
+                                    <option value="color">Color Picker</option>
+                                    <option value="hidden">Hidden</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fieldFillBy">Fill By <span class="required">*</span></label>
+                            <select id="fieldFillBy" class="form-select" required>
+                                <option value="">Select who fills this field...</option>
+                                <option value="Admin">Admin</option>
+                                <option value="User">User</option>
+                            </select>
+                            <small class="form-help">Specify who should fill this field</small>
+                        </div>
+
+                        <!-- API Fields -->
+                        <div class="form-group" id="apiEndpointGroup" style="display: none;">
+                            <label for="apiEndpoint">API Endpoint <span class="required">*</span></label>
+                            <input type="text" id="apiEndpoint" class="form-input" placeholder="/api/v1/contacts">
+                        </div>
+
+                        <div class="form-group" id="apiMethodGroup" style="display: none;">
+                            <label for="apiMethod">HTTP Method <span class="required">*</span></label>
+                            <select id="apiMethod" class="form-select">
+                                <option value="">Select method...</option>
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="PATCH">PATCH</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </div>
+
+                        <!-- Conditional Expression -->
+                        <div class="form-group" id="conditionalExpressionGroup" style="display: none;">
+                            <label for="conditionalExpression">Conditional Expression <span class="required">*</span></label>
+                            <textarea
+                                id="conditionalExpression"
+                                class="form-textarea"
+                                placeholder="{{status}} == 'active'"
+                                rows="3"></textarea>
+                            <small class="form-help">Use {{field_name}} syntax</small>
+                        </div>
+
+                        <!-- Possible Values -->
+                        <div class="form-group" id="possibleValuesGroup" style="display: none;">
+                            <label for="possibleValuesInput">Possible Values <span class="required">*</span></label>
+                            <div class="values-input-wrapper">
+                                <input type="text" id="possibleValuesInput" class="form-input" placeholder="Enter value">
+                                <button type="button" class="btn-secondary btn-sm" onclick="addPossibleValue()">Add</button>
+                            </div>
+                            <div id="possibleValuesList" class="values-list"></div>
+                        </div>
+
+                        <div class="form-group" id="multipleValueGroup" style="display: none;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="fieldMultipleValue" class="form-checkbox">
+                                <span>Allow multiple values</span>
+                            </label>
+                        </div>
+
+                        <!-- Other Fields -->
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="fieldRequired" class="form-checkbox">
+                                <span>This field is required</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group" id="defaultValueGroup">
+                            <label for="fieldDefault">Default Value</label>
+                            <input type="text" id="fieldDefault" class="form-input" placeholder="Enter default value">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fieldDescription">Description</label>
+                            <textarea
+                                id="fieldDescription"
+                                class="form-textarea"
+                                placeholder="Describe this field..."
+                                rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Scripts -->
+    <script src="/js/edit-feature-template.js"></script>
+</body>
+</html>

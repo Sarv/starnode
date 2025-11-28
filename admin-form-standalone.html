@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Configuration Form Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .auth-type-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .auth-type-item {
+            padding: 12px 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .auth-type-item:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .auth-type-item.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .auth-type-item .label {
+            font-weight: 600;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .auth-type-item .description {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .main-content {
+            padding: 30px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="password"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .examples {
+            font-size: 12px;
+            color: #667eea;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .array-container {
+            border: 2px dashed #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .array-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .array-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .array-item-title {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .add-item-btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .output-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .output-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .output-box pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            color: #999;
+            padding: 60px 20px;
+        }
+
+        .placeholder-text h2 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .category-simple {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .category-oauth {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .category-advanced {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .category-database {
+            background: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .simple-array-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .simple-array-input input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Auth Configuration Generator</h1>
+            <p>Select an authentication type and configure its settings</p>
+        </div>
+
+        <div class="content">
+            <div class="sidebar">
+                <h3>Authentication Types</h3>
+                <div class="auth-type-list" id="authTypeList">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div id="formContainer">
+                    <div class="placeholder-text">
+                        <h2>👈 Select an authentication type</h2>
+                        <p>Choose an auth type from the left sidebar to start configuring</p>
+                    </div>
+                </div>
+
+                <div class="output-section" id="outputSection" style="display: none;">
+                    <h3>Generated Configuration</h3>
+                    <div class="output-box">
+                        <pre id="outputJson"></pre>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="copyToClipboard()">📋 Copy JSON</button>
+                        <button class="btn btn-secondary" onclick="downloadJson()">💾 Download JSON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Embedded auth types data
+        const authTypesData = {"authTypes":{"api_key_header":{"label":"API Key (Header)","description":"API key passed in request header","category":"simple","configOptions":{"headerName":{"type":"string","label":"Header Name","required":true,"default":"X-API-Key","helpText":"Name of the header where API key will be sent","examples":["X-API-Key","Authorization","X-Auth-Token","api-key"]},"prefix":{"type":"string","label":"Key Prefix","required":false,"default":"","helpText":"Prefix before the key (e.g., 'Bearer ', 'Token ', or leave empty)","examples":["","Bearer ","Token ","ApiKey "]}},"credentialFields":{"apiKey":{"type":"string","label":"API Key","inputType":"password","required":true,"encrypted":true,"helpText":"Your API key from the provider"}}},"api_key_query":{"label":"API Key (Query Parameter)","description":"API key passed as URL query parameter","category":"simple","configOptions":{"paramName":{"type":"string","label":"Parameter Name","required":true,"default":"apiKey","helpText":"Name of the query parameter","examples":["apiKey","api_key","key","token"]}},"credentialFields":{"apiKey":{"type":"string","label":"API Key","inputType":"password","required":true,"encrypted":true}}},"bearer_token":{"label":"Bearer Token","description":"Bearer token in Authorization header","category":"simple","configOptions":{"headerName":{"type":"string","label":"Header Name","required":true,"default":"Authorization","locked":true,"helpText":"Usually 'Authorization' (standard)"},"prefix":{"type":"string","label":"Token Prefix","required":true,"default":"Bearer ","locked":true}},"credentialFields":{"token":{"type":"string","label":"Access Token","inputType":"password","required":true,"encrypted":true}}},"basic_auth":{"label":"Basic Authentication","description":"Username and password encoded in Authorization header","category":"simple","configOptions":{},"credentialFields":{"username":{"type":"string","label":"Username","inputType":"text","required":true,"encrypted":false},"password":{"type":"string","label":"Password","inputType":"password","required":true,"encrypted":true}}},"custom_headers":{"label":"Custom Headers","description":"Multiple custom headers for authentication","category":"simple","configOptions":{"headers":{"type":"array","label":"Headers Configuration","required":true,"itemSchema":{"headerName":{"type":"string","label":"Header Name","required":true,"examples":["X-Auth-Token","X-User-ID","X-API-Secret"]},"credentialKey":{"type":"string","label":"Credential Field Key","required":true,"helpText":"Key from credential fields to use for this header","examples":["authToken","userId","apiSecret"]},"prefix":{"type":"string","label":"Value Prefix","required":false,"default":""}},"helpText":"Define multiple headers and map them to credential fields"}},"credentialFields":{"_dynamic":true,"_note":"Credential fields are defined dynamically based on headers configuration"}},"oauth2_authorization_code":{"label":"OAuth 2.0 - Authorization Code","description":"OAuth2 flow requiring user authorization","category":"oauth","configOptions":{"authorizationUrl":{"type":"string","label":"Authorization URL","required":true,"helpText":"URL where users authorize your app","examples":["https://accounts.google.com/o/oauth2/v2/auth","https://login.salesforce.com/services/oauth2/authorize"]},"tokenUrl":{"type":"string","label":"Token URL","required":true,"helpText":"URL to exchange code for access token","examples":["https://oauth2.googleapis.com/token","https://login.salesforce.com/services/oauth2/token"]},"scopes":{"type":"array","label":"Scopes","required":false,"helpText":"Comma-separated or array of permission scopes","examples":["read,write","user:email,repo"]},"scopeSeparator":{"type":"string","label":"Scope Separator","required":false,"default":" ","options":[" ",",","+"],"helpText":"Character to join multiple scopes"},"pkceEnabled":{"type":"boolean","label":"Enable PKCE","required":false,"default":false,"helpText":"Use Proof Key for Code Exchange (more secure)"},"authMethod":{"type":"string","label":"Client Authentication Method","required":false,"default":"client_secret_post","options":["client_secret_post","client_secret_basic"],"helpText":"How to send client credentials to token endpoint"},"additionalAuthParams":{"type":"object","label":"Additional Auth Parameters","required":false,"helpText":"Extra parameters for authorization URL (e.g., prompt=consent)","examples":["{\"prompt\": \"consent\", \"access_type\": \"offline\"}"]},"tokenRefreshEnabled":{"type":"boolean","label":"Enable Token Refresh","required":false,"default":true},"refreshTokenUrl":{"type":"string","label":"Refresh Token URL","required":false,"helpText":"URL to refresh expired tokens (usually same as tokenUrl)","dependsOn":{"tokenRefreshEnabled":true}}},"credentialFields":{"clientId":{"type":"string","label":"Client ID","inputType":"text","required":true,"encrypted":false,"helpText":"OAuth Client ID from provider"},"clientSecret":{"type":"string","label":"Client Secret","inputType":"password","required":true,"encrypted":true,"helpText":"OAuth Client Secret from provider"}},"storedTokens":["accessToken","refreshToken","tokenType","expiresIn","scope"]},"oauth2_client_credentials":{"label":"OAuth 2.0 - Client Credentials","description":"OAuth2 server-to-server authentication","category":"oauth","configOptions":{"tokenUrl":{"type":"string","label":"Token URL","required":true,"examples":["https://api.example.com/oauth/token"]},"scopes":{"type":"array","label":"Scopes","required":false},"scopeSeparator":{"type":"string","label":"Scope Separator","required":false,"default":" ","options":[" ",","]},"authMethod":{"type":"string","label":"Client Authentication Method","required":false,"default":"client_secret_post","options":["client_secret_post","client_secret_basic"]}},"credentialFields":{"clientId":{"type":"string","label":"Client ID","inputType":"text","required":true,"encrypted":false},"clientSecret":{"type":"string","label":"Client Secret","inputType":"password","required":true,"encrypted":true}},"storedTokens":["accessToken","tokenType","expiresIn","scope"]},"oauth2_service_account":{"label":"OAuth 2.0 - Service Account (JWT)","description":"Service account authentication using JWT (Google-style)","category":"oauth","configOptions":{"tokenUrl":{"type":"string","label":"Token URL","required":true,"default":"https://oauth2.googleapis.com/token","examples":["https://oauth2.googleapis.com/token"]},"scopes":{"type":"array","label":"Scopes","required":true,"examples":["https://www.googleapis.com/auth/drive"]},"subject":{"type":"string","label":"Subject (Impersonation Email)","required":false,"helpText":"Email to impersonate (for domain-wide delegation)"}},"credentialFields":{"serviceAccountJson":{"type":"json","label":"Service Account JSON","inputType":"textarea","required":true,"encrypted":true,"helpText":"Complete JSON key file from service account"}},"storedTokens":["accessToken","tokenType","expiresIn"]},"oauth1":{"label":"OAuth 1.0a","description":"Legacy OAuth 1.0a authentication","category":"oauth","configOptions":{"requestTokenUrl":{"type":"string","label":"Request Token URL","required":true,"examples":["https://api.twitter.com/oauth/request_token"]},"authorizeUrl":{"type":"string","label":"Authorization URL","required":true,"examples":["https://api.twitter.com/oauth/authorize"]},"accessTokenUrl":{"type":"string","label":"Access Token URL","required":true,"examples":["https://api.twitter.com/oauth/access_token"]},"signatureMethod":{"type":"string","label":"Signature Method","required":true,"default":"HMAC-SHA1","options":["HMAC-SHA1","HMAC-SHA256","PLAINTEXT"]},"version":{"type":"string","label":"OAuth Version","required":true,"default":"1.0","locked":true}},"credentialFields":{"consumerKey":{"type":"string","label":"Consumer Key","inputType":"text","required":true,"encrypted":false},"consumerSecret":{"type":"string","label":"Consumer Secret","inputType":"password","required":true,"encrypted":true}},"storedTokens":["oauthToken","oauthTokenSecret"]},"jwt":{"label":"JWT (JSON Web Token)","description":"Self-generated JWT tokens","category":"advanced","configOptions":{"algorithm":{"type":"string","label":"Algorithm","required":true,"default":"HS256","options":["HS256","HS384","HS512","RS256","RS384","RS512","ES256"],"helpText":"JWT signing algorithm"},"expiresIn":{"type":"number","label":"Token Expiration (seconds)","required":false,"default":3600,"helpText":"How long before token expires"},"issuer":{"type":"string","label":"Issuer (iss)","required":false,"helpText":"JWT issuer claim"},"audience":{"type":"string","label":"Audience (aud)","required":false,"helpText":"JWT audience claim"},"headerName":{"type":"string","label":"Header Name","required":true,"default":"Authorization"},"headerPrefix":{"type":"string","label":"Header Prefix","required":false,"default":"Bearer "},"additionalClaims":{"type":"object","label":"Additional Claims","required":false,"helpText":"Extra claims to include in JWT payload"}},"credentialFields":{"secretKey":{"type":"string","label":"Secret Key / Private Key","inputType":"textarea","required":true,"encrypted":true,"helpText":"Secret for HMAC or Private Key for RSA/ECDSA"},"subject":{"type":"string","label":"Subject (sub)","inputType":"text","required":false,"helpText":"User identifier or subject claim"}}},"aws_signature_v4":{"label":"AWS Signature v4","description":"Amazon Web Services authentication","category":"advanced","configOptions":{"service":{"type":"string","label":"AWS Service","required":true,"default":"execute-api","examples":["execute-api","s3","dynamodb","lambda"],"helpText":"AWS service name for signing"},"region":{"type":"string","label":"AWS Region","required":true,"default":"us-east-1","examples":["us-east-1","eu-west-1","ap-south-1"]}},"credentialFields":{"accessKeyId":{"type":"string","label":"AWS Access Key ID","inputType":"text","required":true,"encrypted":false},"secretAccessKey":{"type":"string","label":"AWS Secret Access Key","inputType":"password","required":true,"encrypted":true},"sessionToken":{"type":"string","label":"Session Token","inputType":"password","required":false,"encrypted":true,"helpText":"Required for temporary credentials"}}},"ssh_key":{"label":"SSH Private Key","description":"SSH authentication using private key","category":"advanced","configOptions":{"port":{"type":"number","label":"SSH Port","required":false,"default":22},"keyFormat":{"type":"string","label":"Key Format","required":false,"default":"openssh","options":["openssh","pkcs8","putty"],"helpText":"Format of the private key"}},"credentialFields":{"host":{"type":"string","label":"Host","inputType":"text","required":true,"helpText":"Server hostname or IP"},"username":{"type":"string","label":"Username","inputType":"text","required":true},"privateKey":{"type":"string","label":"Private Key","inputType":"textarea","required":true,"encrypted":true,"helpText":"SSH private key (PEM format)"},"passphrase":{"type":"string","label":"Passphrase","inputType":"password","required":false,"encrypted":true,"helpText":"If key is encrypted"}}},"database_credentials":{"label":"Database Credentials","description":"Database connection credentials","category":"database","configOptions":{"databaseType":{"type":"string","label":"Database Type","required":true,"options":["postgresql","mysql","mongodb","mssql","oracle","redis"],"helpText":"Type of database"},"defaultPort":{"type":"number","label":"Default Port","required":false,"helpText":"Default port if not provided by user"},"sslEnabled":{"type":"boolean","label":"SSL/TLS Enabled","required":false,"default":true},"connectionTimeout":{"type":"number","label":"Connection Timeout (ms)","required":false,"default":30000}},"credentialFields":{"host":{"type":"string","label":"Host","inputType":"text","required":true},"port":{"type":"number","label":"Port","inputType":"number","required":true},"database":{"type":"string","label":"Database Name","inputType":"text","required":true},"username":{"type":"string","label":"Username","inputType":"text","required":true},"password":{"type":"string","label":"Password","inputType":"password","required":true,"encrypted":true},"ssl":{"type":"boolean","label":"Use SSL","inputType":"checkbox","required":false,"default":true}}}}};
+
+        let currentAuthType = null;
+        let formData = {};
+
+        // Render auth type list in sidebar
+        function renderAuthTypeList() {
+            const listContainer = document.getElementById('authTypeList');
+            listContainer.innerHTML = '';
+
+            Object.keys(authTypesData.authTypes).forEach(key => {
+                const authType = authTypesData.authTypes[key];
+                const item = document.createElement('div');
+                item.className = 'auth-type-item';
+                item.onclick = () => selectAuthType(key, item);
+
+                const categoryClass = `category-${authType.category || 'simple'}`;
+
+                item.innerHTML = `
+                    <span class="category-badge ${categoryClass}">${authType.category || 'simple'}</span>
+                    <span class="label">${authType.label}</span>
+                    <span class="description">${authType.description}</span>
+                `;
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Select auth type and generate form
+        function selectAuthType(authTypeKey, element) {
+            currentAuthType = authTypeKey;
+            formData = {};
+
+            // Update active state
+            document.querySelectorAll('.auth-type-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            // Generate form
+            const authType = authTypesData.authTypes[authTypeKey];
+            generateForm(authType);
+
+            // Show output section
+            document.getElementById('outputSection').style.display = 'block';
+            updateOutput();
+        }
+
+        // Generate form based on configOptions
+        function generateForm(authType) {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.innerHTML = `
+                <div class="form-section active">
+                    <h2 class="section-title">${authType.label}</h2>
+                    <p style="color: #666; margin-bottom: 30px;">${authType.description}</p>
+                    <div id="formFields"></div>
+                </div>
+            `;
+
+            const fieldsContainer = document.getElementById('formFields');
+            const configOptions = authType.configOptions;
+
+            if (Object.keys(configOptions).length === 0) {
+                fieldsContainer.innerHTML = '<p style="color: #999;">No configuration options for this auth type.</p>';
+                return;
+            }
+
+            Object.keys(configOptions).forEach(fieldKey => {
+                const field = configOptions[fieldKey];
+                const fieldHtml = generateField(fieldKey, field);
+                fieldsContainer.insertAdjacentHTML('beforeend', fieldHtml);
+            });
+
+            // Add event listeners
+            attachEventListeners();
+        }
+
+        // Generate individual field HTML
+        function generateField(fieldKey, field) {
+            const required = field.required ? '<span class="required">*</span>' : '';
+            const helpText = field.helpText ? `<div class="help-text">${field.helpText}</div>` : '';
+            const examples = field.examples ? `<div class="examples">Examples: ${Array.isArray(field.examples) ? field.examples.join(', ') : field.examples}</div>` : '';
+
+            // Initialize form data with default value
+            if (field.default !== undefined) {
+                formData[fieldKey] = field.default;
+            }
+
+            switch (field.type) {
+                case 'string':
+                    if (field.options) {
+                        // Dropdown
+                        return `
+                            <div class="form-group">
+                                <label>${field.label}${required}</label>
+                                <select id="${fieldKey}" data-field="${fieldKey}" ${field.required ? 'required' : ''} ${field.locked ? 'disabled' : ''}>
+                                    ${field.options.map(opt =>
+                                        `<option value="${opt}" ${opt === field.default ? 'selected' : ''}>${opt}</option>`
+                                    ).join('')}
+                                </select>
+                                ${helpText}
+                                ${examples}
+                            </div>
+                        `;
+                    } else {
+                        // Text input
+                        return `
+                            <div class="form-group">
+                                <label>${field.label}${required}</label>
+                                <input type="text" id="${fieldKey}" data-field="${fieldKey}"
+                                    placeholder="${field.placeholder || ''}"
+                                    value="${field.default || ''}"
+                                    ${field.required ? 'required' : ''}
+                                    ${field.locked ? 'readonly' : ''}>
+                                ${helpText}
+                                ${examples}
+                            </div>
+                        `;
+                    }
+
+                case 'number':
+                    return `
+                        <div class="form-group">
+                            <label>${field.label}${required}</label>
+                            <input type="number" id="${fieldKey}" data-field="${fieldKey}"
+                                value="${field.default !== undefined ? field.default : ''}"
+                                ${field.required ? 'required' : ''}>
+                            ${helpText}
+                            ${examples}
+                        </div>
+                    `;
+
+                case 'boolean':
+                    return `
+                        <div class="form-group">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="${fieldKey}" data-field="${fieldKey}"
+                                    ${field.default ? 'checked' : ''}>
+                                <label for="${fieldKey}">${field.label}</label>
+                            </div>
+                            ${helpText}
+                        </div>
+                    `;
+
+                case 'array':
+                    formData[fieldKey] = [];
+                    // Check if it's a simple array (like scopes) or complex array (like headers)
+                    if (field.itemSchema) {
+                        // Complex array with itemSchema
+                        return `
+                            <div class="form-group">
+                                <label>${field.label}${required}</label>
+                                ${helpText}
+                                <div class="array-container" id="array-${fieldKey}">
+                                    <div id="array-items-${fieldKey}"></div>
+                                    <button type="button" class="btn btn-primary btn-small add-item-btn"
+                                        onclick="addArrayItem('${fieldKey}')">+ Add Item</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Simple array (like scopes - just strings)
+                        return `
+                            <div class="form-group">
+                                <label>${field.label}${required}</label>
+                                ${helpText}
+                                ${examples}
+                                <div id="simple-array-${fieldKey}">
+                                    <div id="simple-array-items-${fieldKey}"></div>
+                                    <button type="button" class="btn btn-primary btn-small"
+                                        onclick="addSimpleArrayItem('${fieldKey}')">+ Add ${field.label}</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                case 'object':
+                    return `
+                        <div class="form-group">
+                            <label>${field.label}${required}</label>
+                            <textarea id="${fieldKey}" data-field="${fieldKey}"
+                                placeholder='${field.examples ? field.examples[0] : '{}'}'
+                                ${field.required ? 'required' : ''}></textarea>
+                            ${helpText}
+                            ${examples}
+                        </div>
+                    `;
+
+                default:
+                    return '';
+            }
+        }
+
+        // Attach event listeners to form fields
+        function attachEventListeners() {
+            document.querySelectorAll('input[data-field], select[data-field], textarea[data-field]').forEach(field => {
+                const fieldKey = field.dataset.field;
+
+                field.addEventListener('input', (e) => {
+                    if (field.type === 'checkbox') {
+                        formData[fieldKey] = field.checked;
+                    } else if (field.type === 'number') {
+                        formData[fieldKey] = parseFloat(field.value) || 0;
+                    } else {
+                        formData[fieldKey] = field.value;
+                    }
+                    updateOutput();
+                });
+
+                field.addEventListener('change', (e) => {
+                    if (field.type === 'checkbox') {
+                        formData[fieldKey] = field.checked;
+                    } else if (field.type === 'number') {
+                        formData[fieldKey] = parseFloat(field.value) || 0;
+                    } else {
+                        formData[fieldKey] = field.value;
+                    }
+                    updateOutput();
+                });
+            });
+        }
+
+        // Add simple array item (like scopes)
+        function addSimpleArrayItem(fieldKey) {
+            if (!formData[fieldKey]) {
+                formData[fieldKey] = [];
+            }
+
+            const itemIndex = formData[fieldKey].length;
+            formData[fieldKey].push('');
+
+            const itemsContainer = document.getElementById(`simple-array-items-${fieldKey}`);
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'simple-array-input';
+            itemDiv.innerHTML = `
+                <input type="text" placeholder="Enter value"
+                    data-simple-array="${fieldKey}"
+                    data-simple-index="${itemIndex}">
+                <button type="button" class="btn btn-danger btn-small"
+                    onclick="removeSimpleArrayItem('${fieldKey}', ${itemIndex})">Remove</button>
+            `;
+            itemsContainer.appendChild(itemDiv);
+
+            // Attach event listener
+            itemDiv.querySelector('input').addEventListener('input', (e) => {
+                const idx = parseInt(e.target.dataset.simpleIndex);
+                formData[fieldKey][idx] = e.target.value;
+                updateOutput();
+            });
+
+            updateOutput();
+        }
+
+        // Remove simple array item
+        function removeSimpleArrayItem(fieldKey, index) {
+            formData[fieldKey].splice(index, 1);
+
+            // Re-render
+            const itemsContainer = document.getElementById(`simple-array-items-${fieldKey}`);
+            itemsContainer.innerHTML = '';
+
+            formData[fieldKey].forEach((value, idx) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'simple-array-input';
+                itemDiv.innerHTML = `
+                    <input type="text" value="${value}"
+                        data-simple-array="${fieldKey}"
+                        data-simple-index="${idx}">
+                    <button type="button" class="btn btn-danger btn-small"
+                        onclick="removeSimpleArrayItem('${fieldKey}', ${idx})">Remove</button>
+                `;
+                itemsContainer.appendChild(itemDiv);
+
+                itemDiv.querySelector('input').addEventListener('input', (e) => {
+                    const i = parseInt(e.target.dataset.simpleIndex);
+                    formData[fieldKey][i] = e.target.value;
+                    updateOutput();
+                });
+            });
+
+            updateOutput();
+        }
+
+        // Add complex array item (with itemSchema)
+        function addArrayItem(fieldKey) {
+            const authType = authTypesData.authTypes[currentAuthType];
+            const field = authType.configOptions[fieldKey];
+            const itemsContainer = document.getElementById(`array-items-${fieldKey}`);
+
+            if (!formData[fieldKey]) {
+                formData[fieldKey] = [];
+            }
+
+            const itemIndex = formData[fieldKey].length;
+            formData[fieldKey].push({});
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'array-item';
+            itemDiv.id = `array-item-${fieldKey}-${itemIndex}`;
+
+            let itemHtml = `
+                <div class="array-item-header">
+                    <span class="array-item-title">Item #${itemIndex + 1}</span>
+                    <button type="button" class="btn btn-danger btn-small"
+                        onclick="removeArrayItem('${fieldKey}', ${itemIndex})">Remove</button>
+                </div>
+            `;
+
+            // Generate fields for array item
+            Object.keys(field.itemSchema).forEach(itemFieldKey => {
+                const itemField = field.itemSchema[itemFieldKey];
+                const itemRequired = itemField.required ? '<span class="required">*</span>' : '';
+                const itemHelp = itemField.helpText ? `<div class="help-text">${itemField.helpText}</div>` : '';
+                const itemExamples = itemField.examples ? `<div class="examples">Examples: ${itemField.examples.join(', ')}</div>` : '';
+
+                itemHtml += `
+                    <div class="form-group">
+                        <label>${itemField.label}${itemRequired}</label>
+                        <input type="text"
+                            data-array-field="${fieldKey}"
+                            data-array-index="${itemIndex}"
+                            data-item-field="${itemFieldKey}"
+                            value="${itemField.default || ''}"
+                            placeholder="${itemField.examples ? itemField.examples[0] : ''}">
+                        ${itemHelp}
+                        ${itemExamples}
+                    </div>
+                `;
+            });
+
+            itemDiv.innerHTML = itemHtml;
+            itemsContainer.appendChild(itemDiv);
+
+            // Attach event listeners for array item fields
+            itemDiv.querySelectorAll('input[data-array-field]').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const arrayField = e.target.dataset.arrayField;
+                    const arrayIndex = parseInt(e.target.dataset.arrayIndex);
+                    const itemField = e.target.dataset.itemField;
+
+                    if (!formData[arrayField][arrayIndex]) {
+                        formData[arrayField][arrayIndex] = {};
+                    }
+                    formData[arrayField][arrayIndex][itemField] = e.target.value;
+                    updateOutput();
+                });
+            });
+
+            updateOutput();
+        }
+
+        // Remove array item
+        function removeArrayItem(fieldKey, index) {
+            formData[fieldKey].splice(index, 1);
+
+            // Re-render array items
+            const itemsContainer = document.getElementById(`array-items-${fieldKey}`);
+            itemsContainer.innerHTML = '';
+
+            formData[fieldKey].forEach((item, idx) => {
+                const authType = authTypesData.authTypes[currentAuthType];
+                const field = authType.configOptions[fieldKey];
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'array-item';
+
+                let itemHtml = `
+                    <div class="array-item-header">
+                        <span class="array-item-title">Item #${idx + 1}</span>
+                        <button type="button" class="btn btn-danger btn-small"
+                            onclick="removeArrayItem('${fieldKey}', ${idx})">Remove</button>
+                    </div>
+                `;
+
+                Object.keys(field.itemSchema).forEach(itemFieldKey => {
+                    const itemField = field.itemSchema[itemFieldKey];
+                    const itemRequired = itemField.required ? '<span class="required">*</span>' : '';
+
+                    itemHtml += `
+                        <div class="form-group">
+                            <label>${itemField.label}${itemRequired}</label>
+                            <input type="text"
+                                data-array-field="${fieldKey}"
+                                data-array-index="${idx}"
+                                data-item-field="${itemFieldKey}"
+                                value="${item[itemFieldKey] || ''}">
+                        </div>
+                    `;
+                });
+
+                itemDiv.innerHTML = itemHtml;
+                itemsContainer.appendChild(itemDiv);
+
+                itemDiv.querySelectorAll('input[data-array-field]').forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        const arrayField = e.target.dataset.arrayField;
+                        const arrayIndex = parseInt(e.target.dataset.arrayIndex);
+                        const itemField = e.target.dataset.itemField;
+
+                        formData[arrayField][arrayIndex][itemField] = e.target.value;
+                        updateOutput();
+                    });
+                });
+            });
+
+            updateOutput();
+        }
+
+        // Update output JSON
+        function updateOutput() {
+            const output = {
+                authType: currentAuthType,
+                config: {...formData}
+            };
+
+            // Clean up empty values
+            Object.keys(output.config).forEach(key => {
+                if (output.config[key] === '' || output.config[key] === null || output.config[key] === undefined) {
+                    delete output.config[key];
+                }
+                // Clean up empty arrays
+                if (Array.isArray(output.config[key]) && output.config[key].length === 0) {
+                    delete output.config[key];
+                }
+            });
+
+            document.getElementById('outputJson').textContent = JSON.stringify(output, null, 2);
+        }
+
+        // Copy to clipboard
+        function copyToClipboard() {
+            const text = document.getElementById('outputJson').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Copied to clipboard!');
+            });
+        }
+
+        // Download JSON
+        function downloadJson() {
+            const text = document.getElementById('outputJson').textContent;
+            const blob = new Blob([text], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentAuthType}-config.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        renderAuthTypeList();
+    </script>
+</body>
+</html>

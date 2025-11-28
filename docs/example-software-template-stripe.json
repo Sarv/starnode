@@ -1,0 +1,35 @@
+{
+  "softwareId": "stripe",
+  "softwareName": "Stripe",
+  "version": "1.0.0",
+  "baseUrl": "https://api.stripe.com/v1",
+
+  "authMethods": [
+    {
+      "id": "stripe_api_key",
+      "authType": "bearer_token",
+      "label": "API Key",
+      "isDefault": true,
+      "priority": 1,
+
+      "config": {
+        "headerName": "Authorization",
+        "prefix": "Bearer "
+      },
+
+      "credentials": {
+        "token": {
+          "label": "Secret Key",
+          "helpText": "Starts with sk_test_ or sk_live_",
+          "placeholder": "sk_test_..."
+        }
+      },
+
+      "validation": {
+        "testEndpoint": "/charges",
+        "testMethod": "GET",
+        "expectedStatus": [200]
+      }
+    }
+  ]
+}

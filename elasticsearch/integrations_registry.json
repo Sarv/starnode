@@ -1,0 +1,32 @@
+{
+  "integrations_registry" : {
+    "mappings" : {
+      "properties" : {
+        "category" : {
+          "type" : "keyword"
+        },
+        "createdAt" : {
+          "type" : "date"
+        },
+        "description" : {
+          "type" : "text"
+        },
+        "displayName" : {
+          "type" : "text"
+        },
+        "integrationId" : {
+          "type" : "keyword"
+        },
+        "status" : {
+          "type" : "keyword"
+        },
+        "updatedAt" : {
+          "type" : "date"
+        },
+        "version" : {
+          "type" : "keyword"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "endpointLimits": [
+    {
+      "path": "/*",
+      "requestsPerMinute": 60,
+      "requestsPerHour": 3000,
+      "requestsPerDay": 50000,
+      "concurrentRequests": 5
+    }
+  ],
+  "retryStrategy": {
+    "maxRetries": 3,
+    "backoffMultiplier": 2,
+    "initialDelay": 1000
+  }
+}

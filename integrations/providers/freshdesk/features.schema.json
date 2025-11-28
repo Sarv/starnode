@@ -1,0 +1,279 @@
+{
+  "version": "1.0.0",
+  "features": [
+    {
+      "id": "get_contact",
+      "name": "Contact Fetch",
+      "description": "get contacts from freshdesk account",
+      "category": "",
+      "endpoint": {
+        "path": "/contacts",
+        "method": "GET"
+      },
+      "method": "GET",
+      "path": "/api/"
+    }
+  ],
+  "featureMappings": [
+    {
+      "id": "mapping_1764100935626_uikt58e78",
+      "featureTemplateId": "asdf",
+      "featureTemplateName": "Abhiii",
+      "fieldMappings": {
+        "asdf": {
+          "enabled": true,
+          "overrides": null,
+          "customHandlers": {
+            "valueHandler": "func_1",
+            "validationHandler": "func_2",
+            "submitHandler": "func_3",
+            "formatHandler": "format_function"
+          },
+          "adminValue": [
+            "push"
+          ]
+        },
+        "webhook": {
+          "enabled": true,
+          "overrides": null,
+          "customHandlers": null,
+          "adminValue": "https://www.sarv.com/api/v2/get"
+        },
+        "field2": {
+          "enabled": true,
+          "overrides": null,
+          "customHandlers": null
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "demo",
+          "label": "Demo  Bit",
+          "description": "gkgkhjg",
+          "type": "api",
+          "fieldType": "string",
+          "htmlType": "radio",
+          "fillBy": "Admin",
+          "required": true,
+          "default": null,
+          "possibleValues": [
+            {
+              "id": "opt",
+              "label": "ha ha hi hi"
+            }
+          ],
+          "customHandlers": {
+            "valueHandler": "fu_1",
+            "validationHandler": "fu_2",
+            "submitHandler": "fu_3"
+          },
+          "order": 1
+        },
+        {
+          "fieldKey": "sheet_id",
+          "label": "Demo",
+          "description": "Demo",
+          "type": "static",
+          "fieldType": "string",
+          "htmlType": "checkbox",
+          "fillBy": "Admin",
+          "adminValue": [
+            "c"
+          ],
+          "required": true,
+          "default": null,
+          "possibleValues": [
+            {
+              "id": "a",
+              "label": "Apple"
+            },
+            {
+              "id": "b",
+              "label": "Boy"
+            },
+            {
+              "id": "c",
+              "label": "Cat"
+            }
+          ],
+          "customHandlers": {
+            "valueHandler": "formula_1",
+            "validationHandler": "formula_2",
+            "submitHandler": "formula_2"
+          },
+          "order": 2
+        },
+        {
+          "fieldKey": "color",
+          "label": "Text Color",
+          "description": "choose the color of text",
+          "type": "static",
+          "fieldType": "string",
+          "htmlType": "color",
+          "fillBy": "Admin",
+          "adminValue": "#be1e1e",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": {
+            "parseHandler": "parsing_function"
+          },
+          "order": 3
+        }
+      ],
+      "customHandlers": {},
+      "status": "active",
+      "createdAt": "2025-11-25T20:02:15.627Z",
+      "updatedAt": "2025-11-26T15:20:32.999Z"
+    },
+    {
+      "id": "mapping_1764149357915_hq1eiatut",
+      "featureTemplateId": "send_report",
+      "featureTemplateName": "Send Report to CRM",
+      "fieldMappings": {
+        "caller_number": {
+          "enabled": true,
+          "customHandlers": {
+            "valueHandler": "func_1",
+            "validationHandler": "func_22222",
+            "submitHandler": "abcdefgh"
+          },
+          "adminValue": "9782888889"
+        },
+        "api": {
+          "enabled": true,
+          "customHandlers": {
+            "valueHandler": null,
+            "validationHandler": "validateValuesForFreshdesk",
+            "submitHandler": "submitValueHandler"
+          }
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "demo",
+          "label": "Just a Demo",
+          "description": "assign this to user for demo",
+          "type": "api",
+          "fieldType": "string",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": {
+            "valueHandler": null,
+            "validationHandler": null,
+            "submitHandler": null
+          },
+          "order": 1
+        },
+        {
+          "fieldKey": "sheet_id2",
+          "label": "sheet id google",
+          "description": "help me.",
+          "type": "dynamic",
+          "fieldType": "number",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": {
+            "valueHandler": "ararar",
+            "validationHandler": "handle_2234",
+            "submitHandler": "handler_function_234"
+          },
+          "order": 2
+        }
+      ],
+      "customHandlers": {},
+      "status": "active",
+      "createdAt": "2025-11-26T09:29:17.915Z",
+      "updatedAt": "2025-11-26T19:11:47.096Z"
+    },
+    {
+      "id": "mapping_1764248519064_ngam1x57v",
+      "featureTemplateId": "sync_change_in_contact",
+      "featureTemplateName": "Sync Change in Contact",
+      "fieldMappings": {
+        "api_end_point": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "sheet_id": {
+          "enabled": true,
+          "customHandlers": {
+            "valueHandler": "getSheetList_of_user_google",
+            "validationHandler": "validate_agentId"
+          }
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "is_admin",
+          "label": "Is this user an admin",
+          "description": "",
+          "type": "static",
+          "fieldType": "boolean",
+          "htmlType": "checkbox",
+          "fillBy": "Admin",
+          "adminValue": [
+            "1"
+          ],
+          "required": true,
+          "default": null,
+          "possibleValues": [
+            {
+              "id": "1",
+              "label": "One"
+            },
+            {
+              "id": "2",
+              "label": "Two"
+            }
+          ],
+          "customHandlers": null,
+          "order": 1
+        },
+        {
+          "fieldKey": "sheet_api_uri",
+          "label": "Google Sheet Get List",
+          "description": "falsdjfalsjd fa",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "https://www.google.com",
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 2
+        }
+      ],
+      "customHandlers": {},
+      "status": "active",
+      "createdAt": "2025-11-27T13:01:59.065Z",
+      "updatedAt": "2025-11-27T13:13:19.627Z"
+    }
+  ],
+  "lastUpdated": "2025-11-27T13:13:19.627Z"
+}

@@ -1,0 +1,754 @@
+{
+  "authTypes": {
+    "api_key_header": {
+      "label": "API Key (Header)",
+      "description": "API key passed in request header",
+      "category": "simple",
+      "supportsAdditionalFields": true,
+      "configOptions": {
+        "headerName": {
+          "type": "string",
+          "label": "Header Name",
+          "required": true,
+          "default": "X-API-Key",
+          "helpText": "Name of the header where API key will be sent",
+          "examples": ["X-API-Key", "Authorization", "X-Auth-Token", "api-key"]
+        },
+        "prefix": {
+          "type": "string",
+          "label": "Key Prefix",
+          "required": false,
+          "default": "",
+          "helpText": "Prefix before the key (e.g., 'Bearer ', 'Token ', or leave empty)",
+          "examples": ["", "Bearer ", "Token ", "ApiKey "]
+        }
+      },
+      "credentialFields": {
+        "apiKey": {
+          "type": "string",
+          "label": "API Key",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true,
+          "helpText": "Your API key from the provider"
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": true,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
+        }
+      }
+    },
+
+    "api_key_query": {
+      "label": "API Key (Query Parameter)",
+      "description": "API key passed as URL query parameter",
+      "category": "simple",
+      "supportsAdditionalFields": true,
+      "configOptions": {
+        "paramName": {
+          "type": "string",
+          "label": "Parameter Name",
+          "required": true,
+          "default": "apiKey",
+          "helpText": "Name of the query parameter",
+          "examples": ["apiKey", "api_key", "key", "token"]
+        }
+      },
+      "credentialFields": {
+        "apiKey": {
+          "type": "string",
+          "label": "API Key",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": true,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
+        }
+      }
+    },
+
+    "bearer_token": {
+      "label": "Bearer Token",
+      "description": "Bearer token in Authorization header",
+      "category": "simple",
+      "supportsAdditionalFields": true,
+      "configOptions": {
+        "headerName": {
+          "type": "string",
+          "label": "Header Name",
+          "required": true,
+          "default": "Authorization",
+          "locked": true,
+          "helpText": "Usually 'Authorization' (standard)"
+        },
+        "prefix": {
+          "type": "string",
+          "label": "Token Prefix",
+          "required": true,
+          "default": "Bearer ",
+          "locked": true
+        }
+      },
+      "credentialFields": {
+        "token": {
+          "type": "string",
+          "label": "Access Token",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true
+        }
+      }
+    },
+
+    "basic_auth": {
+      "label": "Basic Authentication",
+      "description": "Username and password encoded in Authorization header",
+      "category": "simple",
+      "configOptions": {},
+      "credentialFields": {
+        "username": {
+          "type": "string",
+          "label": "Username",
+          "inputType": "text",
+          "required": true,
+          "encrypted": false
+        },
+        "password": {
+          "type": "string",
+          "label": "Password",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true
+        }
+      }
+    },
+
+    "custom_headers": {
+      "label": "Custom Headers",
+      "description": "Multiple custom headers for authentication",
+      "category": "simple",
+      "configOptions": {
+        "headers": {
+          "type": "array",
+          "label": "Headers Configuration",
+          "required": true,
+          "itemSchema": {
+            "headerName": {
+              "type": "string",
+              "label": "Header Name",
+              "required": true,
+              "examples": ["X-Auth-Token", "X-User-ID", "X-API-Secret"]
+            },
+            "credentialKey": {
+              "type": "string",
+              "label": "Credential Field Key",
+              "required": true,
+              "helpText": "Key from credential fields to use for this header",
+              "examples": ["authToken", "userId", "apiSecret"]
+            },
+            "prefix": {
+              "type": "string",
+              "label": "Value Prefix",
+              "required": false,
+              "default": ""
+            }
+          },
+          "helpText": "Define multiple headers and map them to credential fields"
+        }
+      },
+      "credentialFields": {
+        "_dynamic": true,
+        "_note": "Credential fields are defined dynamically based on headers configuration"
+      }
+    },
+
+    "oauth2_authorization_code": {
+      "label": "OAuth 2.0 - Authorization Code",
+      "description": "OAuth2 flow requiring user authorization",
+      "category": "oauth",
+      "supportsAdditionalFields": true,
+      "configOptions": {
+        "authorizationUrl": {
+          "type": "string",
+          "label": "Authorization URL",
+          "required": true,
+          "helpText": "URL where users authorize your app",
+          "examples": [
+            "https://accounts.google.com/o/oauth2/v2/auth",
+            "https://login.salesforce.com/services/oauth2/authorize"
+          ]
+        },
+        "tokenUrl": {
+          "type": "string",
+          "label": "Token URL",
+          "required": true,
+          "helpText": "URL to exchange code for access token",
+          "examples": [
+            "https://oauth2.googleapis.com/token",
+            "https://login.salesforce.com/services/oauth2/token"
+          ]
+        },
+        "scopes": {
+          "type": "array",
+          "label": "Scopes",
+          "required": false,
+          "helpText": "Comma-separated or array of permission scopes",
+          "examples": ["read,write", "user:email,repo"]
+        },
+        "scopeSeparator": {
+          "type": "string",
+          "label": "Scope Separator",
+          "required": false,
+          "default": " ",
+          "options": [" ", ",", "+"],
+          "helpText": "Character to join multiple scopes"
+        },
+        "pkceEnabled": {
+          "type": "boolean",
+          "label": "Enable PKCE",
+          "required": false,
+          "default": false,
+          "helpText": "Use Proof Key for Code Exchange (more secure)"
+        },
+        "authMethod": {
+          "type": "string",
+          "label": "Client Authentication Method",
+          "required": false,
+          "default": "client_secret_post",
+          "options": ["client_secret_post", "client_secret_basic"],
+          "helpText": "How to send client credentials to token endpoint"
+        },
+        "additionalAuthParams": {
+          "type": "object",
+          "label": "Additional Auth Parameters",
+          "required": false,
+          "helpText": "Extra parameters for authorization URL (e.g., prompt=consent)",
+          "examples": ["{\"prompt\": \"consent\", \"access_type\": \"offline\"}"]
+        },
+        "tokenRefreshEnabled": {
+          "type": "boolean",
+          "label": "Enable Token Refresh",
+          "required": false,
+          "default": true
+        },
+        "refreshTokenUrl": {
+          "type": "string",
+          "label": "Refresh Token URL",
+          "required": false,
+          "helpText": "URL to refresh expired tokens (usually same as tokenUrl)",
+          "dependsOn": {
+            "tokenRefreshEnabled": true
+          }
+        }
+      },
+      "credentialFields": {
+        "clientId": {
+          "type": "string",
+          "label": "Client ID",
+          "inputType": "text",
+          "required": true,
+          "encrypted": false,
+          "helpText": "OAuth Client ID from provider"
+        },
+        "clientSecret": {
+          "type": "string",
+          "label": "Client Secret",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true,
+          "helpText": "OAuth Client Secret from provider"
+        }
+      },
+      "storedTokens": ["accessToken", "refreshToken", "tokenType", "expiresIn", "expiresAt", "scope"],
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": true,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://accounts.google.com/oauth2/v2/userinfo"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
+        },
+        "checkTokenExpiry": {
+          "type": "boolean",
+          "label": "Check Token Expiry",
+          "required": false,
+          "default": true,
+          "locked": true,
+          "helpText": "Automatically check if access token is expired before testing"
+        },
+        "autoRefreshToken": {
+          "type": "boolean",
+          "label": "Auto-Refresh Expired Token",
+          "required": false,
+          "default": true,
+          "locked": true,
+          "helpText": "Automatically refresh token if expired before testing"
+        }
+      }
+    },
+
+    "oauth2_client_credentials": {
+      "label": "OAuth 2.0 - Client Credentials",
+      "description": "OAuth2 server-to-server authentication",
+      "category": "oauth",
+      "supportsAdditionalFields": true,
+      "configOptions": {
+        "tokenUrl": {
+          "type": "string",
+          "label": "Token URL",
+          "required": true,
+          "examples": ["https://api.example.com/oauth/token"]
+        },
+        "scopes": {
+          "type": "array",
+          "label": "Scopes",
+          "required": false
+        },
+        "scopeSeparator": {
+          "type": "string",
+          "label": "Scope Separator",
+          "required": false,
+          "default": " ",
+          "options": [" ", ","]
+        },
+        "authMethod": {
+          "type": "string",
+          "label": "Client Authentication Method",
+          "required": false,
+          "default": "client_secret_post",
+          "options": ["client_secret_post", "client_secret_basic"]
+        }
+      },
+      "credentialFields": {
+        "clientId": {
+          "type": "string",
+          "label": "Client ID",
+          "inputType": "text",
+          "required": true,
+          "encrypted": false
+        },
+        "clientSecret": {
+          "type": "string",
+          "label": "Client Secret",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true
+        }
+      },
+      "storedTokens": ["accessToken", "tokenType", "expiresIn", "scope"]
+    },
+
+    "oauth2_service_account": {
+      "label": "OAuth 2.0 - Service Account (JWT)",
+      "description": "Service account authentication using JWT (Google-style)",
+      "category": "oauth",
+      "configOptions": {
+        "tokenUrl": {
+          "type": "string",
+          "label": "Token URL",
+          "required": true,
+          "default": "https://oauth2.googleapis.com/token",
+          "examples": ["https://oauth2.googleapis.com/token"]
+        },
+        "scopes": {
+          "type": "array",
+          "label": "Scopes",
+          "required": true,
+          "examples": ["https://www.googleapis.com/auth/drive"]
+        },
+        "subject": {
+          "type": "string",
+          "label": "Subject (Impersonation Email)",
+          "required": false,
+          "helpText": "Email to impersonate (for domain-wide delegation)"
+        }
+      },
+      "credentialFields": {
+        "serviceAccountJson": {
+          "type": "json",
+          "label": "Service Account JSON",
+          "inputType": "textarea",
+          "required": true,
+          "encrypted": true,
+          "helpText": "Complete JSON key file from service account"
+        }
+      },
+      "storedTokens": ["accessToken", "tokenType", "expiresIn"]
+    },
+
+    "oauth1": {
+      "label": "OAuth 1.0a",
+      "description": "Legacy OAuth 1.0a authentication",
+      "category": "oauth",
+      "configOptions": {
+        "requestTokenUrl": {
+          "type": "string",
+          "label": "Request Token URL",
+          "required": true,
+          "examples": ["https://api.twitter.com/oauth/request_token"]
+        },
+        "authorizeUrl": {
+          "type": "string",
+          "label": "Authorization URL",
+          "required": true,
+          "examples": ["https://api.twitter.com/oauth/authorize"]
+        },
+        "accessTokenUrl": {
+          "type": "string",
+          "label": "Access Token URL",
+          "required": true,
+          "examples": ["https://api.twitter.com/oauth/access_token"]
+        },
+        "signatureMethod": {
+          "type": "string",
+          "label": "Signature Method",
+          "required": true,
+          "default": "HMAC-SHA1",
+          "options": ["HMAC-SHA1", "HMAC-SHA256", "PLAINTEXT"]
+        },
+        "version": {
+          "type": "string",
+          "label": "OAuth Version",
+          "required": true,
+          "default": "1.0",
+          "locked": true
+        }
+      },
+      "credentialFields": {
+        "consumerKey": {
+          "type": "string",
+          "label": "Consumer Key",
+          "inputType": "text",
+          "required": true,
+          "encrypted": false
+        },
+        "consumerSecret": {
+          "type": "string",
+          "label": "Consumer Secret",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true
+        }
+      },
+      "storedTokens": ["oauthToken", "oauthTokenSecret"]
+    },
+
+    "jwt": {
+      "label": "JWT (JSON Web Token)",
+      "description": "Self-generated JWT tokens",
+      "category": "advanced",
+      "configOptions": {
+        "algorithm": {
+          "type": "string",
+          "label": "Algorithm",
+          "required": true,
+          "default": "HS256",
+          "options": ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "ES256"],
+          "helpText": "JWT signing algorithm"
+        },
+        "expiresIn": {
+          "type": "number",
+          "label": "Token Expiration (seconds)",
+          "required": false,
+          "default": 3600,
+          "helpText": "How long before token expires"
+        },
+        "issuer": {
+          "type": "string",
+          "label": "Issuer (iss)",
+          "required": false,
+          "helpText": "JWT issuer claim"
+        },
+        "audience": {
+          "type": "string",
+          "label": "Audience (aud)",
+          "required": false,
+          "helpText": "JWT audience claim"
+        },
+        "headerName": {
+          "type": "string",
+          "label": "Header Name",
+          "required": true,
+          "default": "Authorization"
+        },
+        "headerPrefix": {
+          "type": "string",
+          "label": "Header Prefix",
+          "required": false,
+          "default": "Bearer "
+        },
+        "additionalClaims": {
+          "type": "object",
+          "label": "Additional Claims",
+          "required": false,
+          "helpText": "Extra claims to include in JWT payload"
+        }
+      },
+      "credentialFields": {
+        "secretKey": {
+          "type": "string",
+          "label": "Secret Key / Private Key",
+          "inputType": "textarea",
+          "required": true,
+          "encrypted": true,
+          "helpText": "Secret for HMAC or Private Key for RSA/ECDSA"
+        },
+        "subject": {
+          "type": "string",
+          "label": "Subject (sub)",
+          "inputType": "text",
+          "required": false,
+          "helpText": "User identifier or subject claim"
+        }
+      }
+    },
+
+    "aws_signature_v4": {
+      "label": "AWS Signature v4",
+      "description": "Amazon Web Services authentication",
+      "category": "advanced",
+      "configOptions": {
+        "service": {
+          "type": "string",
+          "label": "AWS Service",
+          "required": true,
+          "default": "execute-api",
+          "examples": ["execute-api", "s3", "dynamodb", "lambda"],
+          "helpText": "AWS service name for signing"
+        },
+        "region": {
+          "type": "string",
+          "label": "AWS Region",
+          "required": true,
+          "default": "us-east-1",
+          "examples": ["us-east-1", "eu-west-1", "ap-south-1"]
+        }
+      },
+      "credentialFields": {
+        "accessKeyId": {
+          "type": "string",
+          "label": "AWS Access Key ID",
+          "inputType": "text",
+          "required": true,
+          "encrypted": false
+        },
+        "secretAccessKey": {
+          "type": "string",
+          "label": "AWS Secret Access Key",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true
+        },
+        "sessionToken": {
+          "type": "string",
+          "label": "Session Token",
+          "inputType": "password",
+          "required": false,
+          "encrypted": true,
+          "helpText": "Required for temporary credentials"
+        }
+      }
+    },
+
+    "ssh_key": {
+      "label": "SSH Private Key",
+      "description": "SSH authentication using private key",
+      "category": "advanced",
+      "configOptions": {
+        "port": {
+          "type": "number",
+          "label": "SSH Port",
+          "required": false,
+          "default": 22
+        },
+        "keyFormat": {
+          "type": "string",
+          "label": "Key Format",
+          "required": false,
+          "default": "openssh",
+          "options": ["openssh", "pkcs8", "putty"],
+          "helpText": "Format of the private key"
+        }
+      },
+      "credentialFields": {
+        "host": {
+          "type": "string",
+          "label": "Host",
+          "inputType": "text",
+          "required": true,
+          "helpText": "Server hostname or IP"
+        },
+        "username": {
+          "type": "string",
+          "label": "Username",
+          "inputType": "text",
+          "required": true
+        },
+        "privateKey": {
+          "type": "string",
+          "label": "Private Key",
+          "inputType": "textarea",
+          "required": true,
+          "encrypted": true,
+          "helpText": "SSH private key (PEM format)"
+        },
+        "passphrase": {
+          "type": "string",
+          "label": "Passphrase",
+          "inputType": "password",
+          "required": false,
+          "encrypted": true,
+          "helpText": "If key is encrypted"
+        }
+      }
+    },
+
+    "database_credentials": {
+      "label": "Database Credentials",
+      "description": "Database connection credentials",
+      "category": "database",
+      "configOptions": {
+        "databaseType": {
+          "type": "string",
+          "label": "Database Type",
+          "required": true,
+          "options": ["postgresql", "mysql", "mongodb", "mssql", "oracle", "redis"],
+          "helpText": "Type of database"
+        },
+        "defaultPort": {
+          "type": "number",
+          "label": "Default Port",
+          "required": false,
+          "helpText": "Default port if not provided by user"
+        },
+        "sslEnabled": {
+          "type": "boolean",
+          "label": "SSL/TLS Enabled",
+          "required": false,
+          "default": true
+        },
+        "connectionTimeout": {
+          "type": "number",
+          "label": "Connection Timeout (ms)",
+          "required": false,
+          "default": 30000
+        }
+      },
+      "credentialFields": {
+        "host": {
+          "type": "string",
+          "label": "Host",
+          "inputType": "text",
+          "required": true
+        },
+        "port": {
+          "type": "number",
+          "label": "Port",
+          "inputType": "number",
+          "required": true
+        },
+        "database": {
+          "type": "string",
+          "label": "Database Name",
+          "inputType": "text",
+          "required": true
+        },
+        "username": {
+          "type": "string",
+          "label": "Username",
+          "inputType": "text",
+          "required": true
+        },
+        "password": {
+          "type": "string",
+          "label": "Password",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true
+        },
+        "ssl": {
+          "type": "boolean",
+          "label": "Use SSL",
+          "inputType": "checkbox",
+          "required": false,
+          "default": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,311 @@
+{
+  "basicInfo": {
+    "displayName": {
+      "label": "Integration Name",
+      "description": "The display name shown to users",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": true,
+      "placeholder": "e.g., Salesforce"
+    },
+    "id": {
+      "label": "Unique Identifier",
+      "description": "Lowercase, numbers, hyphens, and underscores only",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": true,
+      "pattern": "^[a-z0-9_-]+$",
+      "placeholder": "e.g., salesforce"
+    },
+    "category": {
+      "label": "Category",
+      "description": "Select the category that best fits this integration",
+      "dataType": "string",
+      "htmlType": "select",
+      "required": true,
+      "options": [
+        { "value": "crm", "label": "CRM" },
+        { "value": "payment", "label": "Payment" },
+        { "value": "database", "label": "Database" },
+        { "value": "communication", "label": "Communication" },
+        { "value": "analytics", "label": "Analytics" },
+        { "value": "storage", "label": "Storage" },
+        { "value": "other", "label": "Other" }
+      ]
+    },
+    "version": {
+      "label": "Version",
+      "description": "Semantic versioning (e.g., 1.0.0)",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": false,
+      "default": "1.0.0",
+      "placeholder": "1.0.0"
+    },
+    "description": {
+      "label": "Description",
+      "description": "Describe what this integration does",
+      "dataType": "string",
+      "htmlType": "textarea",
+      "required": true,
+      "placeholder": "Describe what this integration does..."
+    },
+    "status": {
+      "label": "Status",
+      "description": "Current status of the integration",
+      "dataType": "string",
+      "htmlType": "select",
+      "required": true,
+      "default": "inactive",
+      "options": [
+        { "value": "active", "label": "Active", "color": "#10b981", "bgColor": "#d1fae5" },
+        { "value": "inactive", "label": "Inactive", "color": "#ef4444", "bgColor": "#fee2e2" },
+        { "value": "beta", "label": "Beta", "color": "#f59e0b", "bgColor": "#fef3c7" }
+      ]
+    },
+    "iconUrl": {
+      "label": "Icon URL",
+      "description": "URL to the integration's icon/logo",
+      "dataType": "url",
+      "htmlType": "text",
+      "required": false,
+      "placeholder": "https://example.com/icon.png"
+    },
+    "docsUrl": {
+      "label": "Documentation URL",
+      "description": "Link to integration documentation",
+      "dataType": "url",
+      "htmlType": "text",
+      "required": false,
+      "placeholder": "https://docs.example.com"
+    }
+  },
+  "features": {
+    "name": {
+      "label": "Feature Name",
+      "description": "Name of the API feature",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": true,
+      "placeholder": "e.g., Get Contacts"
+    },
+    "id": {
+      "label": "Feature ID",
+      "description": "Unique identifier for this feature",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": false,
+      "placeholder": "e.g., get_contacts"
+    },
+    "description": {
+      "label": "Description",
+      "description": "Brief description of what this feature does",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": false,
+      "placeholder": "Brief description"
+    },
+    "method": {
+      "label": "HTTP Method",
+      "description": "HTTP method for this endpoint",
+      "dataType": "string",
+      "htmlType": "select",
+      "required": true,
+      "options": [
+        { "value": "GET", "label": "GET" },
+        { "value": "POST", "label": "POST" },
+        { "value": "PUT", "label": "PUT" },
+        { "value": "PATCH", "label": "PATCH" },
+        { "value": "DELETE", "label": "DELETE" }
+      ]
+    },
+    "path": {
+      "label": "Endpoint Path",
+      "description": "API endpoint path (must start with /)",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": true,
+      "pattern": "^\\/.*",
+      "placeholder": "/api/v1/contacts"
+    }
+  },
+  "rateLimits": {
+    "path": {
+      "label": "Endpoint Path",
+      "description": "Path pattern (use * for wildcards, e.g., /api/*)",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": true,
+      "placeholder": "/api/v1/*"
+    },
+    "requestsPerMinute": {
+      "label": "Requests per Minute",
+      "description": "Maximum requests allowed per minute",
+      "dataType": "number",
+      "htmlType": "number",
+      "required": true,
+      "min": 1,
+      "default": 60
+    },
+    "requestsPerHour": {
+      "label": "Requests per Hour",
+      "description": "Maximum requests allowed per hour",
+      "dataType": "number",
+      "htmlType": "number",
+      "required": true,
+      "min": 1,
+      "default": 3000
+    },
+    "requestsPerDay": {
+      "label": "Requests per Day",
+      "description": "Maximum requests allowed per day",
+      "dataType": "number",
+      "htmlType": "number",
+      "required": true,
+      "min": 1,
+      "default": 50000
+    },
+    "concurrentRequests": {
+      "label": "Concurrent Requests",
+      "description": "Maximum simultaneous requests",
+      "dataType": "number",
+      "htmlType": "number",
+      "required": true,
+      "min": 1,
+      "default": 10
+    }
+  },
+  "additionalFields": {
+    "name": {
+      "label": "Field Name",
+      "description": "Internal field name (lowercase, no spaces, underscores/hyphens only)",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": true,
+      "pattern": "^[a-z0-9_-]+$",
+      "placeholder": "e.g., company_subdomain, tenant_id"
+    },
+    "label": {
+      "label": "Display Label",
+      "description": "User-friendly label shown in forms",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": true,
+      "placeholder": "e.g., Company Subdomain, Tenant ID"
+    },
+    "type": {
+      "label": "Field Type",
+      "description": "Data type for validation and rendering",
+      "dataType": "string",
+      "htmlType": "select",
+      "required": true,
+      "default": "string",
+      "options": [
+        { "value": "string", "label": "String (Text)" },
+        { "value": "number", "label": "Number" },
+        { "value": "boolean", "label": "Boolean (Yes/No)" },
+        { "value": "url", "label": "URL" },
+        { "value": "email", "label": "Email" },
+        { "value": "select", "label": "Dropdown (Select)" }
+      ]
+    },
+    "required": {
+      "label": "Required Field",
+      "description": "Is this field mandatory?",
+      "dataType": "boolean",
+      "htmlType": "select",
+      "required": true,
+      "default": true,
+      "options": [
+        { "value": true, "label": "Yes (Required)" },
+        { "value": false, "label": "No (Optional)" }
+      ]
+    },
+    "placeholder": {
+      "label": "Placeholder Text",
+      "description": "Help text shown in empty field",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": false,
+      "placeholder": "e.g., Enter your company subdomain"
+    },
+    "description": {
+      "label": "Help Text",
+      "description": "Additional instructions for users",
+      "dataType": "string",
+      "htmlType": "textarea",
+      "required": false,
+      "placeholder": "e.g., This can be found in your account settings"
+    },
+    "default": {
+      "label": "Default Value",
+      "description": "Pre-filled value (optional)",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": false,
+      "placeholder": ""
+    }
+  },
+  "customHandlers": {
+    "valueHandler": {
+      "id": "valueHandler",
+      "label": "Value Handler",
+      "description": "Transform or normalize field values before processing",
+      "placeholder": "e.g., capitalizeFirstName, formatPhoneNumber",
+      "icon": "↓",
+      "helpText": "Function to transform field values (e.g., uppercase, trim spaces)",
+      "category": "transformation",
+      "order": 1
+    },
+    "validationHandler": {
+      "id": "validationHandler",
+      "label": "Validation Handler",
+      "description": "Validate field values and return error messages if invalid",
+      "placeholder": "e.g., validateEmail, validatePhoneNumber",
+      "icon": "✓",
+      "helpText": "Function to validate field values (returns true or error message)",
+      "category": "validation",
+      "order": 2
+    },
+    "submitHandler": {
+      "id": "submitHandler",
+      "label": "Submit Handler",
+      "description": "Process field values before API submission",
+      "placeholder": "e.g., encryptData, base64Encode",
+      "icon": "⚙",
+      "helpText": "Function to process values before sending to API",
+      "category": "submission",
+      "order": 3
+    },
+    "formatHandler": {
+      "id": "formatHandler",
+      "label": "Format Handler",
+      "description": "Format field values for display purposes",
+      "placeholder": "e.g., formatCurrency, formatDate",
+      "icon": "📝",
+      "helpText": "Function to format values for display",
+      "category": "formatting",
+      "order": 4
+    },
+    "parseHandler": {
+      "id": "parseHandler",
+      "label": "Parse Handler",
+      "description": "Parse incoming data before populating fields",
+      "placeholder": "e.g., parseJSON, parseXML",
+      "icon": "🔍",
+      "helpText": "Function to parse data from API responses",
+      "category": "parsing",
+      "order": 5
+    },
+    "conditionalHandler": {
+      "id": "conditionalHandler",
+      "label": "Conditional Handler",
+      "description": "Determine if field should be shown/enabled based on conditions",
+      "placeholder": "e.g., showIfPremium, enableIfAdmin",
+      "icon": "🔀",
+      "helpText": "Function to evaluate field visibility/enablement",
+      "category": "conditional",
+      "order": 6
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "api_key_header_method",
+      "authType": "api_key_header",
+      "label": "API Key (Header)",
+      "isDefault": true,
+      "priority": 3,
+      "config": {
+        "headerName": "API-Key",
+        "prefix": "apiKey",
+        "isDefault": true
+      },
+      "additionalFields": [
+        {
+          "name": "sub_domain",
+          "label": "Sub Domain Company Name",
+          "type": "string",
+          "required": true,
+          "placeholder": "Enter your company name. This will be used for API calls for your account. "
+        },
+        {
+          "name": "custom_field_2",
+          "label": "Custom Field 2",
+          "type": "string",
+          "required": true,
+          "placeholder": "Custom fields detail"
+        }
+      ]
+    },
+    {
+      "id": "api_key_header_method_1763751126487",
+      "authType": "api_key_header",
+      "label": "API Key (Header)",
+      "isDefault": false,
+      "priority": 2,
+      "config": {
+        "headerName": "headerName",
+        "prefix": "abhimanyu ",
+        "isDefault": false
+      },
+      "additionalFields": []
+    }
+  ]
+}

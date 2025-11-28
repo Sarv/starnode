@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "api_key_query_method_1764278365806",
+      "authType": "api_key_query",
+      "label": "API Key (Query Parameter)",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "paramName": "api_secret",
+        "isDefault": true
+      },
+      "testConfig": {
+        "endpoint": "https://api.convertkit.com/v3/account",
+        "timeout": 10000,
+        "testUrl": "https://api.convertkit.com/v3/account"
+      },
+      "additionalFields": []
+    }
+  ]
+}

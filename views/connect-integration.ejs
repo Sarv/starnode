@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title" id="wizardTitle">Connect Integration</h1>
+                    <p class="page-description" id="integrationDescription">Configure your integration connection</p>
+                </div>
+                <button class="btn btn-secondary" onclick="window.history.back()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back
+                </button>
+            </div>
+
+            <!-- Wizard Progress Steps -->
+            <div class="wizard-steps">
+                <div class="wizard-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-info">
+                        <div class="step-label">Select Auth Method</div>
+                        <div class="step-description">Choose authentication type</div>
+                    </div>
+                </div>
+                <div class="wizard-connector"></div>
+                <div class="wizard-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-info">
+                        <div class="step-label">Dynamic Variables</div>
+                        <div class="step-description">Configure variables</div>
+                    </div>
+                </div>
+                <div class="wizard-connector"></div>
+                <div class="wizard-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-info">
+                        <div class="step-label">Credentials</div>
+                        <div class="step-description">Enter authentication details</div>
+                    </div>
+                </div>
+                <div class="wizard-connector"></div>
+                <div class="wizard-step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-info">
+                        <div class="step-label">Test & Save</div>
+                        <div class="step-description">Verify and complete</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wizard Content -->
+            <div class="wizard-content">
+                <!-- Step 1: Select Auth Method -->
+                <div class="wizard-panel active" id="step1">
+                    <div class="panel-header">
+                        <h2>Select Authentication Method</h2>
+                        <p>Choose how you want to authenticate with this integration</p>
+                    </div>
+                    <div id="authMethodsContainer" class="auth-methods-grid">
+                        <!-- Auth methods will be populated here -->
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Loading authentication methods...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Dynamic Variables -->
+                <div class="wizard-panel" id="step2">
+                    <div class="panel-header">
+                        <h2>Configure Dynamic Variables</h2>
+                        <p>These variables will be used in API requests</p>
+                    </div>
+                    <div id="dynamicVariablesContainer" class="form-container">
+                        <!-- Dynamic variables form will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Step 3: Credentials -->
+                <div class="wizard-panel" id="step3">
+                    <div class="panel-header">
+                        <h2>Enter Authentication Credentials</h2>
+                        <p>Provide the required credentials for authentication</p>
+                    </div>
+                    <div id="credentialsContainer" class="form-container">
+                        <!-- Credentials form will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Step 4: Test & Save -->
+                <div class="wizard-panel" id="step4">
+                    <div class="panel-header">
+                        <h2>Review & Test Connection</h2>
+                        <p>Verify your configuration before saving</p>
+                    </div>
+                    <div class="review-container">
+                        <div class="review-section">
+                            <h3>Connection Name</h3>
+                            <div class="form-container" style="margin-bottom: 24px;">
+                                <div class="form-group">
+                                    <label for="connectionName">
+                                        Connection Name (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="connectionName"
+                                        name="connectionName"
+                                        placeholder="e.g., Production, Sandbox, Testing"
+                                    >
+                                    <span class="help-text">Give this connection a custom name to identify it easily. If left empty, the integration name will be used.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="review-section">
+                            <h3>Connection Details</h3>
+                            <div id="reviewDetails" class="review-details">
+                                <!-- Review details will be populated here -->
+                            </div>
+                        </div>
+
+                        <div class="test-section">
+                            <button class="btn btn-secondary" id="testConnectionBtn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                                Test Connection
+                            </button>
+                            <div id="testResult" class="test-result" style="display: none;">
+                                <!-- Test result will be shown here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wizard Navigation -->
+            <div class="wizard-navigation">
+                <button class="btn btn-secondary" id="prevBtn" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Previous
+                </button>
+                <div class="nav-spacer"></div>
+                <button class="btn btn-secondary" id="cancelBtn" onclick="window.history.back()">
+                    Cancel
+                </button>
+                <button class="btn btn-primary" id="nextBtn">
+                    Next
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <button class="btn btn-primary" id="saveBtn" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    Save Connection
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/js/connect-integration.js"></script>
+</body>
+</html>

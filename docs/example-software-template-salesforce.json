@@ -1,0 +1,92 @@
+{
+  "softwareId": "salesforce",
+  "softwareName": "Salesforce",
+  "version": "1.0.0",
+  "baseUrl": "https://{{instance_url}}/services/data/v57.0",
+
+  "authMethods": [
+    {
+      "id": "salesforce_oauth",
+      "authType": "oauth2_authorization_code",
+      "label": "OAuth 2.0 (Recommended)",
+      "isDefault": true,
+      "priority": 1,
+
+      "config": {
+        "authorizationUrl": "https://login.salesforce.com/services/oauth2/authorize",
+        "tokenUrl": "https://login.salesforce.com/services/oauth2/token",
+        "scopes": ["api", "refresh_token", "offline_access"],
+        "scopeSeparator": " ",
+        "pkceEnabled": false,
+        "authMethod": "client_secret_post",
+        "additionalAuthParams": {
+          "prompt": "consent"
+        },
+        "tokenRefreshEnabled": true,
+        "refreshTokenUrl": "https://login.salesforce.com/services/oauth2/token"
+      },
+
+      "credentials": {
+        "clientId": {
+          "label": "Consumer Key",
+          "helpText": "Get this from your Salesforce Connected App settings",
+          "placeholder": "Enter your Salesforce Consumer Key"
+        },
+        "clientSecret": {
+          "label": "Consumer Secret",
+          "helpText": "Secret from your Salesforce Connected App"
+        }
+      },
+
+      "additionalFields": [
+        {
+          "key": "instance_url",
+          "label": "Instance URL",
+          "type": "string",
+          "inputType": "text",
+          "required": false,
+          "default": "https://login.salesforce.com",
+          "helpText": "Use https://test.salesforce.com for sandbox"
+        }
+      ],
+
+      "validation": {
+        "testEndpoint": "/sobjects/",
+        "testMethod": "GET",
+        "expectedStatus": [200]
+      }
+    },
+
+    {
+      "id": "salesforce_session_id",
+      "authType": "bearer_token",
+      "label": "Session ID / Access Token",
+      "isDefault": false,
+      "priority": 2,
+
+      "config": {
+        "headerName": "Authorization",
+        "prefix": "Bearer "
+      },
+
+      "credentials": {
+        "token": {
+          "label": "Session ID / Access Token",
+          "helpText": "Get your session ID from Salesforce or use an existing access token"
+        }
+      },
+
+      "additionalFields": [
+        {
+          "key": "instance_url",
+          "label": "Instance URL",
+          "type": "string",
+          "inputType": "text",
+          "required": true,
+          "placeholder": "https://yourinstance.salesforce.com",
+          "helpText": "Your Salesforce instance URL"
+        }
+      ]
+    }
+  ]
+}

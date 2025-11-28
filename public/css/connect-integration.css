@@ -1,0 +1,444 @@
+/* Connection Wizard Styling */
+
+/* Page Header */
+.page-description strong {
+    color: var(--primary-600);
+    font-weight: 600;
+}
+
+/* Wizard Steps */
+.wizard-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    margin-bottom: 24px;
+}
+
+.wizard-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s;
+    border: 2px solid var(--gray-200);
+    flex-shrink: 0;
+}
+
+.wizard-step.active .step-number {
+    background: var(--primary-600);
+    color: white;
+    border-color: var(--primary-600);
+}
+
+.wizard-step.completed .step-number {
+    background: var(--success-500);
+    color: white;
+    border-color: var(--success-500);
+}
+
+.step-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.step-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--gray-700);
+}
+
+.wizard-step.active .step-label {
+    color: var(--primary-600);
+}
+
+.step-description {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.wizard-connector {
+    width: 60px;
+    height: 2px;
+    background: var(--gray-200);
+    margin: 0 8px;
+}
+
+.wizard-step.completed + .wizard-connector {
+    background: var(--success-500);
+}
+
+/* Wizard Content */
+.wizard-content {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    padding: 32px;
+    margin-bottom: 24px;
+    min-height: 400px;
+}
+
+.wizard-panel {
+    display: none;
+    animation: fadeIn 0.3s;
+}
+
+.wizard-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.panel-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 8px;
+}
+
+.panel-header p {
+    font-size: 14px;
+    color: var(--gray-600);
+}
+
+/* Auth Methods Grid */
+.auth-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.auth-method-card {
+    padding: 20px;
+    border: 2px solid var(--gray-200);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.auth-method-card:hover {
+    border-color: var(--primary-500);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.auth-method-card.selected {
+    border-color: var(--primary-600);
+    background: rgba(59, 130, 246, 0.05);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+}
+
+.auth-method-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.auth-method-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--gray-900);
+}
+
+.auth-method-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.auth-method-badge.oauth {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.auth-method-badge.api-key {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary-600);
+}
+
+.auth-method-badge.basic {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-500);
+}
+
+.auth-method-description {
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.auth-method-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.auth-feature-tag {
+    padding: 4px 10px;
+    background: var(--gray-100);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--gray-700);
+}
+
+.auth-method-card.selected .auth-feature-tag {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--primary-700);
+}
+
+/* Form Container */
+.form-container {
+    max-width: 600px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--gray-900);
+    font-size: 14px;
+}
+
+.form-group label .required {
+    color: var(--error-500);
+    margin-left: 2px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="url"],
+.form-group textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: var(--gray-50);
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-600);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: white;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.help-text {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--gray-500);
+}
+
+.empty-state p {
+    margin-top: 12px;
+}
+
+/* Review Container */
+.review-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.review-section {
+    padding: 24px;
+    background: var(--gray-50);
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+}
+
+.review-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 16px;
+}
+
+.review-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.review-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+}
+
+.review-label {
+    font-weight: 500;
+    color: var(--gray-700);
+    font-size: 14px;
+}
+
+.review-value {
+    color: var(--gray-900);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Test Section */
+.test-section {
+    padding: 24px;
+    background: var(--gray-50);
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+}
+
+.test-result {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.test-result.success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--success-500);
+    color: var(--success-600);
+}
+
+.test-result.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--error-500);
+    color: var(--error-600);
+}
+
+.test-result.loading {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid var(--primary-500);
+    color: var(--primary-600);
+}
+
+/* Wizard Navigation */
+.wizard-navigation {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+}
+
+.nav-spacer {
+    flex: 1;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--primary-600);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-state p {
+    margin-top: 16px;
+    color: var(--gray-600);
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wizard-steps {
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+
+    .step-info {
+        display: none;
+    }
+
+    .wizard-connector {
+        width: 40px;
+    }
+
+    .auth-methods-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wizard-content {
+        padding: 20px;
+    }
+
+    .wizard-navigation {
+        flex-wrap: wrap;
+    }
+}

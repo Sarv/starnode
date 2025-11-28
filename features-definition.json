@@ -1,0 +1,339 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-27T12:33:32.445Z",
+  "categories": {
+    "contacts": {
+      "label": "Contacts",
+      "icon": "👥",
+      "color": "#4CAF50",
+      "description": "Contact management features"
+    },
+    "email": {
+      "label": "Email",
+      "icon": "📧",
+      "color": "#2196F3",
+      "description": "Email communication features"
+    },
+    "sms": {
+      "label": "SMS",
+      "icon": "💬",
+      "color": "#FF9800",
+      "description": "SMS and messaging features"
+    },
+    "leads": {
+      "label": "Leads",
+      "icon": "🎯",
+      "color": "#9C27B0",
+      "description": "Lead management features"
+    },
+    "tasks": {
+      "label": "Tasks",
+      "icon": "✅",
+      "color": "#00BCD4",
+      "description": "Task and activity tracking"
+    }
+  },
+  "features": {
+    "create_contact": {
+      "id": "create_contact",
+      "name": "Create Contact",
+      "description": "Create a new contact in the CRM system",
+      "category": "contacts",
+      "fields": {
+        "api": {
+          "type": "api",
+          "required": true,
+          "label": "API Configuration",
+          "description": "HTTP API endpoint details for creating contacts"
+        },
+        "contact_data": {
+          "type": "dynamic",
+          "fieldType": "object",
+          "label": "Contact Data",
+          "required": true,
+          "description": "Contact information (name, email, phone, etc.)"
+        },
+        "auto_assign": {
+          "type": "static",
+          "fieldType": "boolean",
+          "label": "Auto-assign to user",
+          "required": false,
+          "default": false,
+          "description": "Automatically assign new contact to a user"
+        },
+        "default_owner": {
+          "type": "static",
+          "fieldType": "string",
+          "label": "Default Owner",
+          "required": false,
+          "description": "Default user ID to assign contacts to"
+        }
+      },
+      "createdAt": "2025-11-23T00:00:00Z",
+      "updatedAt": "2025-11-23T00:00:00Z"
+    },
+    "send_email": {
+      "id": "send_email",
+      "name": "Send Email",
+      "description": "Send email via integration platform",
+      "category": "email",
+      "fields": {
+        "api": {
+          "type": "api",
+          "required": true,
+          "label": "API Configuration",
+          "description": "HTTP API endpoint details for sending emails"
+        },
+        "from_email": {
+          "type": "static",
+          "fieldType": "email",
+          "label": "From Email",
+          "required": true,
+          "description": "Sender email address"
+        },
+        "from_name": {
+          "type": "static",
+          "fieldType": "string",
+          "label": "From Name",
+          "required": false,
+          "description": "Sender display name"
+        },
+        "to_email": {
+          "type": "dynamic",
+          "fieldType": "email",
+          "label": "To Email",
+          "required": true,
+          "description": "Recipient email address (runtime value)"
+        },
+        "subject": {
+          "type": "dynamic",
+          "fieldType": "string",
+          "label": "Email Subject",
+          "required": true,
+          "description": "Email subject line (runtime value)"
+        },
+        "body": {
+          "type": "dynamic",
+          "fieldType": "html",
+          "label": "Email Body",
+          "required": true,
+          "description": "Email content in HTML format (runtime value)"
+        },
+        "cc": {
+          "type": "dynamic",
+          "fieldType": "string",
+          "label": "CC Email",
+          "required": false,
+          "description": "Carbon copy email addresses (comma-separated)"
+        },
+        "bcc": {
+          "type": "dynamic",
+          "fieldType": "string",
+          "label": "BCC Email",
+          "required": false,
+          "description": "Blind carbon copy email addresses (comma-separated)"
+        }
+      },
+      "createdAt": "2025-11-23T00:00:00Z",
+      "updatedAt": "2025-11-23T00:00:00Z"
+    },
+    "send_sms": {
+      "id": "send_sms",
+      "name": "Send SMS",
+      "description": "Send SMS message via integration platform",
+      "category": "sms",
+      "fields": {
+        "api": {
+          "type": "api",
+          "required": true,
+          "label": "API Configuration",
+          "description": "HTTP API endpoint details for sending SMS"
+        },
+        "from_number": {
+          "type": "static",
+          "fieldType": "string",
+          "label": "From Phone Number",
+          "required": true,
+          "description": "Sender phone number"
+        },
+        "to_number": {
+          "type": "dynamic",
+          "fieldType": "string",
+          "label": "To Phone Number",
+          "required": true,
+          "description": "Recipient phone number (runtime value)"
+        },
+        "message": {
+          "type": "dynamic",
+          "fieldType": "text",
+          "label": "Message Text",
+          "required": true,
+          "description": "SMS message content (runtime value)"
+        },
+        "enable_delivery_report": {
+          "type": "static",
+          "fieldType": "boolean",
+          "label": "Enable Delivery Report",
+          "required": false,
+          "default": true,
+          "description": "Request delivery confirmation from provider"
+        }
+      },
+      "createdAt": "2025-11-23T00:00:00Z",
+      "updatedAt": "2025-11-23T00:00:00Z"
+    },
+    "get_contact": {
+      "id": "get_contact",
+      "name": "Get Contact",
+      "description": "asdf",
+      "category": "contacts",
+      "fields": {
+        "push_pull": {
+          "type": "static",
+          "label": "Pull Or Pull",
+          "required": true,
+          "description": "",
+          "fieldType": "string",
+          "htmlType": "checkbox",
+          "possibleValues": [
+            "push"
+          ],
+          "multipleValueAllowed": false,
+          "default": "push"
+        },
+        "webhook": {
+          "type": "conditional",
+          "label": "webhook url",
+          "required": false,
+          "description": "",
+          "fieldType": "url",
+          "htmlType": "url",
+          "conditionalExpression": "{{push_pull}}==\"push\""
+        }
+      },
+      "createdAt": "2025-11-23T14:32:07.096Z",
+      "updatedAt": "2025-11-23T14:32:07.096Z"
+    },
+    "asdf": {
+      "id": "asdf",
+      "name": "Abhiii",
+      "description": "afsd",
+      "category": "contacts",
+      "fields": {
+        "asdf": {
+          "type": "static",
+          "label": "Dummy Field Name 2",
+          "required": true,
+          "description": "",
+          "fieldType": "string",
+          "htmlType": "checkbox",
+          "fillBy": "Admin",
+          "possibleValues": [
+            "pull",
+            "push"
+          ],
+          "multipleValueAllowed": false
+        },
+        "webhook": {
+          "type": "conditional",
+          "label": "webhook url",
+          "required": false,
+          "description": "",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "conditionalExpression": "{{asdf}}=='pull' and {{field2}}!=\"done\""
+        },
+        "field2": {
+          "type": "dynamic",
+          "label": "Dummy Field 2",
+          "required": true,
+          "description": "Some definition and details about the field.",
+          "fieldType": "number",
+          "htmlType": "number",
+          "fillBy": "User"
+        }
+      },
+      "createdAt": "2025-11-23T16:05:23.852Z",
+      "updatedAt": "2025-11-26T05:38:07.122Z"
+    },
+    "send_report": {
+      "id": "send_report",
+      "name": "Send Report to CRM",
+      "description": "This feature will allow you to send Deepcall's reports to the selected CRM",
+      "category": "leads",
+      "fields": {
+        "para_1": {
+          "type": "static",
+          "label": "Paramter 1",
+          "required": true,
+          "description": "Testing field only.",
+          "fieldType": "string",
+          "htmlType": "textarea",
+          "fillBy": "User",
+          "default": "abcd"
+        },
+        "caller_number": {
+          "type": "dynamic",
+          "label": "Caller Number",
+          "required": true,
+          "description": "Mobile number of caller. If you want I can tell you which property is best for which UI type (cards, tables, panels, grids)",
+          "fieldType": "number",
+          "htmlType": "text",
+          "fillBy": "Admin"
+        },
+        "api": {
+          "type": "api",
+          "label": "API URL",
+          "required": true,
+          "description": "",
+          "fieldType": "url",
+          "htmlType": "url"
+        }
+      },
+      "createdAt": "2025-11-24T07:57:01.218Z",
+      "updatedAt": "2025-11-26T10:36:00.895Z"
+    },
+    "sync_change_in_contact": {
+      "id": "sync_change_in_contact",
+      "name": "Sync Change in Contact",
+      "description": "pta nhi kya likhna hai.",
+      "category": "contacts",
+      "fields": {
+        "api_end_point": {
+          "type": "api",
+          "label": "API End Point",
+          "required": true,
+          "description": "this is the api end point of this feature",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin"
+        },
+        "sheet_id": {
+          "type": "static",
+          "label": "Sheet Id",
+          "required": true,
+          "description": "",
+          "fieldType": "number",
+          "htmlType": "select",
+          "fillBy": "User",
+          "possibleValues": [
+            "Select Sheet"
+          ]
+        },
+        "testing_conditional": {
+          "type": "conditional",
+          "label": "Just a Condition",
+          "required": false,
+          "description": "",
+          "fieldType": "number",
+          "htmlType": "number",
+          "fillBy": "User",
+          "conditionalExpression": "{{sheet_id}} == \"78979798\""
+        }
+      },
+      "createdAt": "2025-11-27T12:30:42.298Z",
+      "updatedAt": "2025-11-27T12:33:32.445Z"
+    }
+  }
+}

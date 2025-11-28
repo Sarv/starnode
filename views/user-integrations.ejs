@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Available Integrations</h1>
+                    <p class="page-description">Browse and connect to available integrations</p>
+                </div>
+
+                <!-- User Selector -->
+                <div class="user-selector">
+                    <label for="userSelect">Select User:</label>
+                    <select id="userSelect" onchange="handleUserChange()">
+                        <option value="">-- Select a user --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="search-box">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search integrations..."
+                        oninput="filterIntegrations()"
+                    >
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-category="all" onclick="filterByCategory('all')">
+                        All
+                    </button>
+                    <button class="filter-btn" data-category="crm" onclick="filterByCategory('crm')">
+                        CRM
+                    </button>
+                    <button class="filter-btn" data-category="payment" onclick="filterByCategory('payment')">
+                        Payment
+                    </button>
+                    <button class="filter-btn" data-category="database" onclick="filterByCategory('database')">
+                        Database
+                    </button>
+                    <button class="filter-btn" data-category="communication" onclick="filterByCategory('communication')">
+                        Communication
+                    </button>
+                    <button class="filter-btn" data-category="storage" onclick="filterByCategory('storage')">
+                        Storage
+                    </button>
+                </div>
+
+                <div class="status-filter">
+                    <button class="status-btn active" onclick="filterByStatus('all')">
+                        All Integrations
+                    </button>
+                    <button class="status-btn" onclick="filterByStatus('connected')">
+                        Connected Only
+                    </button>
+                    <button class="status-btn" onclick="filterByStatus('not-connected')">
+                        Not Connected
+                    </button>
+                </div>
+            </div>
+
+            <!-- Integrations Grid -->
+            <div class="content-section">
+                <div id="integrationsGrid" class="integrations-grid">
+                    <!-- Integration cards will be populated here -->
+                </div>
+
+                <!-- No User Selected State -->
+                <div id="noUserState" class="empty-state">
+                    <div class="empty-icon">👤</div>
+                    <h3>No User Selected</h3>
+                    <p>Please select a user from the dropdown above to view available integrations</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-icon">🔌</div>
+                    <h3>No Integrations Found</h3>
+                    <p>Try adjusting your filters or search query</p>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="loading-state" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading integrations...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/js/user-integrations.js"></script>
+</body>
+</html>

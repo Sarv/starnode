@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "features": [
+    {
+      "id": "get_contacts",
+      "name": "Get Contacts",
+      "description": "Retrieve contacts from CRM",
+      "method": "GET",
+      "path": "/contacts",
+      "category": "contacts"
+    },
+    {
+      "id": "create_contact",
+      "name": "Create Contact",
+      "description": "Create a new contact",
+      "method": "POST",
+      "path": "/contacts",
+      "category": "contacts"
+    },
+    {
+      "id": "get_leads",
+      "name": "Get Leads",
+      "description": "Retrieve leads from CRM",
+      "method": "GET",
+      "path": "/leads",
+      "category": "leads"
+    },
+    {
+      "id": "create_lead",
+      "name": "Create Lead",
+      "description": "Create a new lead",
+      "method": "POST",
+      "path": "/leads",
+      "category": "leads"
+    }
+  ]
+}

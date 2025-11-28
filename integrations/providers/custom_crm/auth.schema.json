@@ -1,0 +1,58 @@
+{
+  "version": "1.0.0",
+  "baseUrl": "https://api.customcrm.com/v2",
+  "authMethods": [
+    {
+      "id": "custom_crm_headers",
+      "authType": "custom_headers",
+      "label": "API Authentication",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "headers": [
+          {
+            "headerName": "X-API-Token",
+            "credentialKey": "apiToken",
+            "prefix": ""
+          },
+          {
+            "headerName": "X-User-ID",
+            "credentialKey": "userId",
+            "prefix": ""
+          },
+          {
+            "headerName": "X-Tenant-ID",
+            "credentialKey": "tenantId",
+            "prefix": ""
+          }
+        ]
+      },
+      "credentials": {
+        "apiToken": {
+          "label": "API Token",
+          "type": "string",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true,
+          "helpText": "Your API authentication token"
+        },
+        "userId": {
+          "label": "User ID",
+          "type": "string",
+          "inputType": "text",
+          "required": true,
+          "encrypted": false,
+          "helpText": "Your unique user identifier"
+        },
+        "tenantId": {
+          "label": "Tenant ID",
+          "type": "string",
+          "inputType": "text",
+          "required": true,
+          "encrypted": false,
+          "helpText": "Your organization/tenant ID"
+        }
+      }
+    }
+  ]
+}

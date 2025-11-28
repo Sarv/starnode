@@ -1,0 +1,91 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-27T21:27:44.978Z",
+  "description": "Master registry of all third-party software integrations",
+  "integrations": [
+    {
+      "id": "salesforce",
+      "displayName": "Salesforce",
+      "category": "crm",
+      "version": "1.0.0",
+      "description": "Connect to Salesforce CRM for managing contacts, accounts, opportunities, and more",
+      "iconUrl": "https://cdn.worldvectorlogo.com/logos/salesforce-2.svg",
+      "docsUrl": "https://developer.salesforce.com/docs/",
+      "status": "inactive",
+      "createdAt": "2025-11-21T00:00:00Z",
+      "updatedAt": "2025-11-22T20:52:22.393Z"
+    },
+    {
+      "id": "stripe",
+      "displayName": "Stripe",
+      "category": "payment",
+      "version": "1.0.0",
+      "description": "Payment processing platform for accepting payments, managing customers, and subscriptions",
+      "iconUrl": "https://cdn.worldvectorlogo.com/logos/stripe-4.svg",
+      "docsUrl": "https://stripe.com/docs/api",
+      "status": "inactive",
+      "createdAt": "2025-11-21T00:00:00Z",
+      "updatedAt": "2025-11-24T09:26:15.351Z"
+    },
+    {
+      "id": "custom_crm",
+      "displayName": "Custom CRM",
+      "category": "crm",
+      "version": "1.0.0",
+      "description": "Custom CRM integration with multi-header authentication for contacts and leads management",
+      "iconUrl": "",
+      "docsUrl": "https://api.customcrm.com/docs",
+      "status": "active",
+      "createdAt": "2025-11-21T00:00:00Z",
+      "updatedAt": "2025-11-21T00:00:00Z"
+    },
+    {
+      "id": "freshdesk",
+      "displayName": "Freshdesk CRM",
+      "description": "Freshdesk is a cloud-based customer support platform that helps businesses manage tickets, automate workflows, and deliver fast, personalized service. It offers multi-channel support across email, chat, phone, social media, and web, along with powerful features like knowledge base, SLA management, collaboration tools, and AI-driven assistance to improve customer experience.",
+      "category": "crm",
+      "iconUrl": "https://raw.githubusercontent.com/n8n-io/n8n/e203b0ad8178ad5ff658418af3ab112ff8ee1ac8/packages/nodes-base/nodes/Freshdesk/freshdesk.svg",
+      "version": "1.0.0",
+      "docsUrl": "https://github.com/n8n-io/n8n/tree/master/packages/nodes-base/nodes/Freshdesk",
+      "status": "active",
+      "createdAt": "2025-11-21T12:00:25.793Z",
+      "updatedAt": "2025-11-27T13:29:07.135Z"
+    },
+    {
+      "id": "hubspot",
+      "displayName": "Hubspot",
+      "description": "HubSpot is a customer platform that offers a suite of products for marketing, sales, and customer service, along with a central CRM. Its products include Marketing Hub, Sales Hub, and Service Hub, which are designed to help businesses attract and engage customers, manage leads, and provide support, all unified in one place.",
+      "category": "crm",
+      "iconUrl": "https://cdn.worldvectorlogo.com/logos/hubspot-1.svg",
+      "version": "1.0.0",
+      "docsUrl": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.hubspot/",
+      "status": "inactive",
+      "createdAt": "2025-11-22T08:42:28.379Z",
+      "updatedAt": "2025-11-22T11:21:44.198Z"
+    },
+    {
+      "id": "test_valid_vars",
+      "displayName": "Test Valid Variables",
+      "description": "Testing valid dynamic variables",
+      "category": "crm",
+      "iconUrl": "",
+      "version": "1.0.0",
+      "docsUrl": "",
+      "status": "active",
+      "createdAt": "2025-11-22T11:14:50.297Z",
+      "updatedAt": "2025-11-22T22:19:26.459Z"
+    },
+    {
+      "id": "convertkit",
+      "displayName": "ConvertKit",
+      "description": "ConvertKit is now known as Kit, an email marketing and automation platform for content creators, including bloggers, podcasters, and online course creators",
+      "category": "communication",
+      "iconUrl": "https://images.seeklogo.com/logo-png/40/1/convertkit-logo-png_seeklogo-409300.png",
+      "version": "1.0.0",
+      "docsUrl": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.convertkit/",
+      "status": "active",
+      "createdAt": "2025-11-27T20:54:54.458Z",
+      "updatedAt": "2025-11-27T21:27:44.977Z"
+    }
+  ]
+}

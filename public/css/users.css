@@ -1,0 +1,83 @@
+/* Users Management Styling - Extends theme.css */
+
+/* Content Section */
+.content-section {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+}
+
+/* Status badges are already defined in theme.css, no need to override */
+
+/* Action Buttons - Clean minimal style */
+.btn-icon {
+    padding: 6px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--gray-700);
+}
+
+.btn-icon:hover {
+    background-color: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+/* Modal - extends theme.css */
+.modal.show {
+    display: flex;
+}
+
+.modal-content.modal-small {
+    max-width: 400px;
+}
+
+/* Form & Button styles are in theme.css */
+
+.warning-text {
+    color: var(--error-600);
+    font-weight: 500;
+    margin-top: 12px;
+}
+
+.help-text {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.btn-danger {
+    background-color: var(--error-500);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: var(--error-600);
+}
+
+/* Empty/Loading states & toasts are in theme.css */
+
+/* Specific overrides if needed */
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* Toast colors */
+.toast.success {
+    background-color: var(--success-500);
+}
+
+.toast.error {
+    background-color: var(--error-500);
+}

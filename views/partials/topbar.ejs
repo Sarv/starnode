@@ -1,0 +1,67 @@
+<!-- Topbar -->
+<header class="topbar">
+    <div class="topbar-left">
+        <% if (typeof showMobileMenu !== 'undefined' && showMobileMenu) { %>
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+        </button>
+        <% } %>
+
+        <% if (typeof backButton !== 'undefined' && backButton) { %>
+        <button class="btn-back" onclick="<%= backButton.action %>">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span><%= backButton.text %></span>
+        </button>
+        <div class="topbar-divider"></div>
+        <% } %>
+
+        <% if (typeof breadcrumb !== 'undefined' && breadcrumb) { %>
+        <div class="topbar-breadcrumb">
+            <% breadcrumb.forEach(function(item, index) { %>
+                <span class="breadcrumb-item <%= index === breadcrumb.length - 1 ? 'active' : '' %>"><%= item %></span>
+                <% if (index < breadcrumb.length - 1) { %>
+                    <span class="breadcrumb-separator">/</span>
+                <% } %>
+            <% }); %>
+        </div>
+        <% } %>
+
+        <% if (typeof topbarTitle !== 'undefined' && topbarTitle) { %>
+        <h1 class="topbar-title" id="pageTitle"><%= topbarTitle %></h1>
+        <% } %>
+
+        <% if (typeof showSearch !== 'undefined' && showSearch) { %>
+        <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" placeholder="<%= searchPlaceholder || 'Search...' %>" class="search-input">
+        </div>
+        <% } %>
+    </div>
+    <div class="topbar-right">
+        <% if (typeof topbarActions !== 'undefined' && topbarActions) { %>
+            <%- topbarActions %>
+        <% } %>
+
+        <% if (typeof showUserProfile !== 'undefined' && showUserProfile) { %>
+        <div class="user-profile">
+            <div class="user-avatar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <div class="user-info">
+                <div class="user-name">Admin User</div>
+                <div class="user-role">Administrator</div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+</header>

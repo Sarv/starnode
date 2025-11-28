@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "features": [
+    {
+      "id": "get_contacts",
+      "name": "Get Contacts",
+      "description": "Retrieve contacts from Salesforce",
+      "method": "GET",
+      "path": "/sobjects/Contact",
+      "category": "contacts"
+    },
+    {
+      "id": "create_contact",
+      "name": "Create Contact",
+      "description": "Create a new contact in Salesforce",
+      "method": "POST",
+      "path": "/sobjects/Contact",
+      "category": "contacts"
+    },
+    {
+      "id": "get_accounts",
+      "name": "Get Accounts",
+      "description": "Retrieve accounts from Salesforce",
+      "method": "GET",
+      "path": "/sobjects/Account",
+      "category": "accounts"
+    },
+    {
+      "id": "create_opportunity",
+      "name": "Create Opportunity",
+      "description": "Create a new sales opportunity",
+      "method": "POST",
+      "path": "/sobjects/Opportunity",
+      "category": "opportunities"
+    }
+  ],
+  "featureMappings": [],
+  "lastUpdated": "2025-11-24T19:47:36.105Z"
+}

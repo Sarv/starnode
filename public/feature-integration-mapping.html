@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Feature to Integration - Integration Platform</title>
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/feature-integration-mapping.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🔗 IntegrationHub</h2>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M3 12h18M3 6h18M3 18h18" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="/integrations.html" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke-width="2"/>
+                </svg>
+                <span>Integrations</span>
+            </a>
+            <a href="/users.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke-width="2"/>
+                </svg>
+                <span>Users</span>
+            </a>
+            <a href="/feature-templates.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke-width="2"/>
+                </svg>
+                <span>Feature Templates</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="breadcrumb">
+                <a href="/integrations.html">Integrations</a>
+                <span>/</span>
+                <a href="#" id="integrationNameLink">Loading...</a>
+                <span>/</span>
+                <span>Map Feature</span>
+            </div>
+        </div>
+
+        <!-- Wizard Container -->
+        <div class="wizard-container">
+            <!-- Wizard Header -->
+            <div class="wizard-header">
+                <h1 id="wizardTitle">Map Feature to Integration</h1>
+                <p id="wizardSubtitle">Connect a feature template to this integration</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="wizard-progress">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Select Feature</div>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Configure Fields</div>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">API Config</div>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Extra Fields</div>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Submit Handler</div>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="6">
+                    <div class="step-number">6</div>
+                    <div class="step-label">Review & Save</div>
+                </div>
+            </div>
+
+            <!-- Wizard Steps -->
+            <div class="wizard-content">
+
+                <!-- Step 1: Select Feature Template -->
+                <div class="wizard-step active" id="step1">
+                    <h2>Step 1: Select Feature Template</h2>
+                    <p>Choose a feature template to map to this integration</p>
+
+                    <div class="search-filter-section">
+                        <input type="text" id="featureSearch" class="search-input" placeholder="🔍 Search features...">
+
+                        <div class="filter-buttons">
+                            <span>Filter by Category:</span>
+                            <button class="filter-btn active" data-category="all">All</button>
+                            <button class="filter-btn" data-category="contacts">Contacts</button>
+                            <button class="filter-btn" data-category="email">Email</button>
+                            <button class="filter-btn" data-category="sms">SMS</button>
+                            <button class="filter-btn" data-category="leads">Leads</button>
+                            <button class="filter-btn" data-category="tasks">Tasks</button>
+                        </div>
+                    </div>
+
+                    <div id="featuresList" class="features-list">
+                        <!-- Features will be loaded here -->
+                        <div class="loading-state">Loading features...</div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Configure Template Fields -->
+                <div class="wizard-step" id="step2">
+                    <h2>Step 2: Configure Template Fields</h2>
+                    <p>Enable or disable fields from the feature template. Optionally override labels and attach custom handlers.</p>
+
+                    <div id="templateFieldsList" class="template-fields-list">
+                        <!-- Template fields will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Step 3: API Configuration -->
+                <div class="wizard-step" id="step3">
+                    <h2>Step 3: API Configuration</h2>
+                    <p>Configure API details for this feature. This configuration will be stored separately and can be enhanced later.</p>
+
+                    <div class="info-box">
+                        <strong>📝 Note:</strong> This is a simplified API configuration form. Complete API configuration interface will be available later through a dedicated API management system.
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apiConfigId">API Configuration ID (optional)</label>
+                        <input type="text" id="apiConfigId" placeholder="Enter existing API config ID">
+                        <small class="help-text">Leave empty to configure API details later</small>
+                    </div>
+
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="quick-api-setup">
+                        <h3>Quick API Setup</h3>
+
+                        <div class="form-group">
+                            <label for="apiMethod">Method *</label>
+                            <select id="apiMethod">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="PATCH">PATCH</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="apiEndpoint">Endpoint *</label>
+                            <input type="text" id="apiEndpoint" placeholder="/api/contacts">
+                            <small class="help-text">Use {field_name} for dynamic values (e.g., /api/{object_type}/records)</small>
+                        </div>
+
+                        <small class="help-text">(Full API configuration available via separate API management interface)</small>
+                    </div>
+                </div>
+
+                <!-- Step 4: Extra Fields -->
+                <div class="wizard-step" id="step4">
+                    <h2>Step 4: Extra Fields (Optional)</h2>
+                    <p>Add integration-specific fields not in the template. Useful for complex integrations requiring additional data.</p>
+
+                    <div class="extra-fields-section">
+                        <div class="section-header">
+                            <h3>Extra Fields <span id="extraFieldsCount">(0)</span></h3>
+                            <button class="btn-primary" id="addExtraFieldBtn">+ Add Field</button>
+                        </div>
+
+                        <div id="extraFieldsList" class="extra-fields-list">
+                            <div class="empty-state">
+                                <p>No extra fields added. Extra fields are integration-specific and can be used with custom handlers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Submit Handler -->
+                <div class="wizard-step" id="step5">
+                    <h2>Step 5: Submit Handler (Optional)</h2>
+                    <p>Attach a custom submit handler function for complex submission logic. Leave empty to use default behavior.</p>
+
+                    <div class="submit-handler-section">
+                        <div class="form-group">
+                            <label for="submitHandlerFunction">Submit Handler Function</label>
+                            <input type="text" id="submitHandlerFunction" placeholder="e.g., fetchSalesforceContacts">
+                            <small class="help-text">Leave empty to use default engine behavior.</small>
+                        </div>
+
+                        <div class="info-box">
+                            <strong>Submit handlers override the default submission flow and allow you to:</strong>
+                            <ul>
+                                <li>Transform data before API calls</li>
+                                <li>Make multiple sequential API calls</li>
+                                <li>Implement complex business logic</li>
+                                <li>Handle custom error scenarios</li>
+                            </ul>
+                        </div>
+
+                        <div class="handler-guidelines">
+                            <h4>💡 Handler Guidelines</h4>
+                            <ul>
+                                <li>Function must be exported from: <code>integrations/providers/<span id="handlerIntegrationPath"></span>/handlers.js</code></li>
+                                <li>Must return format: <code>{ success, response, error, shouldContinue }</code></li>
+                                <li>Receives context with: formData, integration, utils (apiClient, logger)</li>
+                            </ul>
+                            <a href="/docs/future/custom-handler-architecture.md" target="_blank" class="btn-link">📖 View Handler Documentation</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Review & Save -->
+                <div class="wizard-step" id="step6">
+                    <h2>Step 6: Review & Save</h2>
+                    <p>Review your mapping configuration before saving.</p>
+
+                    <div class="review-summary">
+                        <div class="summary-section">
+                            <h3>📋 Mapping Summary</h3>
+                            <div class="summary-item">
+                                <strong>Feature Template:</strong>
+                                <span id="reviewFeatureName">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <strong>Integration:</strong>
+                                <span id="reviewIntegrationName">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <strong>Status:</strong>
+                                <span class="badge badge-success">Active</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-section">
+                            <div class="summary-header">
+                                <h3>✓ Template Fields <span id="reviewTemplateFieldsCount"></span></h3>
+                                <button class="btn-link" onclick="goToStep(2)">Edit →</button>
+                            </div>
+                            <div id="reviewTemplateFields" class="summary-list">
+                                <!-- Will be populated -->
+                            </div>
+                        </div>
+
+                        <div class="summary-section">
+                            <div class="summary-header">
+                                <h3>✓ API Configuration</h3>
+                                <button class="btn-link" onclick="goToStep(3)">Edit →</button>
+                            </div>
+                            <div id="reviewApiConfig" class="summary-list">
+                                <!-- Will be populated -->
+                            </div>
+                        </div>
+
+                        <div class="summary-section">
+                            <div class="summary-header">
+                                <h3>✓ Extra Fields <span id="reviewExtraFieldsCount"></span></h3>
+                                <button class="btn-link" onclick="goToStep(4)">Edit →</button>
+                            </div>
+                            <div id="reviewExtraFields" class="summary-list">
+                                <!-- Will be populated -->
+                            </div>
+                        </div>
+
+                        <div class="summary-section">
+                            <div class="summary-header">
+                                <h3>✓ Submit Handler</h3>
+                                <button class="btn-link" onclick="goToStep(5)">Edit →</button>
+                            </div>
+                            <div id="reviewSubmitHandler" class="summary-list">
+                                <!-- Will be populated -->
+                            </div>
+                        </div>
+
+                        <div class="summary-section">
+                            <h3>💾 Save Location</h3>
+                            <div class="save-location">
+                                <strong>File:</strong>
+                                <code id="reviewSaveLocation">integrations/providers/[integration]/features.schema.json</code>
+                                <p class="help-text">This mapping will be added to the featureMappings array in the file above.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Wizard Navigation -->
+            <div class="wizard-nav">
+                <button class="btn-secondary" id="cancelBtn">Cancel</button>
+                <div class="nav-buttons">
+                    <button class="btn-secondary" id="prevBtn" style="display:none;">← Back</button>
+                    <button class="btn-primary" id="nextBtn">Next: Configure Fields</button>
+                    <button class="btn-primary" id="saveBtn" style="display:none;">Save Feature Mapping</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Field Configuration Modal -->
+    <div id="fieldConfigModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 id="fieldConfigModalTitle">Configure Field</h2>
+                <button class="modal-close" onclick="closeFieldConfigModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="configFieldKey">
+
+                <div class="form-group">
+                    <label for="configFieldLabel">Override Label (optional)</label>
+                    <input type="text" id="configFieldLabel" placeholder="Custom label for this integration">
+                </div>
+
+                <div class="form-group">
+                    <label for="configFieldDefault">Override Default Value (optional)</label>
+                    <input type="text" id="configFieldDefault" placeholder="Custom default value">
+                </div>
+
+                <div class="form-group">
+                    <label for="configFieldHelp">Override Help Text (optional)</label>
+                    <textarea id="configFieldHelp" rows="2" placeholder="Custom help text"></textarea>
+                </div>
+
+                <div class="handler-section collapsible">
+                    <h4 class="collapsible-header">🔧 Custom Handlers (Advanced)</h4>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <label for="configValueHandler">Value Handler Function</label>
+                            <input type="text" id="configValueHandler" placeholder="e.g., fetchUsersList">
+                            <small class="help-text">Function name to fetch dynamic values</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="configValidationHandler">Validation Handler Function</label>
+                            <input type="text" id="configValidationHandler" placeholder="e.g., validateEmail">
+                            <small class="help-text">Function name for custom validation</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeFieldConfigModal()">Cancel</button>
+                <button class="btn-primary" id="saveFieldConfigBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extra Field Modal -->
+    <div id="extraFieldModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 id="extraFieldModalTitle">Add Extra Field</h2>
+                <button class="modal-close" onclick="closeExtraFieldModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="extraFieldIndex">
+
+                <div class="form-group">
+                    <label for="extraFieldKey">Field Key * (used in code)</label>
+                    <input type="text" id="extraFieldKey" placeholder="e.g., sheet_id" required>
+                    <small class="help-text">💡 Use snake_case, letters/numbers/underscores only</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="extraFieldLabel">Label * (shown to user)</label>
+                    <input type="text" id="extraFieldLabel" placeholder="e.g., Select Google Sheet" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="extraFieldDescription">Description (help text)</label>
+                    <textarea id="extraFieldDescription" rows="2" placeholder="Help text for this field"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="extraFieldType">Field Type *</label>
+                        <select id="extraFieldType" required>
+                            <option value="">Select type</option>
+                            <option value="api">API</option>
+                            <option value="static">Static</option>
+                            <option value="dynamic">Dynamic</option>
+                            <option value="conditional">Conditional</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="extraFieldDataType">Data Type *</label>
+                        <select id="extraFieldDataType" required>
+                            <option value="">Select type</option>
+                            <option value="string">String</option>
+                            <option value="number">Number</option>
+                            <option value="boolean">Boolean</option>
+                            <option value="array">Array</option>
+                            <option value="object">Object</option>
+                            <option value="date">Date</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="extraFieldHtmlType">HTML Type *</label>
+                        <select id="extraFieldHtmlType" required>
+                            <option value="">Select type</option>
+                            <option value="text">Text</option>
+                            <option value="textarea">Textarea</option>
+                            <option value="select">Select</option>
+                            <option value="checkbox">Checkbox</option>
+                            <option value="radio">Radio</option>
+                            <option value="number">Number</option>
+                            <option value="date">Date</option>
+                            <option value="email">Email</option>
+                            <option value="url">URL</option>
+                            <option value="password">Password</option>
+                            <option value="tel">Tel</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="extraFieldRequired">
+                        Required Field
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="extraFieldDefault">Default Value (optional)</label>
+                    <input type="text" id="extraFieldDefault" placeholder="Default value">
+                </div>
+
+                <div class="form-group" id="possibleValuesSection" style="display:none;">
+                    <label>Possible Values (for select/checkbox/radio)</label>
+                    <small class="help-text">Only if fetching via handler - leave empty</small>
+                    <div id="possibleValuesList" class="possible-values-list">
+                        <!-- Possible values will be added here -->
+                    </div>
+                    <button type="button" class="btn-secondary btn-sm" id="addPossibleValueBtn">+ Add Value</button>
+                </div>
+
+                <div class="handler-section collapsible">
+                    <h4 class="collapsible-header">🔧 Custom Handlers (Advanced)</h4>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <label for="extraFieldValueHandler">Value Handler Function</label>
+                            <input type="text" id="extraFieldValueHandler" placeholder="e.g., fetchSheets">
+                            <small class="help-text">Function name to fetch dynamic values</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="extraFieldValidationHandler">Validation Handler Function</label>
+                            <input type="text" id="extraFieldValidationHandler" placeholder="e.g., validateSheetName">
+                            <small class="help-text">Function name for custom validation</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="extraFieldOrder">Field Order</label>
+                    <input type="number" id="extraFieldOrder" value="1" min="1">
+                    <small class="help-text">Determines display order in form</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeExtraFieldModal()">Cancel</button>
+                <button class="btn-primary" id="saveExtraFieldBtn">Add Field</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/js/feature-integration-mapping.js"></script>
+</body>
+</html>

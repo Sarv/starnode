@@ -1,0 +1,14 @@
+ai
+node_modules/
+.env
+dist/
+build/
+.vscode/
+.DS_Store
+html-backup
+backups
+auth-template-schema.json
+package-lock.json
+convert-html-to-ejs.sh
+docs/planning-by-abhimanyu.txt
+docs/README.md

@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "features": [
+    {
+      "id": "test_feature",
+      "name": "Test Feature",
+      "description": "A test feature",
+      "method": "GET",
+      "path": "/test"
+    }
+  ]
+}

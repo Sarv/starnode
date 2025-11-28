@@ -1,0 +1,14 @@
+{
+  "global": {
+    "requestsPerMinute": 60,
+    "requestsPerHour": 1000,
+    "requestsPerDay": 10000,
+    "concurrentRequests": 5
+  },
+  "endpoints": {},
+  "retryStrategy": {
+    "maxRetries": 3,
+    "backoffMultiplier": 2,
+    "initialDelay": 1000
+  }
+}

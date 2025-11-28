@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "features": [
+    {
+      "id": "list_charges",
+      "name": "List Charges",
+      "description": "Retrieve list of charges",
+      "method": "GET",
+      "path": "/charges",
+      "category": "payments"
+    },
+    {
+      "id": "create_charge",
+      "name": "Create Charge",
+      "description": "Create a new charge",
+      "method": "POST",
+      "path": "/charges",
+      "category": "payments"
+    },
+    {
+      "id": "list_customers",
+      "name": "List Customers",
+      "description": "Retrieve list of customers",
+      "method": "GET",
+      "path": "/customers",
+      "category": "customers"
+    },
+    {
+      "id": "create_customer",
+      "name": "Create Customer",
+      "description": "Create a new customer",
+      "method": "POST",
+      "path": "/customers",
+      "category": "customers"
+    }
+  ]
+}
