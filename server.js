@@ -2,13 +2,32 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const elasticsearch = require('./services/elasticsearch');
 const encryption = require('./services/encryption');
 const dynamicVariables = require('./utils/dynamicVariables');
 const { ConnectionTester } = require('./utils/AuthenticationManager');
+const HttpClient = require('./utils/AuthenticationManager/httpClient');
 
 const app = express();
 const PORT = 3000;
+
+// In-memory store for OAuth state (use Redis in production)
+const oauthStateStore = new Map();
+
+// Base URL for OAuth callbacks (will be configured based on ngrok or production URL)
+const getBaseUrl = (req) => {
+    // Check if X-Forwarded-Host header exists (from ngrok or reverse proxy)
+    const forwardedHost = req.get('X-Forwarded-Host');
+    const forwardedProto = req.get('X-Forwarded-Proto') || 'https';
+
+    if (forwardedHost) {
+        return `${forwardedProto}://${forwardedHost}`;
+    }
+
+    // Fallback to local development
+    return `http://localhost:${PORT}`;
+};
 
 // Middleware
 app.use(cors());
@@ -893,6 +912,315 @@ app.post('/api/user-integrations/:connectionId/test', async (req, res) => {
             success: false,
             error: error.message || 'Connection test failed',
             timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// ==============================================
+// OAuth Flow APIs
+// ==============================================
+
+// OAuth Initiation - Start OAuth flow
+app.get('/oauth/:integrationId/:authMethodId/authorize', async (req, res) => {
+    try {
+        const { integrationId, authMethodId } = req.params;
+        const { userId, connectionName } = req.query;
+
+        if (!userId) {
+            return res.status(400).send('Missing userId parameter');
+        }
+
+        // Load integration and auth schema
+        const authSchemaPath = path.join(__dirname, 'integrations', 'providers', integrationId, 'auth.schema.json');
+
+        if (!fs.existsSync(authSchemaPath)) {
+            return res.status(404).send('Integration not found');
+        }
+
+        const authSchema = JSON.parse(fs.readFileSync(authSchemaPath, 'utf8'));
+        const authMethod = authSchema.authMethods?.find(m => m.id === authMethodId);
+
+        if (!authMethod || !authMethod.authType.includes('oauth')) {
+            return res.status(400).send('Invalid OAuth configuration');
+        }
+
+        const config = authMethod.config;
+
+        // Get credentials (clientId, clientSecret)
+        const authTypesDefPath = path.join(__dirname, 'auth-types-definition.json');
+        const authTypesDef = JSON.parse(fs.readFileSync(authTypesDefPath, 'utf8'));
+        const authTypeDef = authTypesDef.authTypes[authMethod.authType];
+
+        const credentialFields = {
+            ...(authTypeDef?.credentialFields || {}),
+            ...(authMethod.credentials || {})
+        };
+
+        // In real implementation, credentials should be stored separately
+        // For now, we expect them in query params or config
+        const clientId = req.query.clientId || config.clientId;
+        const clientSecret = req.query.clientSecret || config.clientSecret;
+
+        if (!clientId) {
+            return res.status(400).send('Missing clientId');
+        }
+
+        // Generate state for CSRF protection
+        const state = crypto.randomBytes(32).toString('hex');
+        const baseUrl = getBaseUrl(req);
+        const redirectUri = `${baseUrl}/oauth/callback`;
+
+        // Store state with metadata
+        oauthStateStore.set(state, {
+            integrationId,
+            authMethodId,
+            userId,
+            connectionName: connectionName || integrationId,
+            clientId,
+            clientSecret,
+            redirectUri,
+            tokenUrl: config.tokenUrl,
+            refreshTokenUrl: config.refreshTokenUrl,
+            createdAt: Date.now(),
+            expiresAt: Date.now() + (10 * 60 * 1000) // 10 minutes
+        });
+
+        // Clean up expired states
+        for (const [key, value] of oauthStateStore.entries()) {
+            if (value.expiresAt < Date.now()) {
+                oauthStateStore.delete(key);
+            }
+        }
+
+        // Build authorization URL
+        const authUrl = new URL(config.authorizationUrl);
+        authUrl.searchParams.set('client_id', clientId);
+        authUrl.searchParams.set('redirect_uri', redirectUri);
+        authUrl.searchParams.set('state', state);
+        authUrl.searchParams.set('response_type', 'code');
+
+        // Add scopes if configured
+        if (config.scopes && config.scopes.length > 0) {
+            const scopeSeparator = config.scopeSeparator || ' ';
+            authUrl.searchParams.set('scope', config.scopes.join(scopeSeparator));
+        }
+
+        // Add additional auth params
+        if (config.additionalAuthParams) {
+            for (const [key, value] of Object.entries(config.additionalAuthParams)) {
+                authUrl.searchParams.set(key, value);
+            }
+        }
+
+        // PKCE support
+        if (config.pkceEnabled) {
+            const codeVerifier = crypto.randomBytes(32).toString('base64url');
+            const codeChallenge = crypto
+                .createHash('sha256')
+                .update(codeVerifier)
+                .digest('base64url');
+
+            authUrl.searchParams.set('code_challenge', codeChallenge);
+            authUrl.searchParams.set('code_challenge_method', 'S256');
+
+            // Store code verifier with state
+            const stateData = oauthStateStore.get(state);
+            stateData.codeVerifier = codeVerifier;
+            oauthStateStore.set(state, stateData);
+        }
+
+        console.log(`🔐 OAuth flow initiated for ${integrationId}`);
+        console.log(`   Redirect URI: ${redirectUri}`);
+        console.log(`   Authorization URL: ${authUrl.toString()}`);
+
+        // Redirect user to OAuth provider
+        res.redirect(authUrl.toString());
+
+    } catch (error) {
+        console.error('Error initiating OAuth flow:', error);
+        res.status(500).send('Failed to initiate OAuth flow: ' + error.message);
+    }
+});
+
+// OAuth Callback - Handle OAuth provider callback
+app.get('/oauth/callback', async (req, res) => {
+    try {
+        const { code, state, error: oauthError, error_description } = req.query;
+
+        // Check for OAuth errors
+        if (oauthError) {
+            console.error('OAuth Error:', oauthError, error_description);
+            return res.redirect(`/my-connections?error=${encodeURIComponent(oauthError)}&error_description=${encodeURIComponent(error_description || '')}`);
+        }
+
+        // Validate state
+        if (!state || !oauthStateStore.has(state)) {
+            console.error('Invalid or expired OAuth state');
+            return res.redirect('/my-connections?error=invalid_state');
+        }
+
+        const stateData = oauthStateStore.get(state);
+        oauthStateStore.delete(state); // Use state only once
+
+        // Check state expiration
+        if (stateData.expiresAt < Date.now()) {
+            console.error('OAuth state expired');
+            return res.redirect('/my-connections?error=state_expired');
+        }
+
+        // Exchange authorization code for tokens
+        const tokenRequestBody = {
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: stateData.redirectUri,
+            client_id: stateData.clientId,
+            client_secret: stateData.clientSecret
+        };
+
+        // Add PKCE code verifier if enabled
+        if (stateData.codeVerifier) {
+            tokenRequestBody.code_verifier = stateData.codeVerifier;
+        }
+
+        // Convert to URL-encoded format
+        const bodyString = Object.entries(tokenRequestBody)
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+            .join('&');
+
+        console.log(`🔄 Exchanging authorization code for tokens...`);
+        console.log(`   Token URL: ${stateData.tokenUrl}`);
+
+        // Make token request
+        const tokenResponse = await HttpClient.post(
+            stateData.tokenUrl,
+            bodyString,
+            {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
+            },
+            15000 // 15 second timeout
+        );
+
+        if (tokenResponse.statusCode !== 200) {
+            console.error('Token exchange failed:', tokenResponse.statusCode, tokenResponse.body);
+            return res.redirect(`/my-connections?error=token_exchange_failed&status=${tokenResponse.statusCode}`);
+        }
+
+        const tokens = tokenResponse.json;
+
+        if (!tokens || !tokens.access_token) {
+            console.error('Invalid token response - missing access_token');
+            return res.redirect('/my-connections?error=invalid_token_response');
+        }
+
+        console.log('✅ OAuth tokens received successfully');
+
+        // Calculate expiry timestamp
+        const expiresAt = tokens.expires_in
+            ? Date.now() + (tokens.expires_in * 1000)
+            : null;
+
+        // Prepare credentials object
+        const credentials = {
+            clientId: stateData.clientId,
+            clientSecret: stateData.clientSecret
+        };
+
+        // Prepare tokens object
+        const tokenData = {
+            accessToken: tokens.access_token,
+            refreshToken: tokens.refresh_token || null,
+            tokenType: tokens.token_type || 'Bearer',
+            expiresIn: tokens.expires_in || null,
+            expiresAt: expiresAt,
+            scope: tokens.scope || null,
+            // Store any additional token data
+            ...Object.fromEntries(
+                Object.entries(tokens).filter(([key]) =>
+                    !['access_token', 'refresh_token', 'token_type', 'expires_in', 'scope'].includes(key)
+                )
+            )
+        };
+
+        // Encrypt credentials
+        const encryptedCreds = encryption.encryptCredentials(credentials);
+
+        // Load integration details
+        const registryPath = path.join(__dirname, 'integrations', 'registry.json');
+        const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+        const integration = registry.integrations.find(i => i.id === stateData.integrationId);
+
+        // Load auth method details
+        const authSchemaPath = path.join(__dirname, 'integrations', 'providers', stateData.integrationId, 'auth.schema.json');
+        const authSchema = JSON.parse(fs.readFileSync(authSchemaPath, 'utf8'));
+        const authMethod = authSchema.authMethods?.find(m => m.id === stateData.authMethodId);
+
+        // Save connection to Elasticsearch
+        const result = await elasticsearch.saveUserConnection({
+            userId: stateData.userId,
+            integrationId: stateData.integrationId,
+            integrationName: integration?.displayName || stateData.integrationId,
+            connectionName: stateData.connectionName,
+            authMethodId: stateData.authMethodId,
+            authMethodLabel: authMethod?.label || stateData.authMethodId,
+            authType: authMethod?.authType || 'oauth2',
+            configuredVariables: {},
+            credentials: {
+                encrypted: encryptedCreds,
+                decrypted: credentials
+            },
+            tokens: tokenData, // Store OAuth tokens
+            status: 'active'
+        });
+
+        console.log(`✅ Connection saved successfully: ${result._id}`);
+
+        // Redirect back to connections page with success message
+        res.redirect(`/my-connections?success=true&connectionId=${result._id}`);
+
+    } catch (error) {
+        console.error('Error in OAuth callback:', error);
+        res.redirect(`/my-connections?error=callback_error&message=${encodeURIComponent(error.message)}`);
+    }
+});
+
+// Get OAuth authorization URL (for frontend to initiate flow)
+app.post('/api/oauth/get-auth-url', async (req, res) => {
+    try {
+        const { integrationId, authMethodId, userId, clientId, clientSecret, connectionName } = req.body;
+
+        if (!integrationId || !authMethodId || !userId || !clientId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: integrationId, authMethodId, userId, clientId'
+            });
+        }
+
+        const baseUrl = getBaseUrl(req);
+
+        // Build OAuth initiation URL
+        const authUrl = new URL(`${baseUrl}/oauth/${integrationId}/${authMethodId}/authorize`);
+        authUrl.searchParams.set('userId', userId);
+        authUrl.searchParams.set('clientId', clientId);
+
+        if (clientSecret) {
+            authUrl.searchParams.set('clientSecret', clientSecret);
+        }
+
+        if (connectionName) {
+            authUrl.searchParams.set('connectionName', connectionName);
+        }
+
+        res.json({
+            success: true,
+            authUrl: authUrl.toString()
+        });
+
+    } catch (error) {
+        console.error('Error generating OAuth URL:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate OAuth URL'
         });
     }
 });

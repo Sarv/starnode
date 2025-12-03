@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-11-27T12:33:32.445Z",
+  "lastUpdated": "2025-12-03T10:15:47.471Z",
   "categories": {
     "contacts": {
       "label": "Contacts",
@@ -330,10 +330,19 @@
           "htmlType": "number",
           "fillBy": "User",
           "conditionalExpression": "{{sheet_id}} == \"78979798\""
+        },
+        "email_id": {
+          "type": "static",
+          "label": "Email Id",
+          "required": false,
+          "description": "",
+          "fieldType": "email",
+          "htmlType": "email",
+          "fillBy": "Admin"
         }
       },
       "createdAt": "2025-11-27T12:30:42.298Z",
-      "updatedAt": "2025-11-27T12:33:32.445Z"
+      "updatedAt": "2025-12-03T10:15:47.471Z"
     }
   }
 }

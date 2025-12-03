@@ -32,6 +32,33 @@
           "encrypted": false
         }
       ]
+    },
+    {
+      "id": "oauth2_authorization_code_method_1764789070145",
+      "authType": "oauth2_authorization_code",
+      "label": "OAuth 2.0 - Authorization Code",
+      "isDefault": false,
+      "priority": 2,
+      "config": {
+        "scopeSeparator": " ",
+        "pkceEnabled": false,
+        "authMethod": "client_secret_post",
+        "tokenRefreshEnabled": false,
+        "authorizationUrl": "https://github.com/login/oauth/authorize",
+        "tokenUrl": "https://github.com/login/oauth/access_token",
+        "additionalAuthParams": "",
+        "refreshTokenUrl": "",
+        "isDefault": false,
+        "scopes": [
+          "user",
+          "repo"
+        ]
+      },
+      "testConfig": {
+        "testUrl": "",
+        "timeout": 10000
+      },
+      "additionalFields": []
     }
   ]
 }

@@ -26,6 +26,11 @@ let allFeatures = [];
 let currentCategory = 'all';
 let customHandlersConfig = null;
 
+// Auth data for template variable validation
+let integrationAuthSchema = null;
+let authTypesDefinition = null;
+let validFieldNames = [];
+
 // =====================================================
 // INITIALIZATION
 // =====================================================
@@ -85,16 +90,37 @@ async function loadCustomHandlers() {
 
 async function loadIntegrationDetails() {
     try {
-        const response = await fetch(`/api/integrations/${wizardState.integrationId}`);
-        const data = await response.json();
+        // Load integration details, auth schema, and auth types definition in parallel
+        const [integrationResponse, authSchemaResponse, authTypesResponse] = await Promise.all([
+            fetch(`/api/integrations/${wizardState.integrationId}`),
+            fetch(`/api/integrations/${wizardState.integrationId}/auth-schema`),
+            fetch(`/api/auth-types`)
+        ]);
 
-        if (response.ok && data) {
+        const data = await integrationResponse.json();
+
+        if (integrationResponse.ok && data) {
             wizardState.integrationName = data.displayName;
             document.getElementById('wizardTitle').textContent =
                 `Map Feature to ${data.displayName}`;
             document.getElementById('integrationNameLink').textContent = data.displayName;
             document.getElementById('integrationNameLink').href =
                 `/integration-detail/${wizardState.integrationId}`;
+        }
+
+        // Load auth schema for template variable validation
+        if (authSchemaResponse.ok) {
+            const authSchemaData = await authSchemaResponse.json();
+            integrationAuthSchema = authSchemaData.authSchema;
+        } else {
+            console.warn('Failed to load auth schema');
+        }
+
+        // Load auth types definition for template variable validation
+        if (authTypesResponse.ok) {
+            authTypesDefinition = await authTypesResponse.json();
+        } else {
+            console.warn('Failed to load auth types definition');
         }
     } catch (error) {
         console.error('Error loading integration:', error);
@@ -147,6 +173,9 @@ async function loadExistingMapping() {
             // Update UI elements
             document.getElementById('wizardTitle').textContent =
                 `Edit Feature Mapping: ${mapping.featureTemplateName}`;
+
+            // Update valid field names for template variable validation
+            validFieldNames = collectAllValidFields();
 
             // Render all steps to show the loaded data
             renderFeaturesList(); // Step 1: Highlight selected feature
@@ -420,6 +449,9 @@ function selectFeature(featureId) {
                 customHandlers: null
             };
         });
+
+        // Update valid field names for template variable validation
+        validFieldNames = collectAllValidFields();
 
         renderFeaturesList();
     }
@@ -719,6 +751,105 @@ function generateValueInput(field, fieldKey, currentValue = '') {
     return html;
 }
 
+// =====================================================
+// TEMPLATE VARIABLE VALIDATION HELPERS
+// =====================================================
+
+/**
+ * Extract all dynamic variables from a string
+ * Format: {{variableName}}
+ * @param {string} str - String containing dynamic variables
+ * @returns {string[]} - Array of variable names
+ */
+function extractDynamicVariables(str) {
+    if (!str || typeof str !== 'string') {
+        return [];
+    }
+
+    const regex = /\{\{([^}]+)\}\}/g;
+    const variables = [];
+    let match;
+
+    while ((match = regex.exec(str)) !== null) {
+        const variableName = match[1].trim();
+        if (variableName && !variables.includes(variableName)) {
+            variables.push(variableName);
+        }
+    }
+
+    return variables;
+}
+
+/**
+ * Collect all valid field names from all sources:
+ * - All auth methods' configOptions (from auth-types-definition)
+ * - All auth methods' credentialFields (from auth-types-definition)
+ * - All auth methods' additionalFields (from integration's auth schema)
+ * - Feature template fields
+ * - Extra fields created during mapping
+ * @returns {string[]} - Array of valid field names
+ */
+function collectAllValidFields() {
+    const fields = [];
+
+    // 1. Collect from ALL auth methods in integration
+    if (integrationAuthSchema && integrationAuthSchema.authMethods && authTypesDefinition) {
+        integrationAuthSchema.authMethods.forEach(authMethod => {
+            const authType = authMethod.authType;
+            const authTypeDef = authTypesDefinition.authTypes?.[authType];
+
+            if (authTypeDef) {
+                // Get configOptions field names
+                if (authTypeDef.configOptions) {
+                    Object.keys(authTypeDef.configOptions).forEach(key => {
+                        if (!fields.includes(key)) {
+                            fields.push(key);
+                        }
+                    });
+                }
+
+                // Get credentialFields names
+                if (authTypeDef.credentialFields) {
+                    Object.keys(authTypeDef.credentialFields).forEach(key => {
+                        if (!fields.includes(key)) {
+                            fields.push(key);
+                        }
+                    });
+                }
+            }
+
+            // Get additionalFields names from auth method
+            if (authMethod.additionalFields && Array.isArray(authMethod.additionalFields)) {
+                authMethod.additionalFields.forEach(field => {
+                    if (field.name && !fields.includes(field.name)) {
+                        fields.push(field.name);
+                    }
+                });
+            }
+        });
+    }
+
+    // 2. Collect from feature template fields
+    if (wizardState.selectedFeature && wizardState.selectedFeature.fields) {
+        Object.keys(wizardState.selectedFeature.fields).forEach(key => {
+            if (!fields.includes(key)) {
+                fields.push(key);
+            }
+        });
+    }
+
+    // 3. Collect from extra fields
+    if (wizardState.extraFields && Array.isArray(wizardState.extraFields)) {
+        wizardState.extraFields.forEach(field => {
+            if (field.fieldKey && !fields.includes(field.fieldKey)) {
+                fields.push(field.fieldKey);
+            }
+        });
+    }
+
+    return fields;
+}
+
 /**
  * Validate admin-entered value based on fieldType
  * @param {*} value - The value to validate
@@ -731,6 +862,25 @@ function validateFieldValue(value, fieldType) {
         return { valid: true, error: '' };
     }
 
+    // Check if value contains template variables
+    const variables = extractDynamicVariables(value);
+    if (variables.length > 0) {
+        // Collect all valid field names
+        validFieldNames = collectAllValidFields();
+
+        // Validate each variable against available fields
+        const invalidVars = variables.filter(v => !validFieldNames.includes(v));
+        if (invalidVars.length > 0) {
+            return {
+                valid: false,
+                error: `Invalid variable(s): {{${invalidVars.join('}}, {{')}}}`
+            };
+        }
+        // All variables are valid, skip literal validation
+        return { valid: true, error: '' };
+    }
+
+    // No template variables, proceed with literal validation
     switch (fieldType) {
         case 'string':
         case 'text':
@@ -1463,6 +1613,9 @@ function saveExtraField() {
         showToast('Extra field added', 'success');
     }
 
+    // Update valid field names for template variable validation
+    validFieldNames = collectAllValidFields();
+
     closeExtraFieldModal();
     renderExtraFields();
 }
@@ -1474,6 +1627,10 @@ function editExtraField(index) {
 function deleteExtraField(index) {
     if (confirm('Are you sure you want to delete this extra field?')) {
         wizardState.extraFields.splice(index, 1);
+
+        // Update valid field names for template variable validation
+        validFieldNames = collectAllValidFields();
+
         renderExtraFields();
         showToast('Extra field deleted', 'success');
     }
