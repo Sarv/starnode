@@ -69,7 +69,7 @@
       "dataType": "url",
       "htmlType": "text",
       "required": false,
-      "placeholder": "https://example.com/icon.png"
+      "placeholder": "explore https://seeklogo.com/"
     },
     "docsUrl": {
       "label": "Documentation URL",
@@ -244,6 +244,75 @@
       "htmlType": "text",
       "required": false,
       "placeholder": ""
+    },
+    "useAs": {
+      "label": "Use As",
+      "description": "How this field should be used in authentication",
+      "dataType": "string",
+      "htmlType": "select",
+      "required": true,
+      "default": "credential",
+      "options": [
+        { "value": "credential", "label": "Credential (User Input)" },
+        { "value": "header", "label": "HTTP Header" },
+        { "value": "variable", "label": "URL Variable" }
+      ]
+    },
+    "fillBy": {
+      "label": "Filled By",
+      "description": "Who provides the value for this field",
+      "dataType": "string",
+      "htmlType": "select",
+      "required": true,
+      "default": "user",
+      "options": [
+        { "value": "user", "label": "User (End-user input during connection)" },
+        { "value": "admin", "label": "Admin (Set by admin during integration creation)" }
+      ]
+    },
+    "headerName": {
+      "label": "Header Name",
+      "description": "Actual HTTP header name (only used when useAs='header')",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": false,
+      "placeholder": "e.g., User-Agent, Accept, X-Custom-Header"
+    },
+    "defaultValue": {
+      "label": "Admin Value",
+      "description": "Value set by admin (shown when fillBy='admin')",
+      "dataType": "string",
+      "htmlType": "text",
+      "required": false,
+      "placeholder": "e.g., IntegrationPlatform/1.0"
+    },
+    "encrypted": {
+      "label": "Encrypt Value",
+      "description": "Should this value be encrypted in storage?",
+      "dataType": "boolean",
+      "htmlType": "select",
+      "required": true,
+      "default": false,
+      "options": [
+        { "value": true, "label": "Yes (Encrypt)" },
+        { "value": false, "label": "No (Plain Text)" }
+      ]
+    },
+    "htmlType": {
+      "label": "Input Type",
+      "description": "HTML input type for rendering in forms",
+      "dataType": "string",
+      "htmlType": "select",
+      "required": false,
+      "default": "text",
+      "options": [
+        { "value": "text", "label": "Text" },
+        { "value": "password", "label": "Password (Masked)" },
+        { "value": "textarea", "label": "Textarea (Multi-line)" },
+        { "value": "number", "label": "Number" },
+        { "value": "email", "label": "Email" },
+        { "value": "url", "label": "URL" }
+      ]
     }
   },
   "customHandlers": {

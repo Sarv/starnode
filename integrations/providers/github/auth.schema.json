@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "bearer_token_method_1764626986028",
+      "authType": "bearer_token",
+      "label": "Bearer Token",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "headerName": "Authorization",
+        "prefix": "Bearer ",
+        "tokenValue": "{{token}}",
+        "isDefault": true
+      },
+      "testConfig": {
+        "testUrl": "https://api.github.com/user",
+        "timeout": 10000
+      },
+      "additionalFields": [
+        {
+          "name": "user-agent",
+          "label": "User Agent",
+          "type": "string",
+          "required": true,
+          "placeholder": "",
+          "default": "starnode",
+          "useAs": "header",
+          "fillBy": "admin",
+          "headerName": "User-Agent",
+          "defaultValue": "starnode",
+          "encrypted": false
+        }
+      ]
+    }
+  ]
+}

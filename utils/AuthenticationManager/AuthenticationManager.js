@@ -31,6 +31,7 @@ class AuthenticationManager {
             'api_key_query': new ApiKeyStrategy(),
             'bearer_token': new BearerTokenStrategy(),
             'basic_auth': new BasicAuthStrategy(),
+            'basic_auth_api_key': new BasicAuthStrategy(),
             'custom_headers': new CustomHeadersStrategy(),
             'oauth2_authorization_code': new OAuth2Strategy(),
             'oauth2_client_credentials': new OAuth2Strategy(),
@@ -47,12 +48,24 @@ class AuthenticationManager {
 
     /**
      * Build authentication headers/params
-     * @returns {Promise<Object>} Headers object
+     *
+     * Purpose: Builds complete authentication headers by calling the appropriate strategy
+     * and passing credentials, config, variables, and tokens. Ensures additionalFields
+     * from authMethodConfig are included in config for header generation.
+     *
+     * @returns {Promise<Object>} Complete headers object including auth and additional headers
      */
     async buildAuthHeaders() {
+        // Merge config with additionalFields so strategies can access both
+        // This allows strategies to build both auth headers and additional headers (User-Agent, Accept, etc.)
+        const fullConfig = {
+            ...(this.authMethodConfig.config || {}),
+            additionalFields: this.authMethodConfig.additionalFields || []
+        };
+
         return await this.strategy.buildHeaders(
             this.connection.credentials,
-            this.authMethodConfig.config || {},
+            fullConfig,
             this.connection.configuredVariables || {},
             this.connection.storedTokens || {}
         );

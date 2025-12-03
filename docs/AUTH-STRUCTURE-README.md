@@ -372,6 +372,32 @@ Admin cannot change locked fields (uses default).
 
 For `custom_headers`, credential fields are dynamically generated based on headers configuration.
 
+### Template Variables (NEW)
+
+**configOptions** now support template variables using `{{variableName}}` syntax for flexible credential formatting:
+
+```json
+{
+  "configOptions": {
+    "username": {
+      "type": "string",
+      "label": "Username Pattern",
+      "default": "{{apiKey}}",
+      "helpText": "Use {{fieldName}} for variables or static values",
+      "examples": ["api", "{{apiKey}}", "{{email}}/{{token}}"]
+    }
+  }
+}
+```
+
+**Benefits:**
+- Single auth type handles multiple patterns (Freshdesk: `{{apiKey}}:X`, Zendesk: `{{email}}/{{token}}`, etc.)
+- Auto-detection: templates parsed if `{{` present, static values used as-is
+- Eliminates need for separate auth types per pattern
+- Self-documenting configuration
+
+**See:** [AUTHENTICATION-TEMPLATE-VARIABLES.md](./AUTHENTICATION-TEMPLATE-VARIABLES.md) for complete documentation.
+
 ---
 
 ## 8. Summary

@@ -68,6 +68,17 @@ function extractVariablesFromAuthMethod(authMethod) {
         }
     });
 
+    // Also check testConfig.testUrl for dynamic variables
+    if (authMethod.testConfig && authMethod.testConfig.testUrl) {
+        const variables = extractDynamicVariables(authMethod.testConfig.testUrl);
+        variables.forEach(varName => {
+            if (!variableUsage[varName]) {
+                variableUsage[varName] = [];
+            }
+            variableUsage[varName].push('testConfig.testUrl');
+        });
+    }
+
     return variableUsage;
 }
 
@@ -296,6 +307,15 @@ function replaceVariablesInAuthMethod(authMethod, values, strict = false) {
             );
         }
     });
+
+    // Also replace variables in testConfig.testUrl
+    if (result.testConfig && result.testConfig.testUrl) {
+        result.testConfig.testUrl = replaceDynamicVariables(
+            result.testConfig.testUrl,
+            values,
+            strict
+        );
+    }
 
     return result;
 }

@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "bearer_token_method_1764703515577",
+      "authType": "bearer_token",
+      "label": "Bearer Token",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "headerName": "Authorization",
+        "prefix": "Bearer ",
+        "tokenValue": "{{token}}",
+        "isDefault": false
+      },
+      "testConfig": {
+        "testUrl": "https://slack.com/api/users.profile.get",
+        "timeout": 10000
+      },
+      "additionalFields": []
+    }
+  ]
+}

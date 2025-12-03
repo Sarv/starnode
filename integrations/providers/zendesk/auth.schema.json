@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "basic_auth_api_key_method_1764620611885",
+      "authType": "basic_auth_api_key",
+      "label": "Basic Auth (API Key)",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "username": "{{email}}/token",
+        "password": "{{apiKey}}",
+        "isDefault": true
+      },
+      "testConfig": {
+        "testUrl": "https://{{sub_domain}}.zendesk.com/api/v2/users/me.json",
+        "timeout": 10000
+      },
+      "additionalFields": [
+        {
+          "name": "sub_domain",
+          "label": "Sub Domain / Company Name",
+          "type": "string",
+          "required": true,
+          "placeholder": "Enter your subdomain in your Zendesk URL ",
+          "useAs": "variable",
+          "fillBy": "user",
+          "encrypted": false,
+          "htmlType": "text"
+        },
+        {
+          "name": "email",
+          "label": "Email Id",
+          "type": "string",
+          "required": true,
+          "placeholder": "your Zendesk email id",
+          "description": "",
+          "useAs": "credential",
+          "fillBy": "user",
+          "encrypted": false,
+          "htmlType": "text"
+        }
+      ]
+    }
+  ]
+}

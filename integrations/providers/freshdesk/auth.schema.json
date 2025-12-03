@@ -2,45 +2,32 @@
   "version": "1.0.0",
   "authMethods": [
     {
-      "id": "api_key_header_method",
-      "authType": "api_key_header",
-      "label": "API Key (Header)",
+      "id": "basic_auth_api_key_method_1764534764891",
+      "authType": "basic_auth_api_key",
+      "label": "API Key Authentication",
       "isDefault": true,
-      "priority": 3,
+      "priority": 1,
       "config": {
-        "headerName": "API-Key",
-        "prefix": "apiKey",
+        "username": "{{apiKey}}",
+        "password": "X",
         "isDefault": true
+      },
+      "testConfig": {
+        "testUrl": "https://{{sub_domain}}.freshdesk.com/api/v2/agents/me/",
+        "timeout": 10000
       },
       "additionalFields": [
         {
           "name": "sub_domain",
-          "label": "Sub Domain Company Name",
+          "label": "Sub-Domain",
           "type": "string",
           "required": true,
-          "placeholder": "Enter your company name. This will be used for API calls for your account. "
-        },
-        {
-          "name": "custom_field_2",
-          "label": "Custom Field 2",
-          "type": "string",
-          "required": true,
-          "placeholder": "Custom fields detail"
+          "placeholder": "Enter subdomain of your Freshdesk URl",
+          "useAs": "credential",
+          "fillBy": "user",
+          "encrypted": false
         }
       ]
-    },
-    {
-      "id": "api_key_header_method_1763751126487",
-      "authType": "api_key_header",
-      "label": "API Key (Header)",
-      "isDefault": false,
-      "priority": 2,
-      "config": {
-        "headerName": "headerName",
-        "prefix": "abhimanyu ",
-        "isDefault": false
-      },
-      "additionalFields": []
     }
   ]
 }

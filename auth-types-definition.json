@@ -2,7 +2,7 @@
   "authTypes": {
     "api_key_header": {
       "label": "API Key (Header)",
-      "description": "API key passed in request header",
+      "description": "API key passed in request header with flexible template support",
       "category": "simple",
       "supportsAdditionalFields": true,
       "configOptions": {
@@ -11,16 +11,25 @@
           "label": "Header Name",
           "required": true,
           "default": "X-API-Key",
-          "helpText": "Name of the header where API key will be sent",
-          "examples": ["X-API-Key", "Authorization", "X-Auth-Token", "api-key"]
+          "helpText": "Name of the header where API key will be sent. Supports templates like '{{customHeaderName}}' or static values",
+          "examples": ["X-API-Key", "Authorization", "X-Auth-Token", "api-key", "{{headerName}}"]
         },
         "prefix": {
           "type": "string",
           "label": "Key Prefix",
           "required": false,
           "default": "",
-          "helpText": "Prefix before the key (e.g., 'Bearer ', 'Token ', or leave empty)",
-          "examples": ["", "Bearer ", "Token ", "ApiKey "]
+          "helpText": "Prefix before the key (e.g., 'Bearer ', 'Token ', or leave empty). Supports templates",
+          "examples": ["", "Bearer ", "Token ", "ApiKey ", "{{prefix}}"]
+        },
+        "apiKeyValue": {
+          "type": "string",
+          "label": "API Key Value",
+          "required": false,
+          "default": "{{apiKey}}",
+          "helpText": "API key value template. Supports credential variables ('{{apiKey}}') or complex patterns ('{{key1}}-{{key2}}')",
+          "examples": ["{{apiKey}}", "{{token}}", "{{key1}}-{{key2}}"],
+          "placeholder": "{{apiKey}}"
         }
       },
       "credentialFields": {
@@ -37,7 +46,7 @@
         "testUrl": {
           "type": "string",
           "label": "Test URL",
-          "required": true,
+          "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
           "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
@@ -67,7 +76,7 @@
 
     "api_key_query": {
       "label": "API Key (Query Parameter)",
-      "description": "API key passed as URL query parameter",
+      "description": "API key passed as URL query parameter with flexible template support",
       "category": "simple",
       "supportsAdditionalFields": true,
       "configOptions": {
@@ -76,8 +85,17 @@
           "label": "Parameter Name",
           "required": true,
           "default": "apiKey",
-          "helpText": "Name of the query parameter",
-          "examples": ["apiKey", "api_key", "key", "token"]
+          "helpText": "Name of the query parameter. Supports templates like '{{paramName}}' or static values",
+          "examples": ["apiKey", "api_key", "key", "token", "{{paramName}}"]
+        },
+        "apiKeyValue": {
+          "type": "string",
+          "label": "API Key Value",
+          "required": false,
+          "default": "{{apiKey}}",
+          "helpText": "API key value template. Supports credential variables ('{{apiKey}}') or complex patterns ('{{key1}}-{{key2}}')",
+          "examples": ["{{apiKey}}", "{{token}}", "{{key1}}-{{key2}}"],
+          "placeholder": "{{apiKey}}"
         }
       },
       "credentialFields": {
@@ -93,7 +111,7 @@
         "testUrl": {
           "type": "string",
           "label": "Test URL",
-          "required": true,
+          "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
           "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
@@ -123,7 +141,7 @@
 
     "bearer_token": {
       "label": "Bearer Token",
-      "description": "Bearer token in Authorization header",
+      "description": "Bearer token in Authorization header with flexible template support",
       "category": "simple",
       "supportsAdditionalFields": true,
       "configOptions": {
@@ -133,14 +151,24 @@
           "required": true,
           "default": "Authorization",
           "locked": true,
-          "helpText": "Usually 'Authorization' (standard)"
+          "helpText": "Usually 'Authorization' (standard). Supports templates like '{{headerName}}' or static values"
         },
         "prefix": {
           "type": "string",
           "label": "Token Prefix",
           "required": true,
           "default": "Bearer ",
-          "locked": true
+          "locked": true,
+          "helpText": "Prefix before the token (usually 'Bearer '). Supports templates"
+        },
+        "tokenValue": {
+          "type": "string",
+          "label": "Token Value",
+          "required": false,
+          "default": "{{token}}",
+          "helpText": "Token value template. Supports credential variables ('{{token}}', '{{accessToken}}') or complex patterns ('{{key1}}-{{key2}}')",
+          "examples": ["{{token}}", "{{accessToken}}", "{{key1}}-{{key2}}"],
+          "placeholder": "{{token}}"
         }
       },
       "credentialFields": {
@@ -151,14 +179,63 @@
           "required": true,
           "encrypted": true
         }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
+        }
       }
     },
 
     "basic_auth": {
       "label": "Basic Authentication",
-      "description": "Username and password encoded in Authorization header",
+      "description": "Username and password encoded in Authorization header with flexible template support",
       "category": "simple",
-      "configOptions": {},
+      "configOptions": {
+        "username": {
+          "type": "string",
+          "label": "Username Template",
+          "required": false,
+          "default": "{{username}}",
+          "helpText": "Username for Basic Auth. Supports templates: credential variables ('{{username}}'), static values, or complex patterns ('{{email}}/{{token}}')",
+          "examples": ["{{username}}", "admin", "{{email}}", "{{clientId}}/{{secret}}"],
+          "placeholder": "{{username}}"
+        },
+        "password": {
+          "type": "string",
+          "label": "Password Template",
+          "required": false,
+          "default": "{{password}}",
+          "helpText": "Password for Basic Auth. Supports templates: credential variables ('{{password}}'), static values, or complex patterns",
+          "examples": ["{{password}}", "X", "{{apiKey}}", "{{secret}}"],
+          "placeholder": "{{password}}"
+        }
+      },
       "credentialFields": {
         "username": {
           "type": "string",
@@ -173,6 +250,103 @@
           "inputType": "password",
           "required": true,
           "encrypted": true
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
+        }
+      }
+    },
+
+    "basic_auth_api_key": {
+      "label": "Basic Auth (API Key)",
+      "description": "API Key authentication using Basic Auth format with flexible template support",
+      "category": "simple",
+      "supportsAdditionalFields": true,
+      "configOptions": {
+        "username": {
+          "type": "string",
+          "label": "Username Value",
+          "required": true,
+          "default": "api",
+          "helpText": "Username for Basic Auth. Supports templates: static values ('api'), credential variables ('{{apiKey}}'), or complex patterns ('{{email}}/{{token}}')",
+          "examples": ["api", "{{apiKey}}", "{{email}}/{{token}}", "{{clientId}}"],
+          "placeholder": "api"
+        },
+        "password": {
+          "type": "string",
+          "label": "Password Value",
+          "required": false,
+          "default": "",
+          "helpText": "Password for Basic Auth. Supports templates: static values ('X'), credential variables ('{{apiKey}}'), or complex patterns. If not specified, defaults to '{{password}}'",
+          "examples": ["X", "{{apiKey}}", "{{password}}", ""],
+          "placeholder": ""
+        }
+      },
+      "credentialFields": {
+        "apiKey": {
+          "type": "string",
+          "label": "API Key",
+          "inputType": "password",
+          "required": true,
+          "encrypted": true,
+          "helpText": "Your API key (will be used as password in Basic Auth)"
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
         }
       }
     },
@@ -213,6 +387,36 @@
       "credentialFields": {
         "_dynamic": true,
         "_note": "Credential fields are defined dynamically based on headers configuration"
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
+        }
       }
     },
 
@@ -318,17 +522,17 @@
         "testUrl": {
           "type": "string",
           "label": "Test URL",
-          "required": true,
+          "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://accounts.google.com/oauth2/v2/userinfo"]
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
         },
         "method": {
           "type": "string",
           "label": "HTTP Method",
           "required": false,
           "default": "GET",
-          "options": ["GET"],
+          "options": ["GET", "POST"],
           "locked": true
         },
         "timeout": {
@@ -342,22 +546,6 @@
           "label": "Expected Success Status Codes",
           "required": false,
           "default": [200, 201]
-        },
-        "checkTokenExpiry": {
-          "type": "boolean",
-          "label": "Check Token Expiry",
-          "required": false,
-          "default": true,
-          "locked": true,
-          "helpText": "Automatically check if access token is expired before testing"
-        },
-        "autoRefreshToken": {
-          "type": "boolean",
-          "label": "Auto-Refresh Expired Token",
-          "required": false,
-          "default": true,
-          "locked": true,
-          "helpText": "Automatically refresh token if expired before testing"
         }
       }
     },
@@ -410,6 +598,36 @@
           "encrypted": true
         }
       },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
+        }
+      },
       "storedTokens": ["accessToken", "tokenType", "expiresIn", "scope"]
     },
 
@@ -446,6 +664,36 @@
           "required": true,
           "encrypted": true,
           "helpText": "Complete JSON key file from service account"
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
         }
       },
       "storedTokens": ["accessToken", "tokenType", "expiresIn"]
@@ -503,6 +751,36 @@
           "inputType": "password",
           "required": true,
           "encrypted": true
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
         }
       },
       "storedTokens": ["oauthToken", "oauthTokenSecret"]
@@ -575,6 +853,36 @@
           "required": false,
           "helpText": "User identifier or subject claim"
         }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
+        }
       }
     },
 
@@ -621,6 +929,36 @@
           "required": false,
           "encrypted": true,
           "helpText": "Required for temporary credentials"
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
         }
       }
     },
@@ -674,6 +1012,36 @@
           "required": false,
           "encrypted": true,
           "helpText": "If key is encrypted"
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
         }
       }
     },
@@ -747,6 +1115,36 @@
           "inputType": "checkbox",
           "required": false,
           "default": true
+        }
+      },
+      "testConfig": {
+        "testUrl": {
+          "type": "string",
+          "label": "Test URL",
+          "required": false,
+          "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
+          "placeholder": "https://api.example.com/v1/me",
+          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+        },
+        "method": {
+          "type": "string",
+          "label": "HTTP Method",
+          "required": false,
+          "default": "GET",
+          "options": ["GET", "POST"],
+          "locked": true
+        },
+        "timeout": {
+          "type": "number",
+          "label": "Request Timeout (ms)",
+          "required": false,
+          "default": 10000
+        },
+        "expectedStatusCodes": {
+          "type": "array",
+          "label": "Expected Success Status Codes",
+          "required": false,
+          "default": [200, 201]
         }
       }
     }

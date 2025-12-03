@@ -311,7 +311,7 @@ function viewConnectionById(connectionId) {
 }
 
 // View connection details
-function viewConnection(connection) {
+async function viewConnection(connection) {
     selectedConnectionId = connection.connectionId;
 
     const modal = document.getElementById('connectionModal');
@@ -333,6 +333,22 @@ function viewConnection(connection) {
     const createdDate = new Date(connection.createdAt).toLocaleString();
     const updatedDate = new Date(connection.updatedAt).toLocaleString();
 
+    // Fetch auth schema to get credential field definitions (labels and inputType)
+    let credentialFieldDefs = {};
+    try {
+        const response = await fetch(`/api/integrations/${connection.integrationId}/auth-schema`);
+        if (response.ok) {
+            const data = await response.json();
+            // Find the auth method used by this connection
+            const authMethod = data.authSchema?.authMethods?.find(m => m.id === connection.authMethodId);
+            if (authMethod && authMethod.credentials) {
+                credentialFieldDefs = authMethod.credentials;
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to load auth schema for credential labels:', error);
+    }
+
     // Build connection details
     let credentialsHtml = '';
     if (connection.credentials) {
@@ -353,18 +369,22 @@ function viewConnection(connection) {
                 // Convert value to string if it's not
                 let stringValue = typeof value === 'string' ? value : JSON.stringify(value);
 
-                const displayValue = (key.toLowerCase().includes('secret') ||
-                                    key.toLowerCase().includes('password') ||
-                                    key.toLowerCase().includes('token'))
-                    ? '••••••••••••'
-                    : escapeHtml(stringValue);
+                // Get field definition from auth schema
+                const fieldDef = credentialFieldDefs[key];
 
-                const isMasked = displayValue.indexOf('••') !== -1;
+                // Use label from config, or fallback to formatted key
+                const label = fieldDef?.label || formatLabel(key);
+
+                // Use inputType from config to determine masking (default to password for sensitive fields)
+                const inputType = fieldDef?.inputType || 'password';
+                const shouldMask = inputType === 'password';
+
+                const displayValue = shouldMask ? '••••••••••••' : escapeHtml(stringValue);
 
                 return `
                     <div class="detail-item">
-                        <span class="detail-label">${escapeHtml(formatLabel(key))}</span>
-                        <span class="detail-value ${isMasked ? 'masked' : ''}">${displayValue}</span>
+                        <span class="detail-label">${escapeHtml(label)}</span>
+                        <span class="detail-value ${shouldMask ? 'masked' : ''}">${displayValue}</span>
                     </div>
                 `;
             })
@@ -477,10 +497,165 @@ async function testConnection() {
         if (testResultModal) {
             if (data.success) {
                 testResultModal.className = 'test-result success';
-                testResultModal.textContent = `✓ Connection test successful! ${data.message || ''}`;
+
+                // Build detailed success message
+                let detailsHtml = `<div class="test-result-header">✓ Connection test successful!</div>`;
+                detailsHtml += `<div class="test-result-details">`;
+
+                if (data.statusCode) {
+                    detailsHtml += `<div class="test-detail-row"><strong>Status Code:</strong> ${data.statusCode}</div>`;
+                }
+
+                if (data.responseTime) {
+                    detailsHtml += `<div class="test-detail-row"><strong>Response Time:</strong> ${data.responseTime}ms</div>`;
+                }
+
+                if (data.details && data.details.testUrl) {
+                    detailsHtml += `<div class="test-detail-row"><strong>Test URL:</strong> ${data.details.testUrl}</div>`;
+                }
+
+                if (data.details && data.details.method) {
+                    detailsHtml += `<div class="test-detail-row"><strong>Method:</strong> ${data.details.method}</div>`;
+                }
+
+                if (data.message) {
+                    detailsHtml += `<div class="test-detail-row"><strong>Message:</strong> ${data.message}</div>`;
+                }
+
+                detailsHtml += `</div>`; // Close test-result-details
+
+                // Helper function to escape HTML
+                const escapeHtml = (text) => {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                };
+
+                // Display Request Details
+                if (data.request) {
+                    detailsHtml += `<div class="test-detail-section">`;
+                    detailsHtml += `<div class="test-detail-section-title">📤 Request Details:</div>`;
+                    detailsHtml += `<div class="test-detail-subsection">`;
+                    detailsHtml += `<div class="test-detail-row"><strong>URL:</strong> ${data.request.url || data.details?.testUrl || 'N/A'}</div>`;
+                    detailsHtml += `<div class="test-detail-row"><strong>Method:</strong> ${data.request.method || data.details?.method || 'N/A'}</div>`;
+
+                    if (data.request.headers && Object.keys(data.request.headers).length > 0) {
+                        detailsHtml += `<div class="test-detail-row"><strong>Headers:</strong></div>`;
+                        detailsHtml += `<pre class="test-response-body">${escapeHtml(JSON.stringify(data.request.headers, null, 2))}</pre>`;
+                    }
+                    detailsHtml += `</div></div>`;
+                }
+
+                // Display Response Headers
+                if (data.responseHeaders) {
+                    detailsHtml += `<div class="test-detail-section">`;
+                    detailsHtml += `<div class="test-detail-section-title">📥 Response Headers:</div>`;
+                    detailsHtml += `<pre class="test-response-body">${escapeHtml(JSON.stringify(data.responseHeaders, null, 2))}</pre>`;
+                    detailsHtml += `</div>`;
+                }
+
+                // Display Response Body
+                if (data.responseBody) {
+                    detailsHtml += `<div class="test-detail-section">`;
+                    detailsHtml += `<div class="test-detail-section-title">📦 Response Body:</div>`;
+
+                    // Format the response based on type
+                    let formattedResponse;
+                    if (typeof data.responseBody === 'object') {
+                        formattedResponse = JSON.stringify(data.responseBody, null, 2);
+                    } else {
+                        formattedResponse = String(data.responseBody);
+                        // Truncate very long responses (like HTML pages)
+                        if (formattedResponse.length > 5000) {
+                            formattedResponse = formattedResponse.substring(0, 5000) + '\n\n... [Truncated. Total length: ' + formattedResponse.length + ' characters]';
+                        }
+                    }
+
+                    detailsHtml += `<pre class="test-response-body">${escapeHtml(formattedResponse)}</pre>`;
+                    detailsHtml += `</div>`;
+                }
+
+                testResultModal.innerHTML = detailsHtml;
             } else {
                 testResultModal.className = 'test-result error';
-                testResultModal.textContent = `✗ Connection test failed: ${data.message || data.error || 'Unknown error'}`;
+
+                // Build detailed error message
+                let errorHtml = `<div class="test-result-header">✗ Connection test failed</div>`;
+                errorHtml += `<div class="test-result-details">`;
+
+                if (data.message) {
+                    errorHtml += `<div class="test-detail-row"><strong>Error:</strong> ${data.message}</div>`;
+                }
+
+                if (data.statusCode) {
+                    errorHtml += `<div class="test-detail-row"><strong>Status Code:</strong> ${data.statusCode}</div>`;
+                }
+
+                if (data.responseTime) {
+                    errorHtml += `<div class="test-detail-row"><strong>Response Time:</strong> ${data.responseTime}ms</div>`;
+                }
+
+                if (data.details) {
+                    if (data.details.testUrl) {
+                        errorHtml += `<div class="test-detail-row"><strong>Test URL:</strong> ${data.details.testUrl}</div>`;
+                    }
+                    if (data.details.error) {
+                        errorHtml += `<div class="test-detail-row"><strong>Details:</strong> ${data.details.error}</div>`;
+                    }
+                }
+
+                errorHtml += `</div>`; // Close test-result-details
+
+                // Helper function to escape HTML (redefine for error case)
+                const escapeHtml = (text) => {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                };
+
+                // Display Request Details in error case
+                if (data.request) {
+                    errorHtml += `<div class="test-detail-section">`;
+                    errorHtml += `<div class="test-detail-section-title">📤 Request Details:</div>`;
+                    errorHtml += `<div class="test-detail-subsection">`;
+                    errorHtml += `<div class="test-detail-row"><strong>URL:</strong> ${data.request.url || data.details?.testUrl || 'N/A'}</div>`;
+                    errorHtml += `<div class="test-detail-row"><strong>Method:</strong> ${data.request.method || data.details?.method || 'N/A'}</div>`;
+
+                    if (data.request.headers && Object.keys(data.request.headers).length > 0) {
+                        errorHtml += `<div class="test-detail-row"><strong>Headers:</strong></div>`;
+                        errorHtml += `<pre class="test-response-body">${escapeHtml(JSON.stringify(data.request.headers, null, 2))}</pre>`;
+                    }
+                    errorHtml += `</div></div>`;
+                }
+
+                // Display Response Headers in error case
+                if (data.responseHeaders) {
+                    errorHtml += `<div class="test-detail-section">`;
+                    errorHtml += `<div class="test-detail-section-title">📥 Response Headers:</div>`;
+                    errorHtml += `<pre class="test-response-body">${escapeHtml(JSON.stringify(data.responseHeaders, null, 2))}</pre>`;
+                    errorHtml += `</div>`;
+                }
+
+                // Display Response Body in error case
+                if (data.responseBody) {
+                    errorHtml += `<div class="test-detail-section">`;
+                    errorHtml += `<div class="test-detail-section-title">📦 Response Body:</div>`;
+
+                    let formattedResponse;
+                    if (typeof data.responseBody === 'object') {
+                        formattedResponse = JSON.stringify(data.responseBody, null, 2);
+                    } else {
+                        formattedResponse = String(data.responseBody);
+                        if (formattedResponse.length > 5000) {
+                            formattedResponse = formattedResponse.substring(0, 5000) + '\n\n... [Truncated. Total length: ' + formattedResponse.length + ' characters]';
+                        }
+                    }
+
+                    errorHtml += `<pre class="test-response-body">${escapeHtml(formattedResponse)}</pre>`;
+                    errorHtml += `</div>`;
+                }
+
+                testResultModal.innerHTML = errorHtml;
             }
         }
 

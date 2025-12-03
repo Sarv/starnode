@@ -676,14 +676,27 @@ function generateAdditionalFieldHTML(fieldKey, fieldConfig, value, methodIndex, 
             const optionsHtml = options.map(opt => {
                 const optValue = typeof opt === 'object' ? opt.value : opt;
                 const optLabel = typeof opt === 'object' ? opt.label : opt;
-                return `<option value="${optValue}" ${fieldValue == optValue ? 'selected' : ''}>${optLabel}</option>`;
+
+                // For boolean dataType, convert fieldValue to string for comparison
+                let isSelected;
+                if (fieldConfig.dataType === 'boolean') {
+                    isSelected = String(fieldValue) === String(optValue);
+                } else {
+                    isSelected = fieldValue == optValue;
+                }
+
+                return `<option value="${optValue}" ${isSelected ? 'selected' : ''}>${optLabel}</option>`;
             }).join('');
+
+            // Only show empty option if field is not required OR doesn't have a default value
+            const showEmptyOption = !fieldConfig.required || (!fieldValue && !fieldConfig.default);
+            const emptyOption = showEmptyOption ? `<option value="">Select ${fieldConfig.label.toLowerCase()}</option>` : '';
 
             return `
                 <div class="form-group">
                     <label>${fieldConfig.label}${required}</label>
                     <select class="${cssClass}" ${dataAttributes}>
-                        <option value="">Select ${fieldConfig.label.toLowerCase()}</option>
+                        ${emptyOption}
                         ${optionsHtml}
                     </select>
                     ${helpText}
@@ -975,12 +988,17 @@ function initStep2Handlers() {
                 method.additionalFields = [];
             }
 
+            // Initialize with default values from panel-config to pass validation
             method.additionalFields.push({
                 name: '',
                 label: '',
                 type: 'string',
                 required: true,
-                placeholder: ''
+                placeholder: '',
+                useAs: 'credential',      // Default from panel-config
+                fillBy: 'user',           // Default from panel-config
+                encrypted: false,         // Default from panel-config
+                htmlType: 'text'          // Default from panel-config
             });
 
             renderWizardStep(2);
@@ -1013,7 +1031,14 @@ function initStep2Handlers() {
             if (method && method.additionalFields && method.additionalFields[fieldIndex]) {
                 const field = method.additionalFields[fieldIndex];
 
-                if (property === 'required') {
+                // Check if this property has a boolean dataType in panel config
+                const fieldConfig = panelConfig?.additionalFields?.[property];
+
+                if (fieldConfig && fieldConfig.dataType === 'boolean') {
+                    // Convert string "true"/"false" to boolean
+                    field[property] = this.value === 'true';
+                } else if (property === 'required') {
+                    // Legacy support for 'required' field
                     field[property] = this.value === 'true';
                 } else {
                     field[property] = this.value;

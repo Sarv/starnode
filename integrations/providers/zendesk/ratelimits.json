@@ -1,0 +1,8 @@
+{
+  "endpointLimits": [],
+  "retryStrategy": {
+    "maxRetries": 3,
+    "backoffMultiplier": 2,
+    "initialDelay": 1000
+  }
+}

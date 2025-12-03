@@ -9,7 +9,8 @@
       "priority": 1,
       "config": {
         "paramName": "api_secret",
-        "isDefault": true
+        "isDefault": true,
+        "tokenUrl": "https://api.convertkit.com/v3/"
       },
       "testConfig": {
         "endpoint": "https://api.convertkit.com/v3/account",
