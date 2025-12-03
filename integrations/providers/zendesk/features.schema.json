@@ -1,4 +1,80 @@
 {
   "version": "1.0.0",
-  "featureMappings": []
+  "featureMappings": [
+    {
+      "id": "mapping_1764795925263_5u1jbpqyu",
+      "featureTemplateId": "sync_change_in_contact",
+      "featureTemplateName": "Sync Change in Contact",
+      "fieldMappings": {
+        "api_end_point": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "sheet_id": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "testing_conditional": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "email_id": {
+          "enabled": true,
+          "customHandlers": {
+            "valueHandler": "email_1",
+            "validationHandler": "email_2",
+            "formatHandler": "email_3"
+          },
+          "adminValue": "{{email}}"
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [],
+      "customHandlers": {},
+      "status": "active",
+      "createdAt": "2025-12-03T21:05:25.263Z",
+      "updatedAt": "2025-12-03T21:05:25.263Z"
+    },
+    {
+      "id": "mapping_1764798079658_230f24xgk",
+      "featureTemplateId": "create_contact",
+      "featureTemplateName": "Create Contact",
+      "fieldMappings": {
+        "api": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "contact_data": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "auto_assign": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "default_owner": {
+          "enabled": true,
+          "customHandlers": null
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [],
+      "customHandlers": {},
+      "customHandlers_for_feature": {
+        "submitHandler": "feature_submit_handler"
+      },
+      "status": "active",
+      "createdAt": "2025-12-03T21:41:19.658Z",
+      "updatedAt": "2025-12-03T21:41:38.404Z"
+    }
+  ],
+  "lastUpdated": "2025-12-03T21:41:38.404Z"
 }

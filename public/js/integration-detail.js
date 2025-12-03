@@ -582,6 +582,9 @@ function selectFeatureTab(mappingId) {
 
 // Render feature content (2-column layout)
 function renderFeatureContent(mapping) {
+    // Render feature-level handlers (if any)
+    renderFeatureLevelHandlers(mapping);
+
     // Render template fields
     renderTemplateFields(mapping);
 
@@ -593,6 +596,66 @@ function renderFeatureContent(mapping) {
 }
 
 // Function renderFieldMappingsTab removed - replaced by renderFeatureContent()
+
+// Render feature-level custom handlers
+function renderFeatureLevelHandlers(mapping) {
+    // Check if feature has custom handlers
+    const handlers = mapping.customHandlers_for_feature;
+
+    // Find the fields column container (parent of all sections)
+    const fieldsColumn = document.querySelector('.fields-column');
+
+    if (!fieldsColumn) {
+        return; // Can't find where to insert
+    }
+
+    // Get the first section-block (template fields section)
+    const firstSection = fieldsColumn.querySelector('.section-block');
+
+    // Remove any existing feature handlers display
+    const existingHandlers = document.getElementById('featureLevelHandlersDisplay');
+    if (existingHandlers) {
+        existingHandlers.remove();
+    }
+
+    // If no handlers, don't display anything
+    if (!handlers || Object.keys(handlers).length === 0) {
+        return;
+    }
+
+    // Create handlers display element
+    const handlersDiv = document.createElement('div');
+    handlersDiv.id = 'featureLevelHandlersDisplay';
+    handlersDiv.style.cssText = 'background: #e3f2fd; border-left: 4px solid #2196f3; padding: 16px; margin-bottom: 24px; border-radius: 4px;';
+
+    let html = '<div style="display: flex; align-items: center; gap: 12px;">';
+    html += '<span style="font-size: 24px;">🚀</span>';
+    html += '<div style="flex: 1;">';
+    html += '<h4 style="margin: 0 0 8px 0; color: #1976d2; font-size: 14px; font-weight: 600;">Feature-Level Custom Handlers</h4>';
+    html += '<div style="display: flex; flex-wrap: wrap; gap: 12px;">';
+
+    Object.entries(handlers).forEach(([handlerType, handlerName]) => {
+        const displayName = handlerType.replace(/([A-Z])/g, ' $1').trim();
+        const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+
+        html += `<div style="background: white; padding: 8px 12px; border-radius: 4px; border: 1px solid #bbdefb;">`;
+        html += `<span style="font-size: 12px; color: #64b5f6; font-weight: 500;">${capitalizedName}:</span> `;
+        html += `<code style="font-size: 13px; color: #1565c0; font-weight: 600;">${handlerName}</code>`;
+        html += `</div>`;
+    });
+
+    html += '</div></div></div>';
+
+    handlersDiv.innerHTML = html;
+
+    // Insert before the first section (template fields)
+    if (firstSection) {
+        fieldsColumn.insertBefore(handlersDiv, firstSection);
+    } else {
+        // If no section found, prepend to column
+        fieldsColumn.prepend(handlersDiv);
+    }
+}
 
 // Render template fields (borderless table with full details)
 async function renderTemplateFields(mapping) {

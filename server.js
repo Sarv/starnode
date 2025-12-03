@@ -1538,7 +1538,7 @@ app.get('/api/integrations/:id/feature-mappings/:mappingId', (req, res) => {
 // Create new feature mapping
 app.post('/api/integrations/:id/feature-mappings', (req, res) => {
     try {
-        const { featureTemplateId, featureTemplateName, fieldMappings, apiConfig, extraFields, customHandlers, status } = req.body;
+        const { featureTemplateId, featureTemplateName, fieldMappings, apiConfig, extraFields, customHandlers, customHandlers_for_feature, status } = req.body;
 
         // Validation
         if (!featureTemplateId || !featureTemplateName) {
@@ -1576,6 +1576,7 @@ app.post('/api/integrations/:id/feature-mappings', (req, res) => {
             apiConfig: apiConfig || { method: 'GET', endpoint: '' },
             extraFields: extraFields || [],
             customHandlers: customHandlers || {},
+            customHandlers_for_feature: customHandlers_for_feature || null,
             status: status || 'active',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
@@ -1605,7 +1606,7 @@ app.post('/api/integrations/:id/feature-mappings', (req, res) => {
 // Update feature mapping
 app.put('/api/integrations/:id/feature-mappings/:mappingId', (req, res) => {
     try {
-        const { featureTemplateName, fieldMappings, apiConfig, extraFields, customHandlers, status } = req.body;
+        const { featureTemplateName, fieldMappings, apiConfig, extraFields, customHandlers, customHandlers_for_feature, status } = req.body;
 
         const featuresSchemaPath = path.join(__dirname, 'integrations', 'providers', req.params.id, 'features.schema.json');
 
@@ -1644,6 +1645,7 @@ app.put('/api/integrations/:id/feature-mappings/:mappingId', (req, res) => {
             apiConfig: apiConfig !== undefined ? apiConfig : existingMapping.apiConfig,
             extraFields: extraFields !== undefined ? extraFields : existingMapping.extraFields,
             customHandlers: customHandlers !== undefined ? customHandlers : existingMapping.customHandlers,
+            customHandlers_for_feature: customHandlers_for_feature !== undefined ? customHandlers_for_feature : existingMapping.customHandlers_for_feature,
             status: status !== undefined ? status : existingMapping.status,
             updatedAt: new Date().toISOString()
         };
@@ -1742,6 +1744,18 @@ app.get('/api/panel-config/custom-handlers', (req, res) => {
     } catch (error) {
         console.error('Error reading custom handlers config:', error);
         res.status(500).json({ error: 'Failed to load custom handlers configuration' });
+    }
+});
+
+// Get feature-level custom handlers configuration
+app.get('/api/panel-config/custom-handlers-for-feature', (req, res) => {
+    try {
+        const data = fs.readFileSync(path.join(__dirname, 'panel-config.json'), 'utf8');
+        const config = JSON.parse(data);
+        res.json(config.customHandlers_for_feature || {});
+    } catch (error) {
+        console.error('Error reading feature handlers config:', error);
+        res.status(500).json({ error: 'Failed to load feature handlers configuration' });
     }
 });
 

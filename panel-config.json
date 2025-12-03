@@ -376,5 +376,17 @@
       "category": "conditional",
       "order": 6
     }
+  },
+  "customHandlers_for_feature": {
+    "submitHandler": {
+      "id": "submitHandler",
+      "label": "Submit Handler",
+      "description": "Process entire feature data before API submission",
+      "placeholder": "e.g., transformPayload, validateAllFields, prepareRequest",
+      "icon": "🚀",
+      "helpText": "Function to process complete feature data before sending to API. Useful for payload transformation, final validation, or custom business logic.",
+      "category": "feature-submission",
+      "order": 1
+    }
   }
 }

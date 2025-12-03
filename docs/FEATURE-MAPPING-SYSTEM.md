@@ -270,6 +270,9 @@ Map a feature template to a specific integration with custom configuration.
   ],
 
   "customHandlers": {},
+  "customHandlers_for_feature": {
+    "submitHandler": "transformContactPayload"
+  },
   "status": "active",
   "createdAt": "2025-11-26T10:00:00.000Z",
   "updatedAt": "2025-11-26T10:00:00.000Z"
@@ -509,7 +512,123 @@ Admin creates mapping (no value set)
 
 Custom handlers allow executing JavaScript functions to transform, validate, or process field values.
 
-### Three Handler Types
+### Handler Scopes
+
+There are two types of custom handler scopes in the feature mapping system:
+
+#### 1. Field-Level Handlers
+
+**Location**: `fieldMappings[fieldKey].customHandlers`
+
+**Purpose**: Process individual field values
+
+**Available Handlers**:
+- `valueHandler`: Transform field value after entry
+- `validationHandler`: Validate field value before submission
+- `submitHandler`: Process field value before API submission
+- `formatHandler`: Format field value for display
+- `parseHandler`: Parse incoming data for field population
+- `conditionalHandler`: Control field visibility/enablement
+
+**Scope**: Applies only to the specific field
+
+**Example**:
+```json
+{
+  "fieldMappings": {
+    "email": {
+      "enabled": true,
+      "customHandlers": {
+        "valueHandler": "toLowerCase",
+        "validationHandler": "validateEmail"
+      }
+    }
+  }
+}
+```
+
+---
+
+#### 2. Feature-Level Handlers
+
+**Location**: `customHandlers_for_feature`
+
+**Purpose**: Process entire feature data before API submission
+
+**Available Handlers**:
+- `submitHandler`: Transform complete feature payload before API call
+
+**Scope**: Applies to all feature data collectively
+
+**When to Use**:
+- Transform entire request payload structure
+- Combine multiple field values
+- Apply feature-wide business logic
+- Prepare data for specific API requirements
+- Add metadata or authentication tokens
+
+**Example**:
+```json
+{
+  "featureTemplateId": "sync_contacts",
+  "fieldMappings": { ... },
+  "customHandlers_for_feature": {
+    "submitHandler": "transformContactPayload"
+  }
+}
+```
+
+**Function Signature**:
+```javascript
+// Feature-level submit handler receives entire feature data
+function transformContactPayload(featureData) {
+    return {
+        api_version: '2.0',
+        data: {
+            contact: {
+                email: featureData.email,
+                name: featureData.name,
+                metadata: {
+                    source: 'integration_platform',
+                    timestamp: Date.now()
+                }
+            }
+        }
+    };
+}
+```
+
+---
+
+### Execution Order
+
+```
+1. User/Admin enters field values
+   ↓
+2. Field-level valueHandler (per field)
+   ↓
+3. Field-level validationHandler (per field)
+   ↓
+4. Field-level submitHandler (per field)
+   ↓
+5. Feature-level submitHandler (entire payload)
+   ↓
+6. API Call
+```
+
+**Key Differences**:
+
+| Aspect | Field-Level | Feature-Level |
+|--------|------------|---------------|
+| Scope | Single field | Entire feature |
+| Location | `fieldMappings[field].customHandlers` | `customHandlers_for_feature` |
+| Input | Field value | Complete feature data |
+| Output | Transformed field value | Transformed payload |
+| Use Case | Field validation/formatting | Payload structuring |
+
+---
+
+### Three Field-Level Handler Types
 
 #### 1. Value Handler (Transform)
 

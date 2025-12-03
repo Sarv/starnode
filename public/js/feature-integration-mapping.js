@@ -18,6 +18,7 @@ let wizardState = {
         endpoint: ''
     },
     extraFields: [],
+    customHandlers_for_feature: null,
     isEditMode: false,
     editMappingId: null
 };
@@ -25,6 +26,7 @@ let wizardState = {
 let allFeatures = [];
 let currentCategory = 'all';
 let customHandlersConfig = null;
+let customHandlersConfig_for_feature = null;
 
 // Auth data for template variable validation
 let integrationAuthSchema = null;
@@ -75,6 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadCustomHandlers() {
     try {
+        // Load field-level custom handlers
         const response = await fetch('/api/panel-config/custom-handlers');
         if (response.ok) {
             customHandlersConfig = await response.json();
@@ -82,9 +85,19 @@ async function loadCustomHandlers() {
             console.error('Failed to load custom handlers config');
             customHandlersConfig = {}; // Fallback to empty object
         }
+
+        // Load feature-level custom handlers
+        const response2 = await fetch('/api/panel-config/custom-handlers-for-feature');
+        if (response2.ok) {
+            customHandlersConfig_for_feature = await response2.json();
+        } else {
+            console.warn('Failed to load feature-level handlers config');
+            customHandlersConfig_for_feature = {}; // Fallback to empty object
+        }
     } catch (error) {
         console.error('Error loading custom handlers:', error);
         customHandlersConfig = {}; // Fallback to empty object
+        customHandlersConfig_for_feature = {}; // Fallback to empty object
     }
 }
 
@@ -169,6 +182,7 @@ async function loadExistingMapping() {
             wizardState.fieldMappings = mapping.fieldMappings || {};
             wizardState.apiConfig = mapping.apiConfig || wizardState.apiConfig;
             wizardState.extraFields = mapping.extraFields || [];
+            wizardState.customHandlers_for_feature = mapping.customHandlers_for_feature || null;
 
             // Update UI elements
             document.getElementById('wizardTitle').textContent =
@@ -479,6 +493,87 @@ function filterFeaturesBySearch() {
 // STEP 2: CONFIGURE TEMPLATE FIELDS
 // =====================================================
 
+/**
+ * Render feature-level custom handlers (e.g., submitHandler)
+ * These handlers apply to the entire feature, not individual fields
+ */
+function renderFeatureHandlers() {
+    console.log('renderFeatureHandlers called');
+    console.log('customHandlersConfig_for_feature:', customHandlersConfig_for_feature);
+
+    if (!customHandlersConfig_for_feature) {
+        console.warn('customHandlersConfig_for_feature is null/undefined');
+        return '';
+    }
+
+    // Sort handlers by order
+    const sortedHandlers = Object.entries(customHandlersConfig_for_feature)
+        .sort(([, a], [, b]) => a.order - b.order);
+
+    console.log('sortedHandlers:', sortedHandlers);
+
+    let html = '<div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 24px;">';
+    html += '<h3 style="margin: 0 0 8px 0; color: #212529; font-size: 16px; font-weight: 600;">Feature-Level Custom Handlers</h3>';
+    html += '<p style="margin: 0 0 16px 0; color: #6c757d; font-size: 14px;">These handlers process the entire feature data before submission. Function names should match your custom handler implementations.</p>';
+    html += '<div style="display: grid; gap: 16px;">';
+
+    sortedHandlers.forEach(([key, config]) => {
+        const value = wizardState.customHandlers_for_feature?.[key] || '';
+        const inputId = `featureHandler_${key}`;
+
+        html += `
+            <div style="margin-bottom: 16px;">
+                <label for="${inputId}" style="display: block; margin-bottom: 8px; color: #495057; font-size: 14px; font-weight: 500;">
+                    ${config.icon ? `<span style="margin-right: 6px;">${config.icon}</span>` : ''}
+                    ${config.label}
+                </label>
+                <input type="text"
+                       id="${inputId}"
+                       style="width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px;"
+                       value="${escapeHtml(value)}"
+                       placeholder="${config.placeholder || ''}">
+                ${config.helpText ? `<small style="display: block; margin-top: 4px; color: #6c757d; font-size: 12px;">${config.helpText}</small>` : ''}
+            </div>
+        `;
+    });
+
+    html += '</div></div>';
+    return html;
+}
+
+/**
+ * Collect feature-level custom handler values from inputs
+ * Called before saving the mapping
+ * @returns {object|null} Handler object or null if no handlers set
+ */
+function collectFeatureHandlers() {
+    if (!customHandlersConfig_for_feature) {
+        return null;
+    }
+
+    const handlers = {};
+    const handlerRegex = /^[a-zA-Z0-9_]+$/;
+
+    for (const [key, config] of Object.entries(customHandlersConfig_for_feature)) {
+        const inputId = `featureHandler_${key}`;
+        const input = document.getElementById(inputId);
+
+        if (input) {
+            const value = input.value.trim();
+            if (value) {
+                // Validate handler function name
+                if (!handlerRegex.test(value)) {
+                    throw new Error(`${config.label}: Only alphanumeric characters and underscores allowed`);
+                }
+                handlers[key] = value;
+            }
+        }
+    }
+
+    // Return null if no handlers were set (to avoid empty object in DB)
+    return Object.keys(handlers).length > 0 ? handlers : null;
+}
+
 function renderTemplateFields() {
     const container = document.getElementById('templateFieldsList');
 
@@ -496,6 +591,7 @@ function renderTemplateFields() {
     }
 
     container.innerHTML = `
+        ${renderFeatureHandlers()}
         <div class="section-header">
             <h3>Template Fields (${fieldKeys.length})</h3>
         </div>
@@ -1733,6 +1829,17 @@ async function saveMapping() {
         saveBtn.disabled = true;
         saveBtn.textContent = 'Saving...';
 
+        // Collect and validate feature-level custom handlers
+        let featureHandlers = null;
+        try {
+            featureHandlers = collectFeatureHandlers();
+        } catch (error) {
+            showToast(error.message, 'error');
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Feature Mapping';
+            return;
+        }
+
         // Filter out disabled fields from fieldMappings
         const enabledFieldMappings = {};
         Object.keys(wizardState.fieldMappings).forEach(key => {
@@ -1747,6 +1854,7 @@ async function saveMapping() {
             fieldMappings: enabledFieldMappings,
             apiConfig: wizardState.apiConfig,
             extraFields: wizardState.extraFields,
+            customHandlers_for_feature: featureHandlers,
             status: 'active'
         };
 
