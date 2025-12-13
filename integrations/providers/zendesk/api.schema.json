@@ -1,0 +1,172 @@
+{
+  "apis": [
+    {
+      "id": "api_1734124800000_abc123xyz",
+      "featureId": "create_contact",
+      "fieldId": "primary_api",
+      "name": "Create Contact in Zendesk",
+      "method": "POST",
+      "url": "https://{{subdomain}}.zendesk.com/api/v2/users",
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "Bearer {{auth_token}}"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "user": {
+            "email": "{{email}}",
+            "name": "{{contact_data}}",
+            "role": "end-user",
+            "verified": true,
+            "custom_fields": {
+              "source": "{{source}}",
+              "auto_assign": "{{auto_assign}}",
+              "owner": "{{default_owner}}"
+            }
+          }
+        }
+      },
+      "response": {
+        "successPath": "user.id",
+        "errorPath": "error.message",
+        "dataFormat": "json"
+      },
+      "createdAt": "2025-12-13T12:00:00.000Z",
+      "updatedAt": "2025-12-13T12:00:00.000Z"
+    },
+    {
+      "id": "api_1734124900000_def456uvw",
+      "featureId": "sync_change_in_contact",
+      "fieldId": "sync_api",
+      "name": "Update Contact in Zendesk",
+      "method": "PUT",
+      "url": "{{api_end_point}}/users/{{user_id}}",
+      "headers": [
+        {
+          "key": "Authorization",
+          "value": "Bearer {{auth_token}}"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "X-Zendesk-Marketplace-App-ID",
+          "value": "{{app_id}}"
+        }
+      ],
+      "queryParams": [
+        {
+          "key": "include",
+          "value": "custom_fields,organizations"
+        }
+      ],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "user": {
+            "email": "{{email_id}}",
+            "updated_fields": {
+              "sheet_id": "{{sheet_id}}",
+              "conditional_field": "{{testing_conditional}}"
+            }
+          }
+        }
+      },
+      "response": {
+        "successPath": "user.updated_at",
+        "errorPath": "errors[0].detail",
+        "dataFormat": "json"
+      },
+      "createdAt": "2025-12-13T12:05:00.000Z",
+      "updatedAt": "2025-12-13T12:05:00.000Z"
+    },
+    {
+      "id": "api_1734125000000_ghi789rst",
+      "featureId": "create_contact",
+      "fieldId": "webhook_notification",
+      "name": "Send Webhook Notification",
+      "method": "POST",
+      "url": "{{webhook_url}}/notify",
+      "headers": [
+        {
+          "key": "X-Webhook-Secret",
+          "value": "{{webhook_secret}}"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "event": "contact_created",
+          "timestamp": "{{timestamp}}",
+          "data": {
+            "contact_id": "{{contact_id}}",
+            "email": "{{email}}",
+            "name": "{{contact_data}}"
+          }
+        }
+      },
+      "response": {
+        "successPath": "success",
+        "errorPath": "error",
+        "dataFormat": "json"
+      },
+      "createdAt": "2025-12-13T12:10:00.000Z",
+      "updatedAt": "2025-12-13T12:10:00.000Z"
+    },
+    {
+      "id": "api_1765651418548_ehy810yro",
+      "featureId": "create_ticket",
+      "fieldId": "api",
+      "name": "api API",
+      "method": "POST",
+      "url": "https://{{sub_domain}}.zendesk.com/api/v2/tickets.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "ticket": {
+            "comment": {
+              "body": "Customer needs help with password reset"
+            },
+            "subject": "Password Reset Request",
+            "priority": "normal",
+            "status": "open"
+          }
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json"
+      },
+      "createdAt": "2025-12-13T18:43:38.548Z",
+      "updatedAt": "2025-12-13T18:43:38.548Z"
+    }
+  ],
+  "version": "1.0.0",
+  "lastUpdated": "2025-12-13T12:10:00.000Z"
+}

@@ -185,6 +185,161 @@ class AuthenticationManager {
 
         return true;
     }
+
+    /**
+     * Execute an API request with authentication and variable replacement
+     * @param {Object} apiConfig - API configuration object
+     * @param {string} apiConfig.url - Request URL (may contain {{variables}})
+     * @param {string} apiConfig.method - HTTP method
+     * @param {Object} apiConfig.headers - Request headers (may contain {{variables}})
+     * @param {Object|string} apiConfig.body - Request body (may contain {{variables}})
+     * @param {Object} apiConfig.params - Query parameters (may contain {{variables}})
+     * @param {Object} variableValues - Values to replace {{variables}} with
+     * @param {Object} options - Additional options
+     * @returns {Promise<Object>} API response with detailed information
+     */
+    async executeApiRequest(apiConfig, variableValues = {}, options = {}) {
+        try {
+            const HttpClient = require('./httpClient');
+            const { replaceDynamicVariables } = require('../dynamicVariables');
+
+            console.log('[AuthManager] Received variableValues:', variableValues);
+            console.log('[AuthManager] Original URL:', apiConfig.url);
+
+            // Build authentication headers
+            const authHeaders = await this.buildAuthHeaders();
+
+            // Replace variables in URL
+            let processedUrl = replaceDynamicVariables(apiConfig.url, variableValues);
+
+            // Ensure URL has protocol
+            if (!processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
+                processedUrl = 'https://' + processedUrl;
+            }
+
+            console.log('[AuthManager] Processed URL after replacement:', processedUrl);
+
+            // Replace variables in headers and merge with auth headers
+            let processedHeaders = { ...authHeaders };
+            console.log('[AuthManager] Auth headers:', authHeaders);
+            console.log('[AuthManager] API config headers:', apiConfig.headers);
+
+            if (apiConfig.headers) {
+                // Handle both array format [{ key, value }] and object format
+                if (Array.isArray(apiConfig.headers)) {
+                    apiConfig.headers.forEach(header => {
+                        if (header.key && header.value) {
+                            const value = typeof header.value === 'string'
+                                ? replaceDynamicVariables(header.value, variableValues)
+                                : header.value;
+                            processedHeaders[header.key] = value;
+                        }
+                    });
+                } else {
+                    Object.entries(apiConfig.headers).forEach(([key, value]) => {
+                        if (typeof value === 'string') {
+                            processedHeaders[key] = replaceDynamicVariables(value, variableValues);
+                        } else {
+                            processedHeaders[key] = value;
+                        }
+                    });
+                }
+            }
+            console.log('[AuthManager] Processed headers:', processedHeaders);
+
+            // Replace variables in body
+            let processedBody = null;
+            if (apiConfig.body) {
+                let bodyToProcess = apiConfig.body;
+
+                // Unwrap if body has a 'json' key wrapper
+                if (bodyToProcess.json) {
+                    bodyToProcess = bodyToProcess.json;
+                }
+
+                if (typeof bodyToProcess === 'string') {
+                    processedBody = replaceDynamicVariables(bodyToProcess, variableValues);
+                    // Try to parse as JSON if it looks like JSON
+                    if (processedBody.trim().startsWith('{') || processedBody.trim().startsWith('[')) {
+                        try {
+                            processedBody = JSON.parse(processedBody);
+                        } catch (e) {
+                            // Keep as string if not valid JSON
+                        }
+                    }
+                } else if (typeof bodyToProcess === 'object') {
+                    // Deep replace in object
+                    processedBody = JSON.parse(
+                        replaceDynamicVariables(JSON.stringify(bodyToProcess), variableValues)
+                    );
+                }
+            }
+
+            // Replace variables in query params and add to URL
+            let processedParams = {};
+            if (apiConfig.params) {
+                Object.entries(apiConfig.params).forEach(([key, value]) => {
+                    if (typeof value === 'string') {
+                        processedParams[key] = replaceDynamicVariables(value, variableValues);
+                    } else {
+                        processedParams[key] = value;
+                    }
+                });
+            }
+
+            // Add query params to URL if present
+            if (Object.keys(processedParams).length > 0) {
+                const urlObj = new URL(processedUrl.startsWith('http') ? processedUrl : 'https://' + processedUrl);
+                Object.entries(processedParams).forEach(([key, value]) => {
+                    urlObj.searchParams.append(key, value);
+                });
+                processedUrl = urlObj.toString();
+            }
+
+            // Make the request using HttpClient
+            const startTime = Date.now();
+            const response = await HttpClient.request(processedUrl, {
+                method: apiConfig.method || 'GET',
+                headers: processedHeaders,
+                body: processedBody,
+                timeout: options.timeout || 30000
+            });
+            const responseTime = Date.now() - startTime;
+
+            // Format the response
+            return {
+                success: response.statusCode >= 200 && response.statusCode < 300,
+                status: response.statusCode,
+                statusText: response.statusMessage,
+                headers: response.headers,
+                data: response.json || response.body,
+                responseTime: responseTime,
+                request: {
+                    url: processedUrl,
+                    method: apiConfig.method || 'GET',
+                    headers: processedHeaders,
+                    params: processedParams,
+                    body: processedBody
+                }
+            };
+
+        } catch (error) {
+            const ErrorHandler = require('./helpers/errorHandler');
+
+            // Return error information
+            return {
+                success: false,
+                error: ErrorHandler.formatError(error).message,
+                request: {
+                    url: apiConfig.url,
+                    method: apiConfig.method,
+                    headers: apiConfig.headers,
+                    params: apiConfig.params || {},
+                    body: apiConfig.body
+                }
+            };
+        }
+    }
 }
 
 module.exports = AuthenticationManager;

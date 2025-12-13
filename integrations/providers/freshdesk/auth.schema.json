@@ -26,6 +26,17 @@
           "useAs": "credential",
           "fillBy": "user",
           "encrypted": false
+        },
+        {
+          "name": "my_field",
+          "label": "my Field",
+          "type": "string",
+          "required": true,
+          "placeholder": "",
+          "useAs": "credential",
+          "fillBy": "user",
+          "encrypted": false,
+          "htmlType": "text"
         }
       ]
     }

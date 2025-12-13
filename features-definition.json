@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-12-03T10:15:47.471Z",
+  "lastUpdated": "2025-12-13T18:54:16.867Z",
   "categories": {
     "contacts": {
       "label": "Contacts",
@@ -255,7 +255,7 @@
         }
       },
       "createdAt": "2025-11-23T16:05:23.852Z",
-      "updatedAt": "2025-11-26T05:38:07.122Z"
+      "updatedAt": "2025-12-13T09:20:29.436Z"
     },
     "send_report": {
       "id": "send_report",
@@ -343,6 +343,63 @@
       },
       "createdAt": "2025-11-27T12:30:42.298Z",
       "updatedAt": "2025-12-03T10:15:47.471Z"
+    },
+    "create_contact_new": {
+      "id": "create_contact_new",
+      "name": "Create Contact New",
+      "description": "New api for freshdesk as of now to create contact",
+      "category": "contacts",
+      "fields": {
+        "api": {
+          "type": "api",
+          "label": "API URL",
+          "required": true,
+          "description": "API detail of the feature",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin"
+        }
+      },
+      "createdAt": "2025-12-13T13:30:25.932Z",
+      "updatedAt": "2025-12-13T13:31:55.239Z"
+    },
+    "create_ticket": {
+      "id": "create_ticket",
+      "name": "Create  Ticket",
+      "description": "Create Ticket using CRM",
+      "category": "leads",
+      "fields": {
+        "api": {
+          "type": "api",
+          "label": "API URL",
+          "required": true,
+          "description": "",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin"
+        }
+      },
+      "createdAt": "2025-12-13T18:42:06.115Z",
+      "updatedAt": "2025-12-13T18:42:06.115Z"
+    },
+    "get_conversation": {
+      "id": "get_conversation",
+      "name": "Get Conversations Slack",
+      "description": "Get Conversations from Slack",
+      "category": "tasks",
+      "fields": {
+        "api": {
+          "type": "api",
+          "label": "API URL",
+          "required": true,
+          "description": "",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin"
+        }
+      },
+      "createdAt": "2025-12-13T18:54:16.867Z",
+      "updatedAt": "2025-12-13T18:54:16.867Z"
     }
   }
 }

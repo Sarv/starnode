@@ -464,6 +464,8 @@ async function loadFeatureMappings() {
 // Store all mappings globally for selection
 let allMappings = [];
 let selectedMappingId = null;
+let selectedFieldKey = null;
+let selectedFieldType = null;
 
 /**
  * Render handler table headers dynamically
@@ -626,10 +628,9 @@ function renderFeatureLevelHandlers(mapping) {
     // Create handlers display element
     const handlersDiv = document.createElement('div');
     handlersDiv.id = 'featureLevelHandlersDisplay';
-    handlersDiv.style.cssText = 'background: #e3f2fd; border-left: 4px solid #2196f3; padding: 16px; margin-bottom: 24px; border-radius: 4px;';
+    handlersDiv.style.cssText = 'background: #f8fafc; border-left: 4px solid #377cf4; padding: 16px; margin-bottom: 24px; border-radius: 4px;';
 
     let html = '<div style="display: flex; align-items: center; gap: 12px;">';
-    html += '<span style="font-size: 24px;">🚀</span>';
     html += '<div style="flex: 1;">';
     html += '<h4 style="margin: 0 0 8px 0; color: #1976d2; font-size: 14px; font-weight: 600;">Feature-Level Custom Handlers</h4>';
     html += '<div style="display: flex; flex-wrap: wrap; gap: 12px;">';
@@ -638,9 +639,9 @@ function renderFeatureLevelHandlers(mapping) {
         const displayName = handlerType.replace(/([A-Z])/g, ' $1').trim();
         const capitalizedName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
 
-        html += `<div style="background: white; padding: 8px 12px; border-radius: 4px; border: 1px solid #bbdefb;">`;
-        html += `<span style="font-size: 12px; color: #64b5f6; font-weight: 500;">${capitalizedName}:</span> `;
-        html += `<code style="font-size: 13px; color: #1565c0; font-weight: 600;">${handlerName}</code>`;
+        html += `<div style="background: white; padding: 8px 12px; border-radius: 4px; border: 1px solid #e2e8f0;">`;
+        html += `<span style="font-size: 12px; color: #71717a; font-weight: 500;">${capitalizedName}:</span> `;
+        html += `<code style="font-size: 13px; color: #71717a; font-weight: 600;">${handlerName}</code>`;
         html += `</div>`;
     });
 
@@ -806,6 +807,46 @@ function renderExtraFields(mapping) {
     }).join('');
 }
 
+// Navigate to API configuration page for selected mapping
+function configureApiForSelectedMapping() {
+    console.log('Configure API clicked');
+    console.log('integrationData:', integrationData);
+    console.log('integrationId:', integrationId);
+    console.log('selectedMappingId:', selectedMappingId);
+    console.log('selectedFieldKey:', selectedFieldKey);
+    console.log('selectedFieldType:', selectedFieldType);
+    console.log('allMappings:', allMappings);
+
+    if (!integrationData || !selectedMappingId) {
+        showToast('Please select a feature mapping first', 'error');
+        return;
+    }
+
+    if (!selectedFieldKey) {
+        showToast('Please select a field first by clicking on it', 'error');
+        return;
+    }
+
+    const mapping = allMappings.find(m => m.id === selectedMappingId);
+    if (!mapping) {
+        showToast('Feature mapping not found', 'error');
+        return;
+    }
+
+    console.log('Found mapping:', mapping);
+
+    // Navigate to API configuration page with parameters including field info
+    const params = new URLSearchParams({
+        integrationId: integrationId || integrationData.id,
+        featureId: mapping.featureTemplateId,
+        featureName: mapping.featureTemplateName,
+        fieldId: selectedFieldKey 
+    });
+
+    console.log('Navigating to:', `/api-configuration?${params.toString()}`);
+    window.location.href = `/api-configuration?${params.toString()}`;
+}
+
 // Render API config panel (right column)
 function renderApiConfigPanel(mapping) {
     const container = document.getElementById('apiConfigContent');
@@ -843,6 +884,10 @@ function renderApiConfigPanel(mapping) {
 // Show API Settings for a field in the right panel
 function showApiSettings(fieldKey, fieldType) {
     const container = document.getElementById('apiConfigContent');
+
+    // Store the selected field information
+    selectedFieldKey = fieldKey;
+    selectedFieldType = fieldType;
 
     // Find the currently selected mapping
     const mapping = allMappings.find(m => m.id === selectedMappingId);

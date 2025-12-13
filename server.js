@@ -42,6 +42,11 @@ app.use('/js', express.static(path.join(__dirname, 'public/js')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Serve features-definition.json file
+app.get('/features-definition.json', (req, res) => {
+    res.sendFile(path.join(__dirname, 'features-definition.json'));
+});
+
 // Initialize Elasticsearch on startup
 elasticsearch.initializeIndexes()
     .then(() => console.log('✅ Elasticsearch indexes ready'))
@@ -446,7 +451,19 @@ app.get('/api/integrations/:id/ratelimits', (req, res) => {
 app.get('/api/users', async (req, res) => {
     try {
         const users = await elasticsearch.getAllUsers();
-        res.json({ users });
+
+        // Format users to add 'id' field for frontend compatibility
+        const formattedUsers = users.map(user => ({
+            id: user.userId,  // Map userId to id for dropdown
+            userId: user.userId,  // Keep original userId too
+            name: user.name || user.email || user.userId,
+            email: user.email,
+            status: user.status || 'active',
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+        }));
+
+        res.json({ users: formattedUsers });
     } catch (error) {
         console.warn('⚠️  Elasticsearch unavailable, returning mock users:', error.message);
 
@@ -1756,6 +1773,454 @@ app.get('/api/panel-config/custom-handlers-for-feature', (req, res) => {
     } catch (error) {
         console.error('Error reading feature handlers config:', error);
         res.status(500).json({ error: 'Failed to load feature handlers configuration' });
+    }
+});
+
+// ==============================================
+// API Configuration Routes
+// ==============================================
+
+// Render API configuration page
+app.get('/api-configuration', (req, res) => {
+    res.render('api-configuration', {
+        pageTitle: 'API Configuration',
+        activePage: 'integrations',
+        extraCSS: ['/css/api-configuration.css'],
+        showMobileMenu: true,
+        showSearch: false,
+        integrationId: req.query.integrationId,
+        featureId: req.query.featureId,
+        featureName: req.query.featureName || 'Feature',
+        fieldId: req.query.fieldId,
+        fieldType: req.query.fieldType || 'template'
+    });
+});
+
+// Get all APIs for a feature
+app.get('/api/integrations/:integrationId/features/:featureId/apis', (req, res) => {
+    try {
+        const { integrationId, featureId } = req.params;
+        const integrationDir = path.join(__dirname, 'integrations/providers', integrationId);
+        const apiSchemaPath = path.join(integrationDir, 'api.schema.json');
+
+        // Check if api.schema.json exists
+        if (!fs.existsSync(apiSchemaPath)) {
+            res.json([]); // Return empty array if file doesn't exist
+            return;
+        }
+
+        const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+
+        // Filter APIs for the specific feature
+        const featureApis = (apiSchema.apis || []).filter(api => api.featureId === featureId);
+
+        res.json(featureApis);
+    } catch (error) {
+        console.error('Error loading APIs:', error);
+        res.status(500).json({ error: 'Failed to load APIs' });
+    }
+});
+
+// Get specific API configuration
+app.get('/api/integrations/:integrationId/features/:featureId/fields/:fieldId/api-config', (req, res) => {
+    try {
+        const { integrationId, featureId, fieldId } = req.params;
+        const integrationDir = path.join(__dirname, 'integrations/providers', integrationId);
+        const apiSchemaPath = path.join(integrationDir, 'api.schema.json');
+
+        if (!fs.existsSync(apiSchemaPath)) {
+            res.status(404).json({ error: 'API configuration not found' });
+            return;
+        }
+
+        const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+
+        // Find the specific API
+        const api = (apiSchema.apis || []).find(
+            a => a.featureId === featureId && a.fieldId === fieldId
+        );
+
+        if (!api) {
+            res.status(404).json({ error: 'API not found' });
+            return;
+        }
+
+        res.json(api);
+    } catch (error) {
+        console.error('Error loading API config:', error);
+        res.status(500).json({ error: 'Failed to load API configuration' });
+    }
+});
+
+// Create new API configuration
+app.post('/api/integrations/:integrationId/features/:featureId/fields/:fieldId/api-config', (req, res) => {
+    try {
+        const { integrationId, featureId, fieldId } = req.params;
+        const integrationDir = path.join(__dirname, 'integrations/providers', integrationId);
+        const apiSchemaPath = path.join(integrationDir, 'api.schema.json');
+
+        // Create integration directory if it doesn't exist
+        if (!fs.existsSync(integrationDir)) {
+            fs.mkdirSync(integrationDir, { recursive: true });
+        }
+
+        // Load or create api.schema.json
+        let apiSchema = { apis: [] };
+        if (fs.existsSync(apiSchemaPath)) {
+            apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+        }
+
+        // Check if API already exists for this field
+        const existingIndex = apiSchema.apis.findIndex(
+            a => a.featureId === featureId && a.fieldId === fieldId
+        );
+
+        if (existingIndex !== -1) {
+            res.status(400).json({ error: 'API already exists for this field' });
+            return;
+        }
+
+        // Create new API configuration
+        const newApi = {
+            id: `api_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            featureId,
+            fieldId,
+            ...req.body,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        apiSchema.apis.push(newApi);
+
+        // Save to file
+        fs.writeFileSync(apiSchemaPath, JSON.stringify(apiSchema, null, 2));
+
+        res.json(newApi);
+    } catch (error) {
+        console.error('Error creating API config:', error);
+        res.status(500).json({ error: 'Failed to create API configuration' });
+    }
+});
+
+// Update API configuration
+app.put('/api/integrations/:integrationId/features/:featureId/fields/:fieldId/api-config', (req, res) => {
+    try {
+        const { integrationId, featureId, fieldId } = req.params;
+        const integrationDir = path.join(__dirname, 'integrations/providers', integrationId);
+        const apiSchemaPath = path.join(integrationDir, 'api.schema.json');
+
+        if (!fs.existsSync(apiSchemaPath)) {
+            res.status(404).json({ error: 'API schema not found' });
+            return;
+        }
+
+        const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+
+        // Find the API to update
+        const apiIndex = apiSchema.apis.findIndex(
+            a => a.featureId === featureId && a.fieldId === fieldId
+        );
+
+        if (apiIndex === -1) {
+            res.status(404).json({ error: 'API not found' });
+            return;
+        }
+
+        // Update API configuration
+        apiSchema.apis[apiIndex] = {
+            ...apiSchema.apis[apiIndex],
+            ...req.body,
+            featureId, // Ensure these don't get overwritten
+            fieldId,
+            updatedAt: new Date().toISOString()
+        };
+
+        // Save to file
+        fs.writeFileSync(apiSchemaPath, JSON.stringify(apiSchema, null, 2));
+
+        res.json(apiSchema.apis[apiIndex]);
+    } catch (error) {
+        console.error('Error updating API config:', error);
+        res.status(500).json({ error: 'Failed to update API configuration' });
+    }
+});
+
+// Delete API configuration
+app.delete('/api/integrations/:integrationId/features/:featureId/fields/:fieldId/api-config', (req, res) => {
+    try {
+        const { integrationId, featureId, fieldId } = req.params;
+        const integrationDir = path.join(__dirname, 'integrations/providers', integrationId);
+        const apiSchemaPath = path.join(integrationDir, 'api.schema.json');
+
+        if (!fs.existsSync(apiSchemaPath)) {
+            res.status(404).json({ error: 'API schema not found' });
+            return;
+        }
+
+        const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+
+        // Find and remove the API
+        const apiIndex = apiSchema.apis.findIndex(
+            a => a.featureId === featureId && a.fieldId === fieldId
+        );
+
+        if (apiIndex === -1) {
+            res.status(404).json({ error: 'API not found' });
+            return;
+        }
+
+        apiSchema.apis.splice(apiIndex, 1);
+
+        // Save to file
+        fs.writeFileSync(apiSchemaPath, JSON.stringify(apiSchema, null, 2));
+
+        res.json({ success: true, message: 'API configuration deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting API config:', error);
+        res.status(500).json({ error: 'Failed to delete API configuration' });
+    }
+});
+
+// Duplicate endpoint removed - using the one at line 451
+
+// Get user connections for integration
+app.get('/api/integrations/:integrationId/user-connections', async (req, res) => {
+    try {
+        const { integrationId } = req.params;
+        const { userId } = req.query;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+
+        const elasticsearch = require('./services/elasticsearch');
+
+        // Get all connections for the user
+        const allConnections = await elasticsearch.getUserConnections(userId);
+
+        // Filter by integration
+        const connections = allConnections.filter(conn => conn.integrationId === integrationId);
+
+        // Format the connections for the frontend
+        const formattedConnections = connections.map(conn => ({
+            id: conn.connectionId,
+            name: conn.connectionName,
+            authMethod: conn.authMethodLabel || conn.authMethodName,
+            status: conn.status || 'active',
+            createdAt: conn.createdAt,
+            configuredVariables: conn.configuredVariables || {}  // Include configured variables
+        }));
+
+        res.json({ connections: formattedConnections });
+
+    } catch (error) {
+        console.error('Error fetching user connections:', error);
+        res.status(500).json({ error: 'Failed to fetch user connections' });
+    }
+});
+
+// Test API configuration with authentication
+app.post('/api/integrations/:integrationId/features/:featureId/fields/:fieldId/test-api', async (req, res) => {
+    try {
+        const { integrationId, featureId, fieldId } = req.params;
+        const { userId, connectionId, variableValues = {} } = req.body;
+
+        // Load the saved API configuration from Elasticsearch
+        const elasticsearch = require('./services/elasticsearch');
+        const featureConfigId = `${integrationId}_${featureId}_${fieldId}`;
+
+        let apiConfig;
+        try {
+            const savedConfig = await elasticsearch.client.get({
+                index: elasticsearch.INDEXES.FEATURE_CONFIGS,
+                id: featureConfigId
+            });
+            apiConfig = savedConfig._source.apiConfig;
+            console.log('Loaded saved API config from Elasticsearch:', JSON.stringify(apiConfig, null, 2));
+        } catch (error) {
+            // If no saved config found, fall back to template
+            console.log('No saved config found, using template. Error:', error.message);
+            const apiSchemaPath = path.join(__dirname, 'integrations/providers', integrationId, 'api.schema.json');
+            if (!fs.existsSync(apiSchemaPath)) {
+                return res.status(404).json({ error: 'API configuration not found' });
+            }
+
+            const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+            apiConfig = apiSchema.apis.find(a => a.featureId === featureId && a.fieldId === fieldId);
+
+            if (!apiConfig) {
+                return res.status(404).json({ error: 'API configuration not found for this field' });
+            }
+            console.log('Loaded API config from template:', JSON.stringify(apiConfig, null, 2));
+        }
+
+        // Get user's connection for authentication
+        const connection = await elasticsearch.getConnectionById(connectionId);
+
+        if (!connection) {
+            return res.status(404).json({ error: 'User connection not found' });
+        }
+
+        // Decrypt credentials if they're encrypted
+        const encryptionManager = require('./services/encryption');
+        if (connection.credentials && connection.credentials.encrypted) {
+            connection.credentials = encryptionManager.decrypt(connection.credentials.encrypted);
+        } else if (connection.credentials && connection.credentials.decrypted) {
+            connection.credentials = connection.credentials.decrypted;
+        }
+
+        console.log('Decrypted credentials:', connection.credentials);
+
+        // Load authentication schema
+        const authSchemaPath = path.join(__dirname, 'integrations/providers', integrationId, 'auth.schema.json');
+        if (!fs.existsSync(authSchemaPath)) {
+            return res.status(404).json({ error: 'Authentication schema not found' });
+        }
+
+        const authSchema = JSON.parse(fs.readFileSync(authSchemaPath, 'utf8'));
+        const authMethod = authSchema.authMethods.find(m => m.id === connection.authMethodId);
+
+        if (!authMethod) {
+            return res.status(404).json({ error: 'Authentication method not found' });
+        }
+
+        // Get auth type definition
+        const authTypes = JSON.parse(fs.readFileSync(path.join(__dirname, 'auth-types-definition.json'), 'utf8'));
+        const authType = authTypes.authTypes[authMethod.authType];
+
+        if (!authType) {
+            return res.status(404).json({ error: 'Authentication type not found' });
+        }
+
+        // Create AuthenticationManager instance
+        const AuthenticationManager = require('./utils/AuthenticationManager/AuthenticationManager');
+        const authManager = new AuthenticationManager(connection, authType, authMethod);
+
+        // Merge configured variables from connection with provided variable values
+        console.log('Connection configuredVariables:', connection.configuredVariables);
+        console.log('Provided variableValues:', variableValues);
+        const allVariables = {
+            ...connection.configuredVariables,  // Pre-configured variables from connection
+            ...variableValues                    // Variables provided in the test request (override)
+        };
+        console.log('Merged allVariables:', allVariables);
+
+        // Convert queryParams array to params object
+        let params = apiConfig.params || {};
+        if (apiConfig.queryParams && Array.isArray(apiConfig.queryParams)) {
+            params = {};
+            apiConfig.queryParams.forEach(param => {
+                if (param.key && param.value !== undefined) {
+                    params[param.key] = param.value;
+                }
+            });
+        }
+
+        // Prepare API request config
+        const requestConfig = {
+            url: apiConfig.url,
+            method: apiConfig.method || 'GET',
+            headers: apiConfig.headers || {},
+            params: params,
+            body: apiConfig.body || null
+        };
+        console.log('Request config before replacement:', requestConfig);
+
+        // Execute the API request with authentication and variable replacement
+        const response = await authManager.executeApiRequest(requestConfig, allVariables);
+        console.log('Response from authManager:', response);
+
+        // Return the response
+        res.json({
+            success: response.success,
+            response: {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers,
+                data: response.data,
+                responseTime: response.responseTime
+            },
+            request: response.request
+        });
+
+    } catch (error) {
+        console.error('Error testing API:', error);
+        res.status(500).json({
+            error: 'Failed to test API',
+            message: error.message,
+            details: error.stack
+        });
+    }
+});
+
+// Get available variables for API configuration
+app.get('/api/integrations/:integrationId/available-variables', (req, res) => {
+    try {
+        const { integrationId } = req.params;
+        const { featureId } = req.query;
+
+        const variables = {
+            featureFields: [],
+            authVariables: [],
+            additionalFields: [],
+            extraFields: []
+        };
+
+        // Load authentication fields from auth.schema.json
+        const authSchemaPath = path.join(__dirname, 'integrations/providers', integrationId, 'auth.schema.json');
+        if (fs.existsSync(authSchemaPath)) {
+            const authSchema = JSON.parse(fs.readFileSync(authSchemaPath, 'utf8'));
+
+            // Add authentication fields from all auth methods
+            if (authSchema.authMethods && authSchema.authMethods.length > 0) {
+                authSchema.authMethods.forEach(authMethod => {
+                    // Add additional fields from auth method
+                    if (authMethod.additionalFields) {
+                        authMethod.additionalFields.forEach(field => {
+                            variables.authVariables.push({
+                                _id: field.name,
+                                label: field.label || field.name
+                            });
+                        });
+                    }
+                });
+            }
+        }
+
+        // Load feature fields if featureId is provided
+        if (featureId) {
+            const featuresSchemaPath = path.join(__dirname, 'integrations/providers', integrationId, 'features.schema.json');
+            if (fs.existsSync(featuresSchemaPath)) {
+                const schema = JSON.parse(fs.readFileSync(featuresSchemaPath, 'utf8'));
+                const mapping = schema.featureMappings.find(m => m.featureTemplateId === featureId);
+
+                if (mapping && mapping.fieldMappings) {
+                    Object.keys(mapping.fieldMappings).forEach(fieldKey => {
+                        if (mapping.fieldMappings[fieldKey].enabled) {
+                            variables.featureFields.push({
+                                _id: fieldKey,
+                                label: fieldKey
+                            });
+                        }
+                    });
+                }
+
+                // Add extra fields
+                if (mapping && mapping.extraFields) {
+                    mapping.extraFields.forEach(field => {
+                        variables.extraFields.push({
+                            _id: field.fieldKey || field.name,
+                            label: field.label || field.fieldKey || field.name
+                        });
+                    });
+                }
+            }
+        }
+
+        res.json(variables);
+    } catch (error) {
+        console.error('Error loading available variables:', error);
+        res.status(500).json({ error: 'Failed to load available variables' });
     }
 });
 

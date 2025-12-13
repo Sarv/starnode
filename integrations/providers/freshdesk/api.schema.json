@@ -1,0 +1,41 @@
+{
+  "apis": [
+    {
+      "id": "api_1765636738459_f4mhqtnp1",
+      "featureId": "create_contact_new",
+      "fieldId": "api",
+      "name": "api API",
+      "method": "POST",
+      "url": "{{sub_domain}}.freshdesk.com/api/v2/contacts",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "name": "Abhimanyu",
+          "email": "abcde@example.com",
+          "phone": "+1234567890",
+          "mobile": "+1234567890",
+          "job_title": "Software Engineer",
+          "address": "123 Main St, City, State 12345",
+          "description": "Primary contact for Company XYZ my subdomain is {{sub_domain}}",
+          "tags": [
+            "vip",
+            "enterprise"
+          ]
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json"
+      },
+      "updatedAt": "2025-12-13T19:44:41.647Z"
+    }
+  ]
+}

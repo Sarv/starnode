@@ -76,31 +76,16 @@
         },
         {
           "fieldKey": "sheet_id",
-          "label": "Demo",
-          "description": "Demo",
+          "label": "DemoLabel",
+          "description": "Demo description",
           "type": "static",
           "fieldType": "string",
-          "htmlType": "checkbox",
+          "htmlType": "text",
           "fillBy": "Admin",
-          "adminValue": [
-            "c"
-          ],
+          "adminValue": "c",
           "required": true,
           "default": null,
-          "possibleValues": [
-            {
-              "id": "a",
-              "label": "Apple"
-            },
-            {
-              "id": "b",
-              "label": "Boy"
-            },
-            {
-              "id": "c",
-              "label": "Cat"
-            }
-          ],
+          "possibleValues": [],
           "customHandlers": {
             "valueHandler": "formula_1",
             "validationHandler": "formula_2",
@@ -129,7 +114,8 @@
       "customHandlers": {},
       "status": "active",
       "createdAt": "2025-11-25T20:02:15.627Z",
-      "updatedAt": "2025-11-26T15:20:32.999Z"
+      "updatedAt": "2025-12-13T11:34:16.228Z",
+      "customHandlers_for_feature": null
     },
     {
       "id": "mapping_1764149357915_hq1eiatut",
@@ -273,7 +259,29 @@
       "status": "active",
       "createdAt": "2025-11-27T13:01:59.065Z",
       "updatedAt": "2025-11-27T13:13:19.627Z"
+    },
+    {
+      "id": "mapping_1765632751669_gw90ilva5",
+      "featureTemplateId": "create_contact_new",
+      "featureTemplateName": "Create Contact New",
+      "fieldMappings": {
+        "api": {
+          "enabled": true,
+          "customHandlers": null
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-13T13:32:31.670Z",
+      "updatedAt": "2025-12-13T13:32:31.670Z"
     }
   ],
-  "lastUpdated": "2025-11-27T13:13:19.627Z"
+  "lastUpdated": "2025-12-13T13:32:31.670Z"
 }

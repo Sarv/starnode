@@ -74,7 +74,29 @@
       "status": "active",
       "createdAt": "2025-12-03T21:41:19.658Z",
       "updatedAt": "2025-12-03T21:41:38.404Z"
+    },
+    {
+      "id": "mapping_1765651353654_1zntopla2",
+      "featureTemplateId": "create_ticket",
+      "featureTemplateName": "Create  Ticket",
+      "fieldMappings": {
+        "api": {
+          "enabled": true,
+          "customHandlers": null
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-13T18:42:33.654Z",
+      "updatedAt": "2025-12-13T18:42:33.654Z"
     }
   ],
-  "lastUpdated": "2025-12-03T21:41:38.404Z"
+  "lastUpdated": "2025-12-13T18:42:33.654Z"
 }

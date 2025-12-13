@@ -1,4 +1,28 @@
 {
   "version": "1.0.0",
-  "featureMappings": []
+  "featureMappings": [
+    {
+      "id": "mapping_1765652074122_lts3dx18g",
+      "featureTemplateId": "get_conversation",
+      "featureTemplateName": "Get Conversations Slack",
+      "fieldMappings": {
+        "api": {
+          "enabled": true,
+          "customHandlers": null
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-13T18:54:34.122Z",
+      "updatedAt": "2025-12-13T18:54:34.122Z"
+    }
+  ],
+  "lastUpdated": "2025-12-13T18:54:34.122Z"
 }

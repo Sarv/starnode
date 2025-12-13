@@ -1,0 +1,28 @@
+{
+  "apis": [
+    {
+      "id": "api_1765652130732_7o0l0oq5j",
+      "featureId": "get_conversation",
+      "fieldId": "api",
+      "name": "api API",
+      "method": "GET",
+      "url": "https://slack.com/api/conversations.list",
+      "headers": [],
+      "queryParams": [
+        {
+          "key": "limit",
+          "value": "100"
+        }
+      ],
+      "bodyType": "none",
+      "body": {},
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json"
+      },
+      "createdAt": "2025-12-13T18:55:30.732Z",
+      "updatedAt": "2025-12-13T19:28:41.531Z"
+    }
+  ]
+}
