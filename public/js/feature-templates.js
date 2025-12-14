@@ -62,7 +62,7 @@ function renderCategoryFilters() {
         const category = allCategories[catKey];
         html += `
             <button class="filter-chip" data-category="${catKey}" onclick="filterByCategory('${catKey}')">
-                ${category.icon} ${category.label}
+                ${category.label}
             </button>
         `;
     });
@@ -215,7 +215,7 @@ function loadCategoriesDropdown() {
     let html = '<option value="">Select a category...</option>';
     Object.keys(allCategories).forEach(catKey => {
         const category = allCategories[catKey];
-        html += `<option value="${catKey}">${category.icon} ${category.label}</option>`;
+        html += `<option value="${catKey}">${category.label}</option>`;
     });
 
     categorySelect.innerHTML = html;

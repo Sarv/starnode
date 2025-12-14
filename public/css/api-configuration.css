@@ -143,7 +143,7 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    border: 1px solid transparent;
+    border: 1px solid #eceaea94;
 }
 
 .api-item:hover {
@@ -1101,4 +1101,93 @@
     grid-template-columns: 1fr 3fr;
     gap: 12px;
     align-items: center;
+}
+
+/* Variable Highlighting Styles */
+.variable-highlight-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.variable-highlight-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: auto;
+    color: #111827; /* Default text color */
+    background: transparent;
+    z-index: 1;
+    box-sizing: border-box;
+    /* Font and padding will be copied from the actual element via JavaScript */
+}
+
+.variable-highlight-overlay.active {
+    z-index: 2;
+}
+
+.variable-token {
+    border-radius: 3px;
+    font-weight: 500;
+    background-color: #dde9ff;
+    color: #387df4;
+    padding: 0px 0px;
+}
+
+/* For textareas */
+textarea.has-highlight {
+    position: relative;
+    background: transparent;
+    z-index: 3;
+    color: transparent;
+    caret-color: black; /* Keep cursor visible */
+}
+
+textarea.has-highlight:focus {
+    background: white;
+    color: inherit; /* Restore text color when focused */
+}
+
+.textarea-highlight-wrapper {
+    position: relative;
+    display: block;
+}
+
+.textarea-highlight-wrapper .variable-highlight-overlay {
+    /* All styles will be copied from textarea via JavaScript */
+    overflow: auto;
+}
+
+/* For input fields */
+input.has-highlight {
+    position: relative;
+    background: transparent;
+    z-index: 3;
+    width: 100%;
+    color: transparent;
+    caret-color: black; /* Keep cursor visible */
+}
+
+input.has-highlight:focus {
+    background: white;
+    color: inherit; /* Restore text color when focused */
+}
+
+.input-highlight-wrapper {
+    position: relative;
+    display: block;
+    flex: 1; /* Participate in flex layouts */
+    min-width: 0; /* Allow flex item to shrink below content size */
+}
+
+.input-highlight-wrapper .variable-highlight-overlay {
+    /* All styles will be copied from input via JavaScript */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

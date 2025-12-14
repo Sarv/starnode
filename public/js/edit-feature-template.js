@@ -62,7 +62,7 @@ function renderCategoryOptions() {
 
     Object.keys(allCategories).forEach(catKey => {
         const category = allCategories[catKey];
-        html += `<option value="${catKey}">${category.icon} ${category.label}</option>`;
+        html += `<option value="${catKey}">${category.label}</option>`;
     });
 
     select.innerHTML = html;

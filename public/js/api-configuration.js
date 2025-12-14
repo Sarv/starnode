@@ -82,6 +82,10 @@ async function initializePage() {
     console.log('[API Config] Updating test button state...');
     updateTestButtonState();
 
+    // Initialize variable highlighting
+    console.log('[API Config] Initializing variable highlighting...');
+    initializeVariableHighlighting();
+
     console.log('[API Config] Initialization complete!');
 }
 
@@ -1556,6 +1560,10 @@ async function initMultiApiMode() {
             showToast('No APIs configured for this integration', 'info');
         }
 
+        // Initialize variable highlighting
+        console.log('[API Config] Initializing variable highlighting...');
+        initializeVariableHighlighting();
+
         console.log('[API Config] Multi-API mode initialization complete!');
     } catch (error) {
         console.error('Error initializing multi-API mode:', error);
@@ -1809,6 +1817,15 @@ async function loadApiConfigurationIntoForm(config) {
         if (successPathEl) successPathEl.value = config.response.successPath || '';
         if (errorPathEl) errorPathEl.value = config.response.errorPath || '';
     }
+
+    // Re-initialize variable highlighting for newly populated fields
+    // Wait a bit for DOM to update
+    setTimeout(() => {
+        // Initialize highlighting for any new fields
+        initializeVariableHighlighting();
+        // Refresh existing overlays with new values
+        refreshAllHighlightOverlays();
+    }, 100);
 }
 
 // Format bytes to human readable
@@ -1829,4 +1846,311 @@ if (originalHandleFormSubmit) {
         updateTestButtonState();
         return result;
     };
+}
+
+// ============================================================================
+// Variable Highlighting System
+// ============================================================================
+
+/**
+ * Parse text and highlight variables in {{...}} format
+ * @param {string} text - The text to parse
+ * @returns {string} - HTML string with highlighted variables
+ */
+function highlightVariables(text) {
+    if (!text) return '';
+
+    // Regex to match {{variableName}} patterns
+    const variableRegex = /\{\{([^}]+)\}\}/g;
+
+    // Replace variables with highlighted spans
+    const highlighted = text.replace(variableRegex, (match, variableName) => {
+        return `<span class="variable-token">${match}</span>`;
+    });
+
+    return highlighted;
+}
+
+/**
+ * Create or update highlight overlay for an input/textarea element
+ * @param {HTMLElement} element - The input or textarea element
+ */
+function createHighlightOverlay(element) {
+    if (!element) return;
+
+    const isTextarea = element.tagName === 'TEXTAREA';
+    const value = element.value || '';
+
+    // Find or create wrapper
+    let wrapper = element.parentElement;
+    if (!wrapper.classList.contains('variable-highlight-wrapper')) {
+        wrapper = document.createElement('div');
+        wrapper.className = isTextarea ? 'textarea-highlight-wrapper variable-highlight-wrapper' : 'input-highlight-wrapper variable-highlight-wrapper';
+        element.parentNode.insertBefore(wrapper, element);
+        wrapper.appendChild(element);
+    }
+
+    // Find or create overlay
+    let overlay = wrapper.querySelector('.variable-highlight-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'variable-highlight-overlay';
+        wrapper.insertBefore(overlay, element);
+    }
+
+    // Copy computed styles from element to overlay for perfect alignment
+    const computedStyle = window.getComputedStyle(element);
+    const stylesToCopy = [
+        'font-family',
+        'font-size',
+        'font-weight',
+        'font-style',
+        'line-height',
+        'letter-spacing',
+        'word-spacing',
+        'text-align',
+        'text-indent',
+        'text-transform',
+        'white-space',
+        'word-wrap',
+        'word-break',
+        'padding-top',
+        'padding-right',
+        'padding-bottom',
+        'padding-left',
+        'border-top-width',
+        'border-right-width',
+        'border-bottom-width',
+        'border-left-width'
+    ];
+
+    stylesToCopy.forEach(style => {
+        overlay.style[style] = computedStyle[style];
+    });
+
+    // Set overlay color to match the original element's color (before we made it transparent)
+    // Get the color from parent or use default
+    const parentColor = window.getComputedStyle(element.parentElement).color;
+    overlay.style.color = parentColor || '#111827';
+
+    // Add class to element to mark it as having highlight
+    element.classList.add('has-highlight');
+
+    // Sync scroll position for textareas
+    if (isTextarea && !element.dataset.scrollSyncSetup) {
+        element.dataset.scrollSyncSetup = 'true';
+        element.addEventListener('scroll', () => {
+            if (overlay) {
+                overlay.scrollTop = element.scrollTop;
+                overlay.scrollLeft = element.scrollLeft;
+            }
+        });
+    }
+
+    return overlay;
+}
+
+/**
+ * Update highlight overlay when element value changes
+ * @param {HTMLElement} element - The input or textarea element
+ */
+function updateHighlightOverlay(element) {
+    const wrapper = element.closest('.variable-highlight-wrapper');
+    if (!wrapper) {
+        createHighlightOverlay(element);
+        return;
+    }
+
+    const overlay = wrapper.querySelector('.variable-highlight-overlay');
+    if (!overlay) {
+        createHighlightOverlay(element);
+        return;
+    }
+
+    const value = element.value || '';
+
+    // Create highlighted content
+    const parts = [];
+    let lastIndex = 0;
+    const variableRegex = /\{\{([^}]+)\}\}/g;
+    let match;
+
+    while ((match = variableRegex.exec(value)) !== null) {
+        // Add text before variable (normal color)
+        if (match.index > lastIndex) {
+            const beforeText = value.substring(lastIndex, match.index);
+            parts.push(escapeHtml(beforeText));
+        }
+
+        // Add variable (highlighted)
+        parts.push(`<span class="variable-token">${escapeHtml(match[0])}</span>`);
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text (normal color)
+    if (lastIndex < value.length) {
+        const remainingText = value.substring(lastIndex);
+        parts.push(escapeHtml(remainingText));
+    }
+
+    overlay.innerHTML = parts.join('');
+
+    // Sync scroll position
+    if (element.tagName === 'TEXTAREA') {
+        overlay.scrollTop = element.scrollTop;
+        overlay.scrollLeft = element.scrollLeft;
+    }
+
+    // Show overlay when not focused
+    if (document.activeElement !== element) {
+        overlay.classList.add('active');
+    }
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * Setup variable highlighting for an input or textarea element
+ * @param {HTMLElement} element - The input or textarea element
+ */
+function setupVariableHighlighting(element) {
+    if (!element || element.dataset.highlightingSetup === 'true') return;
+
+    // Mark as setup to avoid duplicate listeners
+    element.dataset.highlightingSetup = 'true';
+
+    // Create initial overlay
+    createHighlightOverlay(element);
+
+    // Show overlay on blur (when user leaves field)
+    element.addEventListener('blur', () => {
+        updateHighlightOverlay(element);
+        const wrapper = element.closest('.variable-highlight-wrapper');
+        if (wrapper) {
+            const overlay = wrapper.querySelector('.variable-highlight-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+            }
+        }
+    });
+
+    // Hide overlay on focus (when user enters field)
+    element.addEventListener('focus', () => {
+        const wrapper = element.closest('.variable-highlight-wrapper');
+        if (wrapper) {
+            const overlay = wrapper.querySelector('.variable-highlight-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+    });
+
+    // Update overlay as user types (but don't show it while focused)
+    element.addEventListener('input', () => {
+        updateHighlightOverlay(element);
+    });
+
+    // Initial update
+    updateHighlightOverlay(element);
+}
+
+/**
+ * Refresh all existing highlight overlays with current values
+ * This is useful when values change programmatically (e.g., when switching APIs)
+ */
+function refreshAllHighlightOverlays() {
+    console.log('[Variable Highlighting] Refreshing all overlays...');
+
+    // Find all elements that have highlighting setup
+    const highlightedElements = document.querySelectorAll('.has-highlight');
+
+    console.log('[Variable Highlighting] Found', highlightedElements.length, 'highlighted elements');
+
+    highlightedElements.forEach(element => {
+        updateHighlightOverlay(element);
+    });
+
+    console.log('[Variable Highlighting] Refresh complete');
+}
+
+/**
+ * Initialize variable highlighting for all relevant fields on the page
+ */
+function initializeVariableHighlighting() {
+    console.log('[Variable Highlighting] Initializing...');
+
+    // Input fields
+    const apiUrlInput = document.getElementById('apiUrl');
+    const successPathInput = document.getElementById('successPath');
+    const errorPathInput = document.getElementById('errorPath');
+
+    if (apiUrlInput) setupVariableHighlighting(apiUrlInput);
+    if (successPathInput) setupVariableHighlighting(successPathInput);
+    if (errorPathInput) setupVariableHighlighting(errorPathInput);
+
+    // Textarea fields
+    const jsonBodyTextarea = document.getElementById('jsonBody');
+    const xmlBodyTextarea = document.getElementById('xmlBody');
+    const rawBodyTextarea = document.getElementById('rawBody');
+
+    if (jsonBodyTextarea) setupVariableHighlighting(jsonBodyTextarea);
+    if (xmlBodyTextarea) setupVariableHighlighting(xmlBodyTextarea);
+    if (rawBodyTextarea) setupVariableHighlighting(rawBodyTextarea);
+
+    // Setup for dynamically added fields (headers, params, form data, etc.)
+    setupDynamicFieldHighlighting();
+
+    console.log('[Variable Highlighting] Initialization complete');
+}
+
+/**
+ * Setup highlighting for dynamically added key-value fields
+ */
+function setupDynamicFieldHighlighting() {
+    // Monitor for new fields being added
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) { // Element node
+                    // Find input fields in the added node
+                    const inputs = node.querySelectorAll ? node.querySelectorAll('input[type="text"], textarea') : [];
+                    inputs.forEach(input => {
+                        if (!input.dataset.highlightingSetup) {
+                            setupVariableHighlighting(input);
+                        }
+                    });
+
+                    // Check if the node itself is an input
+                    if ((node.tagName === 'INPUT' || node.tagName === 'TEXTAREA') && !node.dataset.highlightingSetup) {
+                        setupVariableHighlighting(node);
+                    }
+                }
+            });
+        });
+    });
+
+    // Observe the containers where dynamic fields are added
+    const containers = [
+        document.getElementById('headersList'),
+        document.getElementById('queryParamsList'),
+        document.getElementById('formDataList'),
+        document.getElementById('urlencodedList')
+    ];
+
+    containers.forEach(container => {
+        if (container) {
+            observer.observe(container, {
+                childList: true,
+                subtree: true
+            });
+        }
+    });
 }

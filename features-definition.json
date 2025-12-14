@@ -31,6 +31,12 @@
       "icon": "✅",
       "color": "#00BCD4",
       "description": "Task and activity tracking"
+    },
+    "tickets": {
+      "label": "Tickets",
+      "icon": "✅",
+      "color": "#00BCD4",
+      "description": "Ticket tracking"
     }
   },
   "features": {
