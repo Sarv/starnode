@@ -11,7 +11,7 @@ let panelConfig = null;
 let customHandlersConfig = null;
 
 // Initialize
-document.addEventListener('DOMContentLoaded', async () => {
+async function initializePage() {
     // Get integration ID from URL path
     // URL format: /integration-detail/salesforce
     const pathParts = window.location.pathname.split('/');
@@ -32,7 +32,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Setup event listeners
     setupEventListeners();
-});
+}
+
+// Handle both cases: DOM already loaded or still loading
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePage);
+} else {
+    // DOM is already loaded, execute immediately
+    initializePage();
+}
 
 // Load panel config
 async function loadPanelConfig() {
@@ -848,41 +856,207 @@ function configureApiForSelectedMapping() {
 }
 
 // Render API config panel (right column)
-function renderApiConfigPanel(mapping) {
+async function renderApiConfigPanel(mapping) {
     const container = document.getElementById('apiConfigContent');
 
-    if (!mapping.apiConfig || !mapping.apiConfig.endpoint) {
-        container.innerHTML = '<div class="api-config-empty">No API Configuration</div>';
+    container.innerHTML = '<div class="api-config-empty">Loading API configuration...</div>';
+
+    // Get integration and feature IDs from the mapping
+    const integrationId = window.location.pathname.split('/').pop();
+    const featureId = mapping.featureId;
+
+    // Find the first API field in this mapping to show its config
+    let fieldId = null;
+    if (mapping.fieldMappings && Object.keys(mapping.fieldMappings).length > 0) {
+        // Get first field that has API type
+        for (const [key, field] of Object.entries(mapping.fieldMappings)) {
+            if (field.fieldType === 'api') {
+                fieldId = field.fieldId;
+                break;
+            }
+        }
+    }
+
+    if (!fieldId) {
+        container.innerHTML = '<div class="api-config-empty">No API fields configured</div>';
         return;
     }
 
-    const config = mapping.apiConfig;
+    try {
+        // Load saved API configuration from server
+        const response = await fetch(`/api/integrations/${integrationId}/features/${featureId}/fields/${fieldId}/api-config`);
 
-    container.innerHTML = `
-        <div class="api-config-row">
-            <span class="api-config-label">Method</span>
-            <div class="api-config-value"><code>${config.method || 'GET'}</code></div>
-        </div>
-        <div class="api-config-row">
-            <span class="api-config-label">Endpoint</span>
-            <div class="api-config-value"><code>${config.endpoint}</code></div>
-        </div>
-        ${config.apiConfigId ? `
+        if (!response.ok) {
+            container.innerHTML = '<div class="api-config-empty">No API configuration saved yet</div>';
+            return;
+        }
+
+        const config = await response.json();
+
+        // Display the configuration
+        let html = `
             <div class="api-config-row">
-                <span class="api-config-label">Config ID</span>
-                <div class="api-config-value">${config.apiConfigId}</div>
+                <span class="api-config-label">Method</span>
+                <div class="api-config-value"><code>${config.method || 'GET'}</code></div>
             </div>
-        ` : ''}
-        <button class="btn btn-secondary" style="margin-top: 16px; width: 100%;">
-            View Full API Settings
-        </button>
-    `;
+            <div class="api-config-row">
+                <span class="api-config-label">URL</span>
+                <div class="api-config-value"><code>${config.url || 'Not configured'}</code></div>
+            </div>
+        `;
+
+        // Show headers if present
+        if (config.headers && config.headers.length > 0) {
+            html += `
+                <div class="api-config-row">
+                    <span class="api-config-label">Headers</span>
+                    <div class="api-config-value">
+                        ${config.headers.map(h => `<code>${h.key}: ${h.value}</code>`).join('<br>')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show query params if present
+        if (config.queryParams && config.queryParams.length > 0) {
+            html += `
+                <div class="api-config-row">
+                    <span class="api-config-label">Query Params</span>
+                    <div class="api-config-value">
+                        ${config.queryParams.map(p => `<code>${p.key}=${p.value}</code>`).join('<br>')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show body type if present
+        if (config.bodyType && config.bodyType !== 'none') {
+            html += `
+                <div class="api-config-row">
+                    <span class="api-config-label">Body Type</span>
+                    <div class="api-config-value"><code>${config.bodyType}</code></div>
+                </div>
+            `;
+        }
+
+        html += `
+            <button class="btn btn-secondary" onclick="window.location.href='/api-configuration?integrationId=${integrationId}&featureId=${featureId}&fieldId=${fieldId}'" style="margin-top: 16px; width: 100%;">
+                View & Edit Full Configuration
+            </button>
+        `;
+
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading API config:', error);
+        container.innerHTML = '<div class="api-config-empty">Error loading configuration</div>';
+    }
 }
 
 // Helper functions (camelize and capitalizeFirst removed - no longer needed)
 
+// Load and display API configuration for API fields
+async function loadAndDisplayApiConfig(fieldKey, fieldData) {
+    const container = document.getElementById('apiConfigContent');
+    container.innerHTML = '<div class="api-config-empty">Loading API configuration...</div>';
+
+    const integrationId = window.location.pathname.split('/').pop();
+    const mapping = allMappings.find(m => m.id === selectedMappingId);
+
+    console.log('loadAndDisplayApiConfig - mapping:', mapping);
+    console.log('loadAndDisplayApiConfig - mapping.featureTemplateId:', mapping.featureTemplateId);
+
+    // Use featureTemplateId as the featureId
+    const featureId = mapping.featureTemplateId;
+    // Use fieldKey as fieldId if fieldId is not available
+    const fieldId = fieldData.fieldId || fieldKey;
+
+    console.log('Using featureId:', featureId, 'fieldId:', fieldId);
+
+    try {
+        const url = `/api/integrations/${integrationId}/features/${featureId}/fields/${fieldId}/api-config`;
+        console.log('Fetching API config from:', url);
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            console.log('Response not OK, status:', response.status);
+            container.innerHTML = '<div class="api-config-empty">No API configuration found</div>';
+            return;
+        }
+
+        const config = await response.json();
+        console.log('Loaded API config:', config);
+
+        let html = `
+            <div class="api-field-detail-header">
+                <h5 style="margin: 0 0 8px 0; color: #6366f1; font-size: 14px; font-weight: 600;">
+                    ${fieldKey}
+                </h5>
+                <span style="display: inline-block; padding: 2px 8px; background: #ddd6fe; color: #5b21b6; font-size: 11px; font-weight: 600; border-radius: 4px; text-transform: uppercase;">
+                    API Configuration
+                </span>
+            </div>
+            <div style="margin-top: 20px;">
+                <div class="api-config-row">
+                    <span class="api-config-label">Method</span>
+                    <div class="api-config-value"><code>${config.method || 'GET'}</code></div>
+                </div>
+                <div class="api-config-row">
+                    <span class="api-config-label">URL</span>
+                    <div class="api-config-value"><code>${config.url || 'Not configured'}</code></div>
+                </div>
+        `;
+
+        if (config.headers && config.headers.length > 0) {
+            html += `
+                <div class="api-config-row">
+                    <span class="api-config-label">Headers</span>
+                    <div class="api-config-value">
+                        ${config.headers.map(h => `<code>${h.key}: ${h.value}</code>`).join('<br>')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (config.queryParams && config.queryParams.length > 0) {
+            html += `
+                <div class="api-config-row">
+                    <span class="api-config-label">Query Params</span>
+                    <div class="api-config-value">
+                        ${config.queryParams.map(p => `<code>${p.key}=${p.value}</code>`).join('<br>')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (config.bodyType && config.bodyType !== 'none') {
+            html += `
+                <div class="api-config-row">
+                    <span class="api-config-label">Body Type</span>
+                    <div class="api-config-value"><code>${config.bodyType}</code></div>
+                </div>
+            `;
+        }
+
+        html += `
+            </div>
+            <button class="btn btn-primary" onclick="window.location.href='/api-configuration?integrationId=${integrationId}&featureId=${featureId}&fieldId=${fieldId}'" style="margin-top: 16px; width: 100%;">
+                View & Edit Full Configuration
+            </button>
+        `;
+
+        console.log('Setting HTML, length:', html.length);
+        console.log('Container element:', container);
+        container.innerHTML = html;
+        console.log('HTML set successfully');
+    } catch (error) {
+        console.error('Error loading API config:', error);
+        container.innerHTML = '<div class="api-config-empty">Error loading configuration</div>';
+    }
+}
+
 // Show API Settings for a field in the right panel
-function showApiSettings(fieldKey, fieldType) {
+async function showApiSettings(fieldKey, fieldType) {
     const container = document.getElementById('apiConfigContent');
 
     // Store the selected field information
@@ -914,6 +1088,17 @@ function showApiSettings(fieldKey, fieldType) {
         container.innerHTML = '<div class="api-config-empty">Field not found</div>';
         return;
     }
+
+    console.log('showApiSettings - fieldData:', fieldData);
+    console.log('showApiSettings - fieldType check:', fieldData.fieldType);
+    console.log('showApiSettings - fieldId check:', fieldData.fieldId);
+    console.log('showApiSettings - fieldKey:', fieldKey);
+
+    // For API fields, try to load API configuration
+    // API fields typically have fieldKey like "api" or have fieldId property
+    console.log('Attempting to load API config for field:', fieldKey);
+    await loadAndDisplayApiConfig(fieldKey, fieldData);
+    return; // Don't continue to build old HTML
 
     // Build the display based on field type
     let content = `

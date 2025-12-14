@@ -8,9 +8,13 @@ let availableVariables = {};
 let currentFocusedInput = null;
 let currentApiConfig = null;
 let currentApiName = null; // Store API name since we removed the input field
+let allApis = []; // Store all APIs for the integration
+let multiApiMode = false; // Flag to track if we're in multi-API mode
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', async () => {
+async function initializePage() {
+    console.log('[API Config] Initializing page...');
+
     // Extract parameters from URL
     const urlParams = new URLSearchParams(window.location.search);
     currentIntegrationId = urlParams.get('integrationId');
@@ -19,26 +23,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentFieldType = urlParams.get('fieldType') || 'template';
     const featureName = urlParams.get('featureName');
 
+    console.log('[API Config] URL Params:', {
+        integrationId: currentIntegrationId,
+        featureId: currentFeatureId,
+        fieldId: currentFieldId,
+        fieldType: currentFieldType
+    });
+
+    // Check if we're in multi-API mode (only integrationId provided)
+    if (currentIntegrationId && !currentFeatureId && !currentFieldId) {
+        console.log('[API Config] Entering MULTI-API mode');
+        multiApiMode = true;
+        await initMultiApiMode();
+        return;
+    }
+
+    // Single API mode - need all params
     if (!currentIntegrationId || !currentFeatureId || !currentFieldId) {
+        console.log('[API Config] Missing required parameters');
         showToast('Missing required parameters. Please navigate from Integration Detail page.', 'error');
-        // Show helpful instruction
         document.querySelector('.api-form-panel').innerHTML = `
             <div class="empty-state" style="padding: 48px; text-align: center;">
                 <h3 style="color: #374151; margin-bottom: 16px;">Missing Required Parameters</h3>
                 <p style="color: #6b7280; margin-bottom: 24px;">
                     This page requires proper navigation from the Integration Detail page.
                 </p>
-                <p style="color: #9ca3af; font-size: 14px;">
-                    Please follow these steps:<br>
-                    1. Go to <a href="/integrations">Integrations</a><br>
-                    2. Select an integration<br>
-                    3. Choose a feature mapping<br>
-                    4. Click "API Settings" → "Configure API"
-                </p>
             </div>
         `;
         return;
     }
+
+    console.log('[API Config] Entering SINGLE-API mode');
 
     // Update UI with feature and field info
     document.getElementById('featureDisplayName').textContent = `${featureName || 'Feature'} / ${currentFieldId}`;
@@ -48,24 +63,63 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('integrationLink').href = `/integration-detail?id=${currentIntegrationId}`;
 
     // Load data
+    console.log('[API Config] Loading feature fields...');
     await loadFeatureFields();
+    console.log('[API Config] Loading field API config...');
     await loadFieldApiConfig();
+    console.log('[API Config] Loading available variables...');
     await loadAvailableVariables();
 
+    // Also load API tree for multi-API navigation
+    console.log('[API Config] Loading API tree...');
+    await loadApiTreeForSingleMode();
+
     // Set up event listeners
+    console.log('[API Config] Setting up event listeners...');
     setupEventListeners();
-});
+
+    // Update test button state
+    console.log('[API Config] Updating test button state...');
+    updateTestButtonState();
+
+    console.log('[API Config] Initialization complete!');
+}
+
+// Handle both cases: DOM already loaded or still loading
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePage);
+} else {
+    // DOM is already loaded, execute immediately
+    initializePage();
+}
+
+// Track if event listeners have been set up
+let eventListenersSetup = false;
 
 // Setup event listeners
 function setupEventListeners() {
-    // Initialize tab functionality
+    console.log('[API Config] Setting up event listeners, already setup:', eventListenersSetup);
+
+    // Initialize tab functionality (always re-initialize for clean state)
     initializeTabs();
 
+    // Only set up other listeners once
+    if (eventListenersSetup) {
+        console.log('[API Config] Event listeners already set up, skipping');
+        return;
+    }
+
     // Form submission
-    document.getElementById('apiConfigForm').addEventListener('submit', handleFormSubmit);
+    const form = document.getElementById('apiConfigForm');
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
+    }
 
     // Variable search
-    document.getElementById('variableSearch').addEventListener('input', filterVariables);
+    const variableSearch = document.getElementById('variableSearch');
+    if (variableSearch) {
+        variableSearch.addEventListener('input', filterVariables);
+    }
 
     // Track focused input for variable insertion
     document.querySelectorAll('input[type="text"], textarea').forEach(input => {
@@ -80,6 +134,9 @@ function setupEventListeners() {
         bodyTypeSelect.addEventListener('change', (e) => switchBodyType(e.target.value));
     }
 
+    eventListenersSetup = true;
+    console.log('[API Config] Event listeners setup complete');
+
     // Button event listeners are handled via onclick in the EJS template
 }
 
@@ -88,22 +145,45 @@ function initializeTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
 
+    console.log('[API Config] Initializing tabs, found', tabButtons.length, 'tab buttons');
+
+    // Remove existing listeners by cloning and replacing
     tabButtons.forEach(button => {
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+    });
+
+    // Re-query after cloning
+    const freshTabButtons = document.querySelectorAll('.tab-btn');
+    const freshTabPanes = document.querySelectorAll('.tab-pane');
+
+    freshTabButtons.forEach(button => {
         button.addEventListener('click', () => {
             const targetTab = button.getAttribute('data-tab');
+            console.log('[API Config] Tab clicked:', targetTab);
 
             // Update active tab button
-            tabButtons.forEach(btn => btn.classList.remove('active'));
+            freshTabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
 
             // Show corresponding tab pane
-            tabPanes.forEach(pane => {
-                if (pane.getAttribute('data-pane') === targetTab) {
+            let foundPane = false;
+            freshTabPanes.forEach(pane => {
+                const paneId = pane.getAttribute('data-pane');
+                if (paneId === targetTab) {
                     pane.classList.add('active');
+                    pane.style.display = 'block';
+                    foundPane = true;
+                    console.log('[API Config] Showing pane:', paneId);
                 } else {
                     pane.classList.remove('active');
+                    pane.style.display = 'none';
                 }
             });
+
+            if (!foundPane) {
+                console.warn('[API Config] No pane found for tab:', targetTab);
+            }
         });
     });
 }
@@ -401,7 +481,12 @@ async function handleFormSubmit(e) {
     }
 
     try {
-        const method = currentApiConfig ? 'PUT' : 'POST';
+        // Check if API is configured or not
+        const isConfigured = currentApiConfig && currentApiConfig.configured !== false;
+        const method = isConfigured ? 'PUT' : 'POST';
+
+        console.log('[API Config] Saving API:', method, isConfigured ? 'Update existing' : 'Create new');
+
         const response = await fetch(`/api/integrations/${currentIntegrationId}/features/${currentFeatureId}/fields/${currentFieldId}/api-config`, {
             method: method,
             headers: {
@@ -412,15 +497,32 @@ async function handleFormSubmit(e) {
 
         if (response.ok) {
             showToast('API configuration saved successfully', 'success');
-            // Reload to show updated configuration
-            await loadFeatureFields();
-            await loadFieldApiConfig();
+
+            // Update currentApiConfig with saved data
+            const savedApi = await response.json();
+            currentApiConfig = { ...savedApi, configured: true };
+
+            // Reload API tree in multi-API mode
+            if (multiApiMode) {
+                await initMultiApiMode();
+            } else {
+                // Reload in single-API mode
+                await loadFeatureFields();
+                await loadFieldApiConfig();
+                if (allApis.length > 0 || document.getElementById('fieldsList')) {
+                    await loadApiTreeForSingleMode();
+                }
+            }
+
+            // Update test button state
+            updateTestButtonState();
         } else {
-            throw new Error('Failed to save API configuration');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to save API configuration');
         }
     } catch (error) {
         console.error('Error saving API configuration:', error);
-        showToast('Failed to save API configuration', 'error');
+        showToast(error.message || 'Failed to save API configuration', 'error');
     }
 }
 
@@ -754,13 +856,38 @@ function removeRow(button) {
 
 // Switch body type
 function switchBodyType(type) {
+    console.log('[API Config] Switching body type to:', type);
+
+    // Remove any existing empty state message
+    const existingEmptyState = document.getElementById('bodyEmptyState');
+    if (existingEmptyState) {
+        existingEmptyState.remove();
+    }
+
     // Hide all body editors
     document.querySelectorAll('.body-editor').forEach(editor => {
         editor.style.display = 'none';
     });
 
     // Show selected editor based on type
-    if (type !== 'none') {
+    if (type === 'none') {
+        // Create and show empty state message for "none" type
+        const bodyPane = document.querySelector('[data-pane="body"]');
+        if (bodyPane) {
+            const emptyState = document.createElement('div');
+            emptyState.id = 'bodyEmptyState';
+            emptyState.style.cssText = 'padding: 40px 20px; text-align: center; color: #9CA3AF; font-size: 14px;';
+            emptyState.innerHTML = '<div>No request body required for this API.<br>Change "Body Type" above if you need to send data.</div>';
+
+            // Insert after body type selector
+            const bodyTypeSelector = bodyPane.querySelector('#bodyType')?.parentElement?.parentElement;
+            if (bodyTypeSelector && bodyTypeSelector.nextSibling) {
+                bodyTypeSelector.parentElement.insertBefore(emptyState, bodyTypeSelector.nextSibling);
+            } else if (bodyPane.querySelector('.body-editor')) {
+                bodyPane.insertBefore(emptyState, bodyPane.querySelector('.body-editor'));
+            }
+        }
+    } else {
         let editorId;
         switch(type) {
             case 'json':
@@ -785,6 +912,9 @@ function switchBodyType(type) {
         const editor = document.getElementById(editorId);
         if (editor) {
             editor.style.display = 'block';
+            console.log('[API Config] Showing editor:', editorId);
+        } else {
+            console.warn('[API Config] Editor not found:', editorId);
         }
     }
 }
@@ -991,11 +1121,12 @@ function updateTestButtonState() {
     const testButton = document.getElementById('testApiBtn');
     if (!testButton) return;
 
-    // Check if API config exists (meaning it's saved)
-    const urlParams = new URLSearchParams(window.location.search);
-    const integrationId = urlParams.get('integrationId');
-    const featureId = urlParams.get('featureId');
-    const fieldId = urlParams.get('fieldId');
+    // Use global variables (works for both single and multi-API mode)
+    const integrationId = currentIntegrationId;
+    const featureId = currentFeatureId;
+    const fieldId = currentFieldId;
+
+    console.log('[API Config] Checking test button state for:', integrationId, featureId, fieldId);
 
     if (!integrationId || !featureId || !fieldId) {
         testButton.disabled = true;
@@ -1006,14 +1137,17 @@ function updateTestButtonState() {
     fetch(`/api/integrations/${integrationId}/features/${featureId}/fields/${fieldId}/api-config`)
         .then(response => {
             if (response.ok) {
+                console.log('[API Config] Test button enabled - API is saved');
                 testButton.disabled = false;
                 testButton.title = 'Test API Configuration';
             } else {
+                console.log('[API Config] Test button disabled - API not saved');
                 testButton.disabled = true;
                 testButton.title = 'Save API configuration before testing';
             }
         })
         .catch(() => {
+            console.log('[API Config] Test button disabled - Error checking API');
             testButton.disabled = true;
             testButton.title = 'Save API configuration before testing';
         });
@@ -1197,10 +1331,19 @@ function checkAndShowVariableInputs() {
     }
 
     // Extract variables from body
-    if (currentApiConfig.body && typeof currentApiConfig.body === 'string') {
-        const matches = currentApiConfig.body.matchAll(variablePattern);
-        for (const match of matches) {
-            variables.add(match[1].trim());
+    if (currentApiConfig.body) {
+        if (typeof currentApiConfig.body === 'string') {
+            const matches = currentApiConfig.body.matchAll(variablePattern);
+            for (const match of matches) {
+                variables.add(match[1].trim());
+            }
+        } else if (currentApiConfig.body.json) {
+            // Extract from JSON body object
+            const bodyStr = JSON.stringify(currentApiConfig.body.json);
+            const matches = bodyStr.matchAll(variablePattern);
+            for (const match of matches) {
+                variables.add(match[1].trim());
+            }
         }
     }
 
@@ -1352,6 +1495,322 @@ function closeTestModal() {
     selectedConnection = null;
 }
 
+// ============================================
+// Multi-API Mode Functions
+// ============================================
+
+// Load API tree for single-API mode (to show navigation)
+async function loadApiTreeForSingleMode() {
+    try {
+        const response = await fetch(`/api/integrations/${currentIntegrationId}/all-apis`);
+        const data = await response.json();
+        allApis = data.apis || [];
+        renderApiTree();
+    } catch (error) {
+        console.error('Error loading API tree:', error);
+    }
+}
+
+// Initialize multi-API mode
+async function initMultiApiMode() {
+    try {
+        console.log('[API Config] Loading all APIs...');
+
+        // Load all APIs for this integration
+        const response = await fetch(`/api/integrations/${currentIntegrationId}/all-apis`);
+        const data = await response.json();
+        allApis = data.apis || [];
+
+        console.log('[API Config] Loaded', allApis.length, 'APIs');
+
+        // Update integration link
+        document.getElementById('integrationLink').href = `/integration-detail/${currentIntegrationId}`;
+
+        // Render API tree in left panel
+        renderApiTree();
+
+        // Set up event listeners for tabs and other interactions
+        console.log('[API Config] Setting up event listeners...');
+        setupEventListeners();
+
+        // If we have APIs and one is specified in URL, select it
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedFeature = urlParams.get('featureId');
+        const selectedField = urlParams.get('fieldId');
+
+        if (selectedFeature && selectedField && allApis.length > 0) {
+            const api = allApis.find(a => a.featureId === selectedFeature && a.fieldId === selectedField);
+            if (api) {
+                console.log('[API Config] Selecting API from URL:', selectedFeature, selectedField);
+                await selectApi(api);
+            } else if (allApis.length > 0) {
+                // Select first API
+                console.log('[API Config] API not found, selecting first API');
+                await selectApi(allApis[0]);
+            }
+        } else if (allApis.length > 0) {
+            // Select first API by default
+            console.log('[API Config] Selecting first API by default');
+            await selectApi(allApis[0]);
+        } else {
+            showToast('No APIs configured for this integration', 'info');
+        }
+
+        console.log('[API Config] Multi-API mode initialization complete!');
+    } catch (error) {
+        console.error('Error initializing multi-API mode:', error);
+        showToast('Failed to load APIs', 'error');
+    }
+}
+
+// Render API tree in left panel
+function renderApiTree() {
+    const container = document.getElementById('fieldsList');
+    if (!container) {
+        console.error('fieldsList container not found');
+        return;
+    }
+
+    // Also update the count
+    const countEl = document.getElementById('fieldsCount');
+    if (countEl) countEl.textContent = allApis.length;
+
+    if (allApis.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; color: #6b7280; text-align: center;">No APIs configured</div>';
+        return;
+    }
+
+    // Group APIs by feature
+    const featureGroups = {};
+    allApis.forEach(api => {
+        if (!featureGroups[api.featureId]) {
+            featureGroups[api.featureId] = {
+                featureName: api.featureName,
+                apis: []
+            };
+        }
+        featureGroups[api.featureId].apis.push(api);
+    });
+
+    // Build tree HTML
+    let html = '';
+    Object.entries(featureGroups).forEach(([featureId, group]) => {
+        html += `
+            <div class="feature-group" style="margin-bottom: 16px;">
+                <div style="font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 13px;">
+                    ${group.featureName}
+                </div>
+                ${group.apis.map((api, idx) => {
+                    const apiIndex = allApis.findIndex(a => a.featureId === api.featureId && a.fieldId === api.fieldId);
+                    const isActive = currentFeatureId === api.featureId && currentFieldId === api.fieldId;
+                    const isConfigured = api.configured !== false;
+                    const urlDisplay = api.url ? `${api.method} ${api.url.substring(0, 40)}...` : 'Not configured yet';
+                    const statusBadge = !isConfigured ? '<span style="font-size: 10px; padding: 2px 6px; background: #FEF3C7; color: #92400E; border-radius: 4px; margin-left: 6px;">NEW</span>' : '';
+                    const fieldDisplayName = api.fieldLabel ? `${api.fieldLabel} (${api.fieldId})` : api.fieldId;
+                    return `
+                    <div class="api-item ${isActive ? 'active' : ''}"
+                         data-api-index="${apiIndex}"
+                         style="padding: 8px 12px; cursor: pointer; border-radius: 4px; margin-bottom: 4px; background: ${isActive ? '#EEF2FF' : 'transparent'};">
+                        <div style="font-size: 13px; color: #111827; display: flex; align-items: center;">
+                            ${fieldDisplayName}
+                            ${statusBadge}
+                        </div>
+                        <div style="font-size: 11px; color: ${isConfigured ? '#6b7280' : '#9CA3AF'};">${urlDisplay}</div>
+                    </div>
+                `;
+                }).join('')}
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+
+    // Add click listeners
+    container.querySelectorAll('.api-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const index = parseInt(item.getAttribute('data-api-index'));
+            selectApiByIndex(index);
+        });
+    });
+}
+
+// Select API by index (helper for click handlers)
+function selectApiByIndex(index) {
+    if (index >= 0 && index < allApis.length) {
+        selectApi(allApis[index]);
+    }
+}
+
+// Select an API from the tree
+async function selectApi(api) {
+    console.log('[API Config] Selecting API:', api.featureId, api.fieldId);
+
+    // Update current selection
+    currentFeatureId = api.featureId;
+    currentFieldId = api.fieldId;
+    currentApiConfig = api;
+
+    // Update URL without reload
+    const url = new URL(window.location);
+    url.searchParams.set('featureId', api.featureId);
+    url.searchParams.set('fieldId', api.fieldId);
+    window.history.pushState({}, '', url);
+
+    // Update UI
+    document.getElementById('featureDisplayName').textContent = `${api.featureName} / ${api.fieldId}`;
+    document.getElementById('featureName').textContent = api.featureName;
+
+    // Load API configuration into form
+    await loadApiConfigurationIntoForm(api);
+
+    // Load available variables for this feature
+    console.log('[API Config] Loading available variables for feature:', currentFeatureId);
+    await loadAvailableVariables();
+
+    // Re-render tree to update active state
+    renderApiTree();
+
+    // Check for variables in the current config
+    checkAndShowVariableInputs();
+
+    // Update test button state (check if this API is already saved)
+    updateTestButtonState();
+
+    console.log('[API Config] API selection complete');
+}
+
+// Load API configuration into form
+async function loadApiConfigurationIntoForm(config) {
+    console.log('[API Config] Loading API configuration into form:', config.featureId, config.fieldId);
+    console.log('[API Config] Config details - Method:', config.method, 'Body Type:', config.bodyType, 'URL:', config.url?.substring(0, 50));
+
+    // Populate form fields with null checks
+    const methodEl = document.getElementById('httpMethod');
+    const urlEl = document.getElementById('apiUrl');
+
+    if (methodEl) {
+        methodEl.value = config.method || 'GET';
+        console.log('[API Config] Set method to:', methodEl.value);
+    }
+    if (urlEl) {
+        urlEl.value = config.url || '';
+        console.log('[API Config] Set URL to:', urlEl.value?.substring(0, 50));
+    }
+
+    // Clear and load headers
+    const headersList = document.getElementById('headersList');
+    if (headersList) {
+        headersList.innerHTML = '';
+        console.log('[API Config] Loading headers, count:', config.headers?.length || 0);
+        if (config.headers && config.headers.length > 0) {
+            config.headers.forEach(header => {
+                console.log('[API Config] Adding header:', header.key, '=', header.value);
+                addKeyValueRow('headers', header.key, header.value);
+            });
+        } else {
+            console.log('[API Config] No headers to load');
+            // Show empty state message
+            headersList.innerHTML = '<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 14px;">No headers configured. Click "Add Header" to add one.</div>';
+        }
+    } else {
+        console.warn('[API Config] headersList element not found!');
+    }
+
+    // Clear and load query params
+    const queryParamsList = document.getElementById('queryParamsList');
+    if (queryParamsList) {
+        queryParamsList.innerHTML = '';
+        console.log('[API Config] Loading query params, count:', config.queryParams?.length || 0);
+        if (config.queryParams && config.queryParams.length > 0) {
+            config.queryParams.forEach(param => {
+                console.log('[API Config] Adding param:', param.key, '=', param.value);
+                addKeyValueRow('params', param.key, param.value);
+            });
+        } else {
+            console.log('[API Config] No query params to load');
+            // Show empty state message
+            queryParamsList.innerHTML = '<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 14px;">No query parameters configured. Click "Add Parameter" to add one.</div>';
+        }
+    } else {
+        console.warn('[API Config] queryParamsList element not found!');
+    }
+
+    // Clear all body sections first
+    const jsonBodyEl = document.getElementById('jsonBody');
+    const xmlBodyEl = document.getElementById('xmlBody');
+    const rawBodyEl = document.getElementById('rawBody');
+    const formDataTable = document.getElementById('formDataTable');
+    const urlencodedTable = document.getElementById('urlencodedTable');
+
+    if (jsonBodyEl) jsonBodyEl.value = '';
+    if (xmlBodyEl) xmlBodyEl.value = '';
+    if (rawBodyEl) rawBodyEl.value = '';
+    if (formDataTable) formDataTable.innerHTML = '';
+    if (urlencodedTable) urlencodedTable.innerHTML = '';
+
+    // Load body type and content
+    const bodyType = config.bodyType || 'none';
+    console.log('[API Config] Body type:', bodyType);
+
+    const bodyTypeEl = document.getElementById('bodyType');
+    if (bodyTypeEl) {
+        bodyTypeEl.value = bodyType;
+        // Trigger switchBodyType to show/hide appropriate body section
+        switchBodyType(bodyType);
+    }
+
+    // Load body content based on type
+    if (config.body) {
+        if (bodyType === 'json' && config.body.json) {
+            const jsonBodyEl = document.getElementById('jsonBody');
+            if (jsonBodyEl) {
+                // Check if config.body.json is already a string or an object
+                let jsonValue = config.body.json;
+                if (typeof jsonValue === 'string') {
+                    try {
+                        const parsed = JSON.parse(jsonValue);
+                        jsonBodyEl.value = JSON.stringify(parsed, null, 2);
+                    } catch (e) {
+                        jsonBodyEl.value = jsonValue;
+                    }
+                } else {
+                    jsonBodyEl.value = JSON.stringify(jsonValue, null, 2);
+                }
+            }
+        } else if (bodyType === 'xml' && config.body.xml) {
+            const xmlBodyEl = document.getElementById('xmlBody');
+            if (xmlBodyEl) xmlBodyEl.value = config.body.xml;
+        } else if (bodyType === 'form-data' && config.body.formData) {
+            const formDataTable = document.getElementById('formDataTable');
+            if (formDataTable) {
+                formDataTable.innerHTML = '';
+                config.body.formData.forEach(item => {
+                    addFormDataRow(item.key, item.value, item.type);
+                });
+            }
+        } else if (bodyType === 'x-www-form-urlencoded' && config.body.urlencoded) {
+            const urlencodedTable = document.getElementById('urlencodedTable');
+            if (urlencodedTable) {
+                urlencodedTable.innerHTML = '';
+                config.body.urlencoded.forEach(item => {
+                    addUrlencodedRow(item.key, item.value);
+                });
+            }
+        } else if (bodyType === 'raw' && config.body.raw) {
+            const rawBodyEl = document.getElementById('rawBody');
+            if (rawBodyEl) rawBodyEl.value = config.body.raw;
+        }
+    }
+
+    // Load response configuration
+    if (config.response) {
+        const successPathEl = document.getElementById('successPath');
+        const errorPathEl = document.getElementById('errorPath');
+        if (successPathEl) successPathEl.value = config.response.successPath || '';
+        if (errorPathEl) errorPathEl.value = config.response.errorPath || '';
+    }
+}
+
 // Format bytes to human readable
 function formatBytes(bytes) {
     if (bytes === 0) return '0 Bytes';
@@ -1361,13 +1820,13 @@ function formatBytes(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Initialize test button state on page load and after save
-document.addEventListener('DOMContentLoaded', updateTestButtonState);
-
+// Note: updateTestButtonState is now called in initializePage and selectApi functions
 // Also update test button state after saving API
 const originalHandleFormSubmit = window.handleFormSubmit;
-window.handleFormSubmit = async function(e) {
-    const result = await originalHandleFormSubmit.call(this, e);
-    updateTestButtonState();
-    return result;
-};
+if (originalHandleFormSubmit) {
+    window.handleFormSubmit = async function(e) {
+        const result = await originalHandleFormSubmit.call(this, e);
+        updateTestButtonState();
+        return result;
+    };
+}

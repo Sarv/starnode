@@ -1065,6 +1065,7 @@
 /* Modern Button */
 .btn-modern {
     display: inline-flex;
+    background: #f5fbff;
     align-items: center;
     gap: 8px;
     padding: 10px 18px;

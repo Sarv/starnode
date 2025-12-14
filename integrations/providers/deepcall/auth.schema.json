@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "api_key_header_method_1765695813948",
+      "authType": "api_key_header",
+      "label": "API Key (Header)",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "headerName": "X-API-Key",
+        "prefix": "abcd",
+        "apiKeyValue": "abcd",
+        "isDefault": true
+      },
+      "testConfig": {
+        "testUrl": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/List",
+        "timeout": 10000
+      },
+      "additionalFields": [
+        {
+          "name": "userid",
+          "label": "User Id",
+          "type": "string",
+          "required": true,
+          "placeholder": "",
+          "useAs": "credential",
+          "fillBy": "user",
+          "encrypted": false,
+          "htmlType": "text"
+        },
+        {
+          "name": "token",
+          "label": "Token",
+          "type": "string",
+          "required": true,
+          "placeholder": "",
+          "useAs": "credential",
+          "fillBy": "user",
+          "encrypted": false,
+          "htmlType": "text"
+        },
+        {
+          "name": "api_sub_domain",
+          "label": "api_sub_domain",
+          "type": "string",
+          "required": true,
+          "placeholder": "",
+          "useAs": "credential",
+          "fillBy": "user",
+          "encrypted": false,
+          "htmlType": "text"
+        }
+      ]
+    }
+  ]
+}

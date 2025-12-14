@@ -853,7 +853,7 @@
 
 .modal-header {
     padding: 20px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #377cf4;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -899,7 +899,8 @@
 
 .test-config-panel {
     padding: 20px;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid #377cf4;
+    background: #EEF2FF;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -928,7 +929,7 @@
 .connection-info {
     margin-top: 10px;
     padding: 12px;
-    background: #f9fafb;
+    background: #d4e4ff /*#f9fafb*/;
     border-radius: 4px;
 }
 
@@ -943,14 +944,14 @@
 }
 
 .info-label {
-    color: #6b7280;
+    color: #384f7b;
     margin-right: 8px;
     min-width: 150px;
 }
 
 .modal-actions {
     padding: 20px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #d7e5fe;
     display: flex;
     justify-content: flex-end;
     gap: 10px;

@@ -1,0 +1,65 @@
+{
+  "apis": [
+    {
+      "id": "api_1765696379551_axnbkvjcp",
+      "featureId": "fetch_employees",
+      "fieldId": "api",
+      "name": "api API",
+      "method": "POST",
+      "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/List",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "userId": "{{userid}}",
+          "token": "{{token}}",
+          "page": 1,
+          "limit": 10
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json"
+      },
+      "createdAt": "2025-12-14T07:12:59.551Z",
+      "updatedAt": "2025-12-14T12:08:50.388Z"
+    },
+    {
+      "id": "api_1765696982197_i2dhjk4ag",
+      "featureId": "get_employee_detail",
+      "fieldId": "api",
+      "name": "api API",
+      "method": "POST",
+      "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "userId": "{{userid}}",
+          "token": "{{token}}",
+          "empId": "{{employee_id}}"
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json"
+      },
+      "createdAt": "2025-12-14T07:23:02.197Z",
+      "updatedAt": "2025-12-14T15:33:31.896Z"
+    }
+  ]
+}

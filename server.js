@@ -1945,36 +1945,145 @@ app.put('/api/integrations/:integrationId/features/:featureId/fields/:fieldId/ap
     }
 });
 
+// Get all APIs for an integration
+app.get('/api/integrations/:integrationId/all-apis', (req, res) => {
+    try {
+        const { integrationId } = req.params;
+        const apiSchemaPath = path.join(__dirname, 'integrations/providers', integrationId, 'api.schema.json');
+        const featuresSchemaPath = path.join(__dirname, 'integrations/providers', integrationId, 'features.schema.json');
+        const featuresDefinitionPath = path.join(__dirname, 'features-definition.json');
+
+        // Load configured APIs
+        let configuredApis = [];
+        if (fs.existsSync(apiSchemaPath)) {
+            const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+            configuredApis = apiSchema.apis || [];
+        }
+
+        // Load feature mappings
+        let featureMappings = [];
+        if (fs.existsSync(featuresSchemaPath)) {
+            const featuresSchema = JSON.parse(fs.readFileSync(featuresSchemaPath, 'utf8'));
+            featureMappings = featuresSchema.featureMappings || [];
+        }
+
+        // Load features definition to get field labels
+        let featuresDefinition = { features: {} };
+        if (fs.existsSync(featuresDefinitionPath)) {
+            featuresDefinition = JSON.parse(fs.readFileSync(featuresDefinitionPath, 'utf8'));
+        }
+
+        // Create a list of all API fields from feature mappings
+        const allApis = [];
+        featureMappings.forEach(mapping => {
+            // Get the feature template to access field definitions
+            const featureTemplate = featuresDefinition.features[mapping.featureTemplateId];
+
+            // Check if this mapping has any api-type fields enabled
+            const apiFields = Object.entries(mapping.fieldMappings || {}).filter(([fieldKey, fieldData]) => {
+                // Check if field is enabled and is an api type field
+                return fieldData.enabled !== false && fieldKey.includes('api');
+            });
+
+            apiFields.forEach(([fieldKey]) => {
+                // Get field label from feature template
+                let fieldLabel = fieldKey; // default to fieldKey
+                if (featureTemplate && featureTemplate.fields && featureTemplate.fields[fieldKey]) {
+                    const fieldDef = featureTemplate.fields[fieldKey];
+                    if (fieldDef && fieldDef.label) {
+                        fieldLabel = fieldDef.label;
+                    }
+                }
+
+                // Check if API is already configured
+                const configuredApi = configuredApis.find(api =>
+                    api.featureId === mapping.featureTemplateId && api.fieldId === fieldKey
+                );
+
+                if (configuredApi) {
+                    // API is configured, use configured data
+                    allApis.push({
+                        ...configuredApi,
+                        featureName: mapping.featureTemplateName,
+                        fieldLabel: fieldLabel,
+                        configured: true
+                    });
+                } else {
+                    // API is not configured, create placeholder
+                    allApis.push({
+                        id: `placeholder_${mapping.featureTemplateId}_${fieldKey}`,
+                        featureId: mapping.featureTemplateId,
+                        fieldId: fieldKey,
+                        featureName: mapping.featureTemplateName,
+                        fieldLabel: fieldLabel,
+                        name: `${fieldKey} API`,
+                        method: 'GET',
+                        url: '',
+                        headers: [],
+                        queryParams: [],
+                        bodyType: 'none',
+                        body: {},
+                        response: {
+                            successPath: '',
+                            errorPath: '',
+                            dataFormat: 'json'
+                        },
+                        configured: false
+                    });
+                }
+            });
+        });
+
+        res.json({ apis: allApis });
+    } catch (error) {
+        console.error('Error loading all APIs:', error);
+        res.status(500).json({ error: 'Failed to load APIs' });
+    }
+});
+
 // Delete API configuration
 app.delete('/api/integrations/:integrationId/features/:featureId/fields/:fieldId/api-config', (req, res) => {
     try {
         const { integrationId, featureId, fieldId } = req.params;
         const integrationDir = path.join(__dirname, 'integrations/providers', integrationId);
         const apiSchemaPath = path.join(integrationDir, 'api.schema.json');
+        const featuresSchemaPath = path.join(integrationDir, 'features.schema.json');
 
-        if (!fs.existsSync(apiSchemaPath)) {
-            res.status(404).json({ error: 'API schema not found' });
-            return;
+        // Remove API configuration from api.schema.json
+        if (fs.existsSync(apiSchemaPath)) {
+            const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+
+            const apiIndex = apiSchema.apis.findIndex(
+                a => a.featureId === featureId && a.fieldId === fieldId
+            );
+
+            if (apiIndex !== -1) {
+                apiSchema.apis.splice(apiIndex, 1);
+                fs.writeFileSync(apiSchemaPath, JSON.stringify(apiSchema, null, 2));
+                console.log(`Removed API config for ${featureId}/${fieldId} from api.schema.json`);
+            }
         }
 
-        const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+        // Remove feature mapping from features.schema.json
+        if (fs.existsSync(featuresSchemaPath)) {
+            const featuresSchema = JSON.parse(fs.readFileSync(featuresSchemaPath, 'utf8'));
 
-        // Find and remove the API
-        const apiIndex = apiSchema.apis.findIndex(
-            a => a.featureId === featureId && a.fieldId === fieldId
-        );
+            const mappingIndex = featuresSchema.featureMappings.findIndex(
+                m => m.featureTemplateId === featureId
+            );
 
-        if (apiIndex === -1) {
-            res.status(404).json({ error: 'API not found' });
-            return;
+            if (mappingIndex !== -1) {
+                featuresSchema.featureMappings.splice(mappingIndex, 1);
+                featuresSchema.lastUpdated = new Date().toISOString();
+                fs.writeFileSync(featuresSchemaPath, JSON.stringify(featuresSchema, null, 2));
+                console.log(`Removed feature mapping for ${featureId} from features.schema.json`);
+            }
         }
 
-        apiSchema.apis.splice(apiIndex, 1);
-
-        // Save to file
-        fs.writeFileSync(apiSchemaPath, JSON.stringify(apiSchema, null, 2));
-
-        res.json({ success: true, message: 'API configuration deleted successfully' });
+        res.json({
+            success: true,
+            message: 'Feature and API configuration deleted successfully'
+        });
     } catch (error) {
         console.error('Error deleting API config:', error);
         res.status(500).json({ error: 'Failed to delete API configuration' });

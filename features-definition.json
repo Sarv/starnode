@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-12-13T18:54:16.867Z",
+  "lastUpdated": "2025-12-14T07:20:04.498Z",
   "categories": {
     "contacts": {
       "label": "Contacts",
@@ -400,6 +400,44 @@
       },
       "createdAt": "2025-12-13T18:54:16.867Z",
       "updatedAt": "2025-12-13T18:54:16.867Z"
+    },
+    "fetch_employees": {
+      "id": "fetch_employees",
+      "name": "Fetch Employees",
+      "description": "get list of employees in the organization",
+      "category": "contacts",
+      "fields": {
+        "api": {
+          "type": "api",
+          "label": "API URL",
+          "required": true,
+          "description": "",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin"
+        }
+      },
+      "createdAt": "2025-12-14T07:11:22.967Z",
+      "updatedAt": "2025-12-14T07:11:22.967Z"
+    },
+    "get_employee_detail": {
+      "id": "get_employee_detail",
+      "name": "Employee Detail Fetch",
+      "description": "Get detail of an individual Employee",
+      "category": "contacts",
+      "fields": {
+        "api": {
+          "type": "api",
+          "label": "API URL",
+          "required": true,
+          "description": "",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin"
+        }
+      },
+      "createdAt": "2025-12-14T07:20:04.498Z",
+      "updatedAt": "2025-12-14T07:20:04.498Z"
     }
   }
 }

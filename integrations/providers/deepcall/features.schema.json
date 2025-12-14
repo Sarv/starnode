@@ -1,0 +1,66 @@
+{
+  "version": "1.0.0",
+  "featureMappings": [
+    {
+      "id": "mapping_1765696302095_ksdvttis4",
+      "featureTemplateId": "fetch_employees",
+      "featureTemplateName": "Fetch Employees",
+      "fieldMappings": {
+        "api": {
+          "enabled": true,
+          "customHandlers": null
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-14T07:11:42.095Z",
+      "updatedAt": "2025-12-14T07:11:42.095Z"
+    },
+    {
+      "id": "mapping_1765696848938_kibyawxws",
+      "featureTemplateId": "get_employee_detail",
+      "featureTemplateName": "Employee Detail Fetch",
+      "fieldMappings": {
+        "api": {
+          "enabled": true,
+          "customHandlers": null
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "employee_id",
+          "label": "Employee Unique Id",
+          "description": "provide employee Id",
+          "type": "dynamic",
+          "fieldType": "string",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-14T07:20:48.938Z",
+      "updatedAt": "2025-12-14T08:39:58.669Z"
+    }
+  ],
+  "lastUpdated": "2025-12-14T15:43:25.226Z"
+}
