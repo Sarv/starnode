@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "api_key_header_method_1764841798347",
+      "authType": "api_key_header",
+      "label": "API Key (Header)",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "headerName": "Authorization",
+        "prefix": "Basic ",
+        "apiKeyValue": "{{apiKey}}",
+        "isDefault": true
+      },
+      "testConfig": {
+        "testUrl": "https://api.{{insightly_pod}}.insightly.com/v3.1/",
+        "timeout": 10000
+      },
+      "additionalFields": [
+        {
+          "name": "insightly_pod",
+          "label": "Insightly pod",
+          "type": "string",
+          "required": true,
+          "placeholder": "na1,eu1",
+          "useAs": "variable",
+          "fillBy": "user",
+          "encrypted": false,
+          "htmlType": "text"
+        }
+      ]
+    }
+  ]
+}

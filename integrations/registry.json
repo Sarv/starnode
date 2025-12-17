@@ -134,6 +134,78 @@
       "status": "active",
       "createdAt": "2025-12-14T06:58:22.148Z",
       "updatedAt": "2025-12-14T14:33:02.158Z"
+    },
+    {
+      "id": "pipedrive",
+      "displayName": "Pipedrive",
+      "description": "Pipedrive lets you track your sales pipeline, optimize leads, manage deals with AI and automate your entire sales process so you can focus on selling.",
+      "category": "crm",
+      "iconUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3wKK6XNtqguPaLiMVBMVpkH74NMpSkEtf3LGxyIM&usqp=CAE&s",
+      "version": "1.0.0",
+      "docsUrl": "https://developers.pipedrive.com/docs/api/v1",
+      "status": "active",
+      "createdAt": "2025-12-03T13:15:05.336Z",
+      "updatedAt": "2025-12-03T13:23:04.921Z"
+    },
+    {
+      "id": "copper",
+      "displayName": "Copper",
+      "description": "Win clients for life with Copper CRM software solutions. Give us a try and see how we can help your business build stronger customer relationships.",
+      "category": "crm",
+      "iconUrl": "https://play-lh.googleusercontent.com/4lc5KTwIKPqbNSk0IvhbFfZ-alRCiOGXp9i5JoS3BcAnE4ntcTTmS3Pzn21W7LDe5U4",
+      "version": "1.0.0",
+      "docsUrl": "https://developer.copper.com/",
+      "status": "active",
+      "createdAt": "2025-12-03T13:41:57.003Z",
+      "updatedAt": "2025-12-05T06:41:33.761Z"
+    },
+    {
+      "id": "insightly",
+      "displayName": "Insightly",
+      "description": "Insightly is easy-to-use, modern and affordable CRM tool. Sell smarter, grow faster and build lasting customer relationships.",
+      "category": "crm",
+      "iconUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTp61PJP3yLRQnBsCT3aivFNGhJuFP_6bZYTQ&s",
+      "version": "1.0.0",
+      "docsUrl": "https://www.insightly.com/api-for-developers/",
+      "status": "active",
+      "createdAt": "2025-12-04T10:01:35.241Z",
+      "updatedAt": "2025-12-04T10:06:33.665Z"
+    },
+    {
+      "id": "capsule",
+      "displayName": "Capsule",
+      "description": "Simple yet powerful CRM. Join over 10000 global businesses and discover an easier way to manage contacts, sales and grow lasting relationships.",
+      "category": "crm",
+      "iconUrl": "https://images.g2crowd.com/uploads/product/image/bfd19986e2b747ff06e8f30e166332e9/capsule-crm.png",
+      "version": "1.0.0",
+      "docsUrl": "https://developer.capsulecrm.com/",
+      "status": "active",
+      "createdAt": "2025-12-04T10:32:04.450Z",
+      "updatedAt": "2025-12-04T10:34:46.644Z"
+    },
+    {
+      "id": "sendgrid",
+      "displayName": "SendGrid",
+      "description": "Send at scale with SendGrid's trusted email API and marketing campaigns platform, delivering 148+ billion emails for senders like you every month.",
+      "category": "communication",
+      "iconUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3QXgrxqk7Ydkm2fGU5IyV2okE-ht75HLqUg&s",
+      "version": "1.0.0",
+      "docsUrl": "https://www.twilio.com/docs/sendgrid",
+      "status": "active",
+      "createdAt": "2025-12-04T12:13:18.917Z",
+      "updatedAt": "2025-12-04T12:13:18.917Z"
+    },
+    {
+      "id": "twilio",
+      "displayName": "Twilio",
+      "description": "Create amazing customer experiences with our Customer Engagement Platform (CEP) that combines communication APIs with AI. Build solutions for SMS, WhatsApp, voice, and email.",
+      "category": "communication",
+      "iconUrl": "https://avatars.githubusercontent.com/u/109142?s=280&v=4",
+      "version": "1.0.0",
+      "docsUrl": "https://www.twilio.com/docs",
+      "status": "active",
+      "createdAt": "2025-12-04T12:46:32.777Z",
+      "updatedAt": "2025-12-04T13:27:52.383Z"
     }
   ]
 }
