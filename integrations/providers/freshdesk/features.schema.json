@@ -281,7 +281,55 @@
       "status": "active",
       "createdAt": "2025-12-13T13:32:31.670Z",
       "updatedAt": "2025-12-13T13:32:31.670Z"
+    },
+    {
+      "id": "mapping_1766091636840_w0sjpvykq",
+      "featureTemplateId": "test_feature",
+      "featureTemplateName": "Test Feature",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "test_field",
+          "label": "Test Field",
+          "description": "",
+          "type": "static",
+          "fieldType": "string",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        },
+        {
+          "fieldKey": "sheet_id",
+          "label": "sheet id",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "string",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 2
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-18T21:00:36.840Z",
+      "updatedAt": "2025-12-18T21:00:36.840Z"
     }
   ],
-  "lastUpdated": "2025-12-13T13:32:31.670Z"
+  "lastUpdated": "2025-12-18T21:00:36.840Z"
 }

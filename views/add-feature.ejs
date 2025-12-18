@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head') %>
+    <link rel="stylesheet" href="/css/add-feature.css" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="breadcrumb">
+          <a href="/integrations">Integrations</a>
+          <span>/</span>
+          <a href="#" id="integrationNameLink">Loading...</a>
+          <span>/</span>
+          <span>Add Feature</span>
+        </div>
+      </div>
+
+      <!-- Wizard Container -->
+      <div class="wizard-container">
+        <!-- Wizard Header -->
+        <div class="wizard-header">
+          <h1 id="wizardTitle">Add Feature</h1>
+          <p id="wizardSubtitle">Create a new feature for this integration</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="wizard-progress">
+          <div class="progress-step active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-label">Define Feature</div>
+          </div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-label">Add Fields</div>
+          </div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-label">Review & Save</div>
+          </div>
+        </div>
+
+        <!-- Wizard Navigation -->
+        <div class="wizard-nav">
+          <button class="btn-secondary" id="cancelBtn">Cancel</button>
+          <div class="nav-buttons">
+            <button class="btn-secondary" id="prevBtn" style="display: none">
+              ← Back
+            </button>
+            <button class="btn-primary" id="nextBtn">Next: Add Fields</button>
+            <button class="btn-primary" id="saveBtn" style="display: none">
+              Save Feature
+            </button>
+          </div>
+        </div>
+
+        <!-- Wizard Steps -->
+        <div class="wizard-content">
+          <!-- Step 1: Define Feature -->
+          <div class="wizard-step active" id="step1">
+            <h2>Step 1: Define Feature</h2>
+            <p>Enter the basic details for the new feature</p>
+
+            <div class="feature-form">
+              <div class="form-group">
+                <label for="featureName">Feature Name *</label>
+                <input
+                  type="text"
+                  id="featureName"
+                  placeholder="e.g., Create Contact"
+                  required
+                />
+                <small class="help-text"
+                  >A descriptive name for this feature</small
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="featureId">Feature ID *</label>
+                <input
+                  type="text"
+                  id="featureId"
+                  placeholder="e.g., create_contact"
+                  required
+                />
+                <small class="help-text"
+                  >Unique identifier (snake_case, letters/numbers/underscores
+                  only)</small
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="featureDescription">Description</label>
+                <textarea
+                  id="featureDescription"
+                  rows="3"
+                  placeholder="Describe what this feature does..."
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="featureCategory">Category</label>
+                <select id="featureCategory">
+                  <option value="">Select category (optional)</option>
+                  <option value="contacts">Contacts</option>
+                  <option value="leads">Leads</option>
+                  <option value="email">Email</option>
+                  <option value="sms">SMS</option>
+                  <option value="tasks">Tasks</option>
+                  <option value="tickets">Tickets</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Add Fields -->
+          <div class="wizard-step" id="step2">
+            <h2>Step 2: Add Fields</h2>
+            <p>
+              Define the fields for this feature. These are the data points that
+              will be collected or used.
+            </p>
+
+            <div id="templateFieldsList" class="template-fields-list">
+              <!-- Fields will be managed here -->
+            </div>
+          </div>
+
+          <!-- Step 3: Review & Save -->
+          <div class="wizard-step" id="step3">
+            <h2>Step 3: Review & Save</h2>
+            <p>Review your feature configuration before saving.</p>
+
+            <div class="review-summary">
+              <div class="summary-section">
+                <h3>📋 Feature Summary</h3>
+                <div class="summary-item">
+                  <strong>Feature Name:</strong>
+                  <span id="reviewFeatureName">-</span>
+                </div>
+                <div class="summary-item">
+                  <strong>Feature ID:</strong>
+                  <span id="reviewFeatureId">-</span>
+                </div>
+                <div class="summary-item">
+                  <strong>Integration:</strong>
+                  <span id="reviewIntegrationName">-</span>
+                </div>
+                <div class="summary-item">
+                  <strong>Category:</strong>
+                  <span id="reviewFeatureCategory">-</span>
+                </div>
+              </div>
+
+              <div class="summary-section">
+                <div class="summary-header">
+                  <h3>
+                    ✓ Fields
+                    <span id="reviewFieldsCount"></span>
+                  </h3>
+                  <button class="btn-link" onclick="goToStep(2)">Edit →</button>
+                </div>
+                <div id="reviewFields" class="summary-list">
+                  <!-- Will be populated -->
+                </div>
+              </div>
+
+              <div class="summary-section">
+                <h3>💾 Save Location</h3>
+                <div class="save-location">
+                  <strong>File:</strong>
+                  <code id="reviewSaveLocation"
+                    >integrations/providers/[integration]/features.schema.json</code
+                  >
+                  <p class="help-text">
+                    This feature will be added to the features array in the file
+                    above.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Field Configuration Modal -->
+    <div id="fieldConfigModal" class="modal">
+      <div class="modal-content modal-lg">
+        <div class="modal-header">
+          <h2 id="fieldConfigModalTitle">Configure Field</h2>
+          <button class="modal-close" onclick="closeFieldConfigModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="configFieldKey" />
+
+          <!-- Admin Value Section (shown if fillBy=Admin) -->
+          <div id="adminValueSection" style="display: none">
+            <h4
+              style="
+                margin-bottom: 15px;
+                font-size: 16px;
+                font-weight: 600;
+                color: #2d3748;
+              "
+            >
+              📝 Admin Value
+            </h4>
+            <div class="form-group" id="adminValueInput">
+              <!-- Dynamic input will be generated here based on htmlType -->
+            </div>
+          </div>
+
+          <div class="handler-section collapsible open">
+            <h4 class="collapsible-header">🔧 Custom Handlers (Advanced)</h4>
+            <div class="collapsible-content">
+              <div id="customHandlersContainer">
+                <!-- Dynamically populated from panel-config.json -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeFieldConfigModal()">
+            Cancel
+          </button>
+          <button class="btn-primary" id="saveFieldConfigBtn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Extra Field Modal -->
+    <div id="extraFieldModal" class="modal">
+      <div class="modal-content modal-lg">
+        <div class="modal-header">
+          <h2 id="extraFieldModalTitle">Add Extra Field</h2>
+          <button class="modal-close" onclick="closeExtraFieldModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="extraFieldIndex" />
+
+          <div class="form-group">
+            <label for="extraFieldKey">Field Key * (used in code)</label>
+            <input
+              type="text"
+              id="extraFieldKey"
+              placeholder="e.g., sheet_id"
+              required
+            />
+            <small class="help-text"
+              >💡 Use snake_case, letters/numbers/underscores only</small
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="extraFieldLabel">Label * (shown to user)</label>
+            <input
+              type="text"
+              id="extraFieldLabel"
+              placeholder="e.g., Select Google Sheet"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="extraFieldDescription">Description (help text)</label>
+            <textarea
+              id="extraFieldDescription"
+              rows="2"
+              placeholder="Help text for this field"
+            ></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="extraFieldType">Field Type *</label>
+              <select id="extraFieldType" required>
+                <option value="">Select type</option>
+                <option value="api">API</option>
+                <option value="static">Static</option>
+                <option value="dynamic">Dynamic</option>
+                <option value="conditional">Conditional</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="extraFieldDataType">Data Type *</label>
+              <select id="extraFieldDataType" required>
+                <option value="">Select type</option>
+                <option value="string">String</option>
+                <option value="text">Text (Long)</option>
+                <option value="number">Number</option>
+                <option value="boolean">Boolean</option>
+                <option value="email">Email</option>
+                <option value="url">URL</option>
+                <option value="html">HTML</option>
+                <option value="date">Date</option>
+                <option value="array">Array</option>
+                <option value="object">Object</option>
+                <option value="json">JSON</option>
+              </select>
+              <small class="help-text"
+                >The type of data this field will store</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="extraFieldHtmlType">HTML Type *</label>
+              <select id="extraFieldHtmlType" required>
+                <option value="">Select type</option>
+                <optgroup label="Text Input">
+                  <option value="text">Text</option>
+                  <option value="textarea">Textarea</option>
+                  <option value="password">Password</option>
+                </optgroup>
+                <optgroup label="Selection">
+                  <option value="select">Select (Dropdown)</option>
+                  <option value="checkbox">Checkbox (Multiple)</option>
+                  <option value="radio">Radio (Single Choice)</option>
+                </optgroup>
+                <optgroup label="Numbers">
+                  <option value="number">Number</option>
+                  <option value="range">Range (Slider)</option>
+                </optgroup>
+                <optgroup label="Date & Time">
+                  <option value="date">Date</option>
+                  <option value="time">Time</option>
+                  <option value="datetime-local">DateTime (Local)</option>
+                  <option value="month">Month</option>
+                  <option value="week">Week</option>
+                </optgroup>
+                <optgroup label="Contact & Media">
+                  <option value="email">Email</option>
+                  <option value="url">URL</option>
+                  <option value="tel">Telephone</option>
+                  <option value="file">File Upload</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="color">Color Picker</option>
+                  <option value="hidden">Hidden</option>
+                </optgroup>
+              </select>
+              <small class="help-text"
+                >The HTML input type for this field</small
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="extraFieldRequired" />
+              Required Field
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="extraFieldFillBy">Fill By *</label>
+            <select id="extraFieldFillBy" required>
+              <option value="">Select who fills this field</option>
+              <option value="Admin">Admin</option>
+              <option value="User">User</option>
+            </select>
+            <small class="help-text">Specify who should fill this field</small>
+          </div>
+
+          <div class="form-group">
+            <label for="extraFieldDefault">Default Value (optional)</label>
+            <input
+              type="text"
+              id="extraFieldDefault"
+              placeholder="Default value"
+            />
+          </div>
+
+          <!-- Admin Value Section (shown if fillBy=Admin) -->
+          <div id="extraFieldAdminValueSection" style="display: none">
+            <h4
+              style="
+                margin-bottom: 15px;
+                font-size: 16px;
+                font-weight: 600;
+                color: #2d3748;
+              "
+            >
+              📝 Admin Value
+            </h4>
+            <div class="form-group" id="extraFieldAdminValueInput">
+              <!-- Dynamic input will be generated here based on htmlType -->
+            </div>
+          </div>
+
+          <div
+            class="form-group"
+            id="possibleValuesSection"
+            style="display: none"
+          >
+            <label>Possible Values (for select/checkbox/radio)</label>
+            <small class="help-text"
+              >Only if fetching via handler - leave empty</small
+            >
+            <div id="possibleValuesList" class="possible-values-list">
+              <!-- Possible values will be added here -->
+            </div>
+            <button
+              type="button"
+              class="btn-secondary btn-sm"
+              id="addPossibleValueBtn"
+            >
+              + Add Value
+            </button>
+          </div>
+
+          <div class="handler-section collapsible open">
+            <h4 class="collapsible-header">🔧 Custom Handlers (Advanced)</h4>
+            <div class="collapsible-content">
+              <div id="extraFieldCustomHandlersContainer">
+                <!-- Dynamically populated from panel-config.json -->
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="extraFieldOrder">Field Order</label>
+            <input type="number" id="extraFieldOrder" value="1" min="1" />
+            <small class="help-text">Determines display order in form</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeExtraFieldModal()">
+            Cancel
+          </button>
+          <button class="btn-primary" id="saveExtraFieldBtn">Add Field</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/js/add-feature.js"></script>
+  </body>
+</html>
