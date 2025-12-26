@@ -1,517 +1,831 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <%- include('partials/head') %>
-    <link rel="stylesheet" href="/css/api-configuration.css">
+    <link rel="stylesheet" href="/css/api-configuration.css" />
     <style>
-        /* Force three-column layout on desktop */
-        @media (min-width: 768px) {
-            .api-config-layout {
-                display: grid !important;
-                grid-template-columns: 250px 1fr 320px !important;
-                grid-template-areas: "left middle right" !important;
-            }
-
-            .api-list-panel {
-                grid-area: left !important;
-            }
-
-            .api-form-panel {
-                grid-area: middle !important;
-            }
-
-            .variable-panel {
-                grid-area: right !important;
-                display: block !important;
-            }
+      /* Force three-column layout on desktop */
+      @media (min-width: 768px) {
+        .api-config-layout {
+          display: grid !important;
+          grid-template-columns: 250px 1fr 320px !important;
+          grid-template-areas: 'left middle right' !important;
         }
+
+        .api-list-panel {
+          grid-area: left !important;
+        }
+
+        .api-form-panel {
+          grid-area: middle !important;
+        }
+
+        .variable-panel {
+          grid-area: right !important;
+          display: block !important;
+        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Sidebar -->
     <%- include('partials/sidebar') %>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Topbar -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M3 12h18M3 6h18M3 18h18"/>
-                    </svg>
-                </button>
-                <div class="breadcrumb">
-                    <a href="/integrations/">Integrations</a>
-                    <span class="separator">/</span>
-                    <a href="/integration-detail/" id="integrationLink">Integration</a>
-                    <span class="separator">/</span>
-                    <span id="featureName">API Configuration</span>
-                </div>
-            </div>
-
-            <div class="topbar-right">
-                <button class="icon-btn" id="notificationBtn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                    <span class="notification-badge">3</span>
-                </button>
-
-                <div class="user-menu">
-                    <img src="/img/download.svg" alt="User" class="user-avatar">
-                    <div class="user-info">
-                        <span class="user-name">Abhimanyu</span>
-                        <span class="user-role">Administrator</span>
-                    </div>
-                    <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <polyline points="6 9 12 15 18 9"/>
-                    </svg>
-                </div>
-            </div>
-        </header>
-
-        <!-- API Configuration Container -->
-        <div class="api-config-container">
-            <!-- Header -->
-            <div class="api-config-header">
-                <div class="header-info">
-                    <h1 class="page-title">API Configuration</h1>
-                    <p class="page-subtitle">Configure API endpoints for <span id="featureDisplayName"></span></p>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="window.history.back()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                            <path d="M19 12H5M12 19l-7-7 7-7"/>
-                        </svg>
-                        Back
-                    </button>
-                </div>
-            </div>
-
-            <!-- Main Layout -->
-            <div class="api-config-layout">
-                <!-- Left Panel: Feature Fields -->
-                <div class="api-list-panel">
-                    <div class="panel-header">
-                        <h3>Feature Fields</h3>
-                        <span class="api-count" id="fieldsCount">0</span>
-                    </div>
-                    <div class="api-list" id="fieldsList">
-                        <!-- Field items will be inserted here -->
-                    </div>
-                </div>
-
-                <!-- Middle Panel: API Configuration Form -->
-                <div class="api-form-panel" id="apiFormPanel">
-                    <!-- Tab Navigation -->
-                    <div class="api-tabs">
-                        <button type="button" class="tab-btn active" data-tab="basic">Basic</button>
-                        <button type="button" class="tab-btn" data-tab="headers">Headers</button>
-                        <button type="button" class="tab-btn" data-tab="params">Params</button>
-                        <button type="button" class="tab-btn" data-tab="body">Body</button>
-                        <button type="button" class="tab-btn" data-tab="response">Response</button>
-                    </div>
-
-                    <form id="apiConfigForm" class="apiConfigForm">
-                        <!-- Tab Content -->
-                        <div class="tab-content">
-                            <!-- Basic Tab -->
-                            <div class="tab-pane active" data-pane="basic">
-                                <!-- Request Configuration -->
-                                <div class="form-section">
-                                    <h3 class="section-title">Request Configuration</h3>
-
-                                    <!-- Method and URL -->
-                                    <div class="method-url-group">
-                                        <select id="httpMethod" name="method" class="method-select">
-                                            <option value="GET">GET</option>
-                                            <option value="POST">POST</option>
-                                            <option value="PUT">PUT</option>
-                                            <option value="PATCH">PATCH</option>
-                                            <option value="DELETE">DELETE</option>
-                                        </select>
-                                        <div class="url-input-wrapper">
-                                            <input type="text" id="apiUrl" name="url" class="url-input" placeholder="https://api.example.com/v2/contacts" required>
-                                            <button type="button" class="btn-icon" onclick="insertVariable('apiUrl')" title="Insert variable">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-                                                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-                                                    <line x1="6" y1="6" x2="6.01" y2="6"/>
-                                                    <line x1="6" y1="18" x2="6.01" y2="18"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            </div>
-
-                            <!-- Headers Tab -->
-                            <div class="tab-pane" data-pane="headers">
-                                <div class="form-section">
-                                    <h3 class="section-title">Headers</h3>
-                                    <div class="subsection-header">
-                                        <button type="button" class="btn btn-sm btn-ghost" onclick="addHeader()">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            </svg>
-                                            Add Header
-                                        </button>
-                                    </div>
-                                    <div class="key-value-table" id="headersTable">
-                                        <div class="table-header">
-                                            <span>Key</span>
-                                            <span>Value</span>
-                                            <span></span>
-                                        </div>
-                                        <div id="headersList">
-                                            <!-- Headers will be added here -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Params Tab -->
-                            <div class="tab-pane" data-pane="params">
-                                <div class="form-section">
-                                    <h3 class="section-title">Query Parameters</h3>
-                                    <div class="subsection-header">
-                                        <button type="button" class="btn btn-sm btn-ghost" onclick="addQueryParam()">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                            </svg>
-                                            Add Parameter
-                                        </button>
-                                    </div>
-                                    <div class="key-value-table" id="queryParamsTable">
-                                        <div class="table-header">
-                                            <span>Key</span>
-                                            <span>Value</span>
-                                            <span></span>
-                                        </div>
-                                        <div id="queryParamsList">
-                                            <!-- Query params will be added here -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Body Tab -->
-                            <div class="tab-pane" data-pane="body">
-                                <div class="form-section">
-                                    <h3 class="section-title">Body</h3>
-                                    <div class="subsection-header">
-                                        <label for="bodyType">Body Type:</label>
-                                        <select id="bodyType" name="bodyType" class="body-type-select" onchange="switchBodyType()">
-                                            <option value="none">None</option>
-                                            <option value="json">JSON</option>
-                                            <option value="form-data">Form Data</option>
-                                            <option value="x-www-form-urlencoded">x-www-form-urlencoded</option>
-                                            <option value="raw">Raw</option>
-                                            <option value="xml">XML</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Body Editors -->
-                                    <div class="body-editors">
-                                    <!-- JSON Editor -->
-                                    <div id="jsonEditor" class="body-editor" style="display: none;">
-                                        <div class="editor-toolbar">
-                                            <button type="button" class="btn btn-sm btn-ghost" onclick="formatJson()">Format</button>
-                                            <button type="button" class="btn btn-sm btn-ghost" onclick="validateJson()">Validate</button>
-                                        </div>
-                                        <textarea id="jsonBody" class="code-editor" placeholder='{"email": "{{email}}","name": "{{name}}"}' rows="20"></textarea>
-                                    </div>
-
-                                    <!-- Form Data -->
-                                    <div id="formDataEditor" class="body-editor" style="display: none;">
-                                        <div class="editor-toolbar">
-                                            <button type="button" class="btn btn-sm btn-ghost" onclick="addFormData()">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                </svg>
-                                                Add Field
-                                            </button>
-                                        </div>
-                                        <div class="key-value-table">
-                                            <div class="table-header">
-                                                <span>Key</span>
-                                                <span>Value</span>
-                                                <span></span>
-                                            </div>
-                                            <div id="formDataList">
-                                                <!-- Form data fields will be added here -->
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- URL Encoded -->
-                                    <div id="urlencodedEditor" class="body-editor" style="display: none;">
-                                        <div class="editor-toolbar">
-                                            <button type="button" class="btn btn-sm btn-ghost" onclick="addUrlEncoded()">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                </svg>
-                                                Add Field
-                                            </button>
-                                        </div>
-                                        <div class="key-value-table">
-                                            <div class="table-header">
-                                                <span>Key</span>
-                                                <span>Value</span>
-                                                <span></span>
-                                            </div>
-                                            <div id="urlencodedList">
-                                                <!-- URL encoded fields will be added here -->
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Raw -->
-                                    <div id="rawEditor" class="body-editor" style="display: none;">
-                                        <textarea id="rawBody" class="code-editor" placeholder="Enter raw body content..." rows="10"></textarea>
-                                    </div>
-
-                                    <!-- XML -->
-                                    <div id="xmlEditor" class="body-editor" style="display: none;">
-                                        <div class="editor-toolbar">
-                                            <button type="button" class="btn btn-sm btn-ghost" onclick="formatXml()">Format</button>
-                                            <button type="button" class="btn btn-sm btn-ghost" onclick="validateXml()">Validate</button>
-                                        </div>
-                                        <textarea id="xmlBody" class="code-editor" placeholder="<?xml version='1.0' encoding='UTF-8'?>" rows="10"></textarea>
-                                    </div>
-                                </div>
-                                </div>
-                            </div>
-
-                            <!-- Response Tab -->
-                            <div class="tab-pane" data-pane="response">
-                                <div class="form-section">
-                                    <h3 class="section-title">Response Configuration</h3>
-                                    <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="successPath">Success Path</label>
-                                    <input type="text" id="successPath" name="successPath" class="form-control" placeholder="e.g., data.id or result.success">
-                                    <small class="help-text">JSONPath to extract success indicator</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="errorPath">Error Path</label>
-                                    <input type="text" id="errorPath" name="errorPath" class="form-control" placeholder="e.g., error.message or errors[0].detail">
-                                    <small class="help-text">JSONPath to extract error message</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="dataFormat">Response Format</label>
-                                    <select id="dataFormat" name="dataFormat" class="form-control">
-                                        <option value="json">JSON</option>
-                                        <option value="xml">XML</option>
-                                        <option value="text">Plain Text</option>
-                                        <option value="html">HTML</option>
-                                    </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End of tab-content -->
-
-                        <!-- Form Actions -->
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="cancelApiEdit()">Cancel</button>
-                            <button type="button" class="btn btn-danger" id="deleteApiBtn" onclick="deleteCurrentApi()" style="display: none;" >Delete API</button>
-                            <button type="button" class="btn btn-info" id="testApiBtn" onclick="testApi()" disabled title="Save API configuration before testing">Test API</button>
-                            <button type="submit" class="btn btn-primary">Save API</button>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Right Panel: Variable Sidebar -->
-            <div class="variable-panel">
-                <div class="panel-header" style="padding: 3px 20px;">
-                    <h3>Variables</h3>
-                    <input type="text" class="variable-search" id="variableSearch" placeholder="Search variables...">
-                </div>
-
-                <div class="variable-sections">
-
-                    <!-- Authentication -->
-                    <div class="variable-section">
-                        <div class="section-header" onclick="toggleSection('authVariables')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                <rect x="5" y="11" width="14" height="10" rx="2" ry="2"/>
-                                <circle cx="12" cy="16" r="1"/>
-                                <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-                            </svg>
-                            <span>Authentication</span>
-                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </div>
-                        <div class="section-content" id="authVariables">
-                            <!-- Auth variables will be loaded here -->
-                        </div>
-                    </div>
-
-                    <!-- Additional Fields -->
-                    <div class="variable-section">
-                        <div class="section-header" onclick="toggleSection('additionalFields')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                <circle cx="12" cy="12" r="3"/>
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="21.17" y1="8" x2="12" y2="8"/>
-                                <line x1="3.95" y1="6.06" x2="8.54" y2="14"/>
-                                <line x1="10.88" y1="21.94" x2="15.46" y2="14"/>
-                            </svg>
-                            <span>Additional Fields</span>
-                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </div>
-                        <div class="section-content" id="additionalFields">
-                            <!-- Additional field variables will be loaded here -->
-                        </div>
-                    </div>
-
-                    <!-- Feature Fields -->
-                    <div class="variable-section">
-                        <div class="section-header" onclick="toggleSection('featureFields')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                            </svg>
-                            <span>Feature Fields</span>
-                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </div>
-                        <div class="section-content" id="featureFields">
-                            <!-- Feature field variables will be loaded here -->
-                        </div>
-                    </div>
-
-
-                    <!-- Extra Fields -->
-                    <div class="variable-section">
-                        <div class="section-header" onclick="toggleSection('extraFields')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                            </svg>
-                            <span>Extra Fields</span>
-                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </div>
-                        <div class="section-content" id="extraFields">
-                            <!-- Extra field variables will be loaded here -->
-                        </div>
-                    </div>
-
-                   
-                </div>
-            </div>
-                
-            </div>
-
-            
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+          </button>
+          <div class="breadcrumb">
+            <a href="/integrations/">Integrations</a>
+            <span class="separator">/</span>
+            <a href="/integration-detail/" id="integrationLink">Integration</a>
+            <span class="separator">/</span>
+            <span id="featureName">API Configuration</span>
+          </div>
         </div>
+
+        <div class="topbar-right">
+          <button class="icon-btn" id="notificationBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            <span class="notification-badge">3</span>
+          </button>
+
+          <div class="user-menu">
+            <img src="/img/download.svg" alt="User" class="user-avatar" />
+            <div class="user-info">
+              <span class="user-name">Abhimanyu</span>
+              <span class="user-role">Administrator</span>
+            </div>
+            <svg
+              class="dropdown-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+      </header>
+
+      <!-- API Configuration Container -->
+      <div class="api-config-container">
+        <!-- Header -->
+        <div class="api-config-header">
+          <div class="header-info">
+            <h1 class="page-title">API Configuration</h1>
+            <p class="page-subtitle">
+              Configure API endpoints for <span id="featureDisplayName"></span>
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="window.history.back()">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                width="16"
+                height="16"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="api-config-layout">
+          <!-- Left Panel: Feature Fields -->
+          <div class="api-list-panel">
+            <div class="panel-header">
+              <h3>Feature Fields</h3>
+              <span class="api-count" id="fieldsCount">0</span>
+            </div>
+            <div class="api-list" id="fieldsList">
+              <!-- Field items will be inserted here -->
+            </div>
+          </div>
+
+          <!-- Middle Panel: API Configuration Form -->
+          <div class="api-form-panel" id="apiFormPanel">
+            <!-- Tab Navigation -->
+            <div class="api-tabs">
+              <button type="button" class="tab-btn active" data-tab="basic">
+                Basic
+              </button>
+              <button type="button" class="tab-btn" data-tab="headers">
+                Headers
+              </button>
+              <button type="button" class="tab-btn" data-tab="params">
+                Params
+              </button>
+              <button type="button" class="tab-btn" data-tab="body">
+                Body
+              </button>
+              <button type="button" class="tab-btn" data-tab="response">
+                Response
+              </button>
+            </div>
+
+            <form id="apiConfigForm" class="apiConfigForm">
+              <!-- Tab Content -->
+              <div class="tab-content">
+                <!-- Basic Tab -->
+                <div class="tab-pane active" data-pane="basic">
+                  <!-- Request Configuration -->
+                  <div class="form-section">
+                    <h3 class="section-title">Request Configuration</h3>
+
+                    <!-- Method and URL -->
+                    <div class="method-url-group">
+                      <select
+                        id="httpMethod"
+                        name="method"
+                        class="method-select"
+                      >
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="DELETE">DELETE</option>
+                      </select>
+                      <div class="url-input-wrapper">
+                        <input
+                          type="text"
+                          id="apiUrl"
+                          name="url"
+                          class="url-input"
+                          placeholder="https://api.example.com/v2/contacts"
+                          required
+                        />
+                        <button
+                          type="button"
+                          class="btn-icon"
+                          onclick="insertVariable('apiUrl')"
+                          title="Insert variable"
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            width="16"
+                            height="16"
+                          >
+                            <rect
+                              x="2"
+                              y="2"
+                              width="20"
+                              height="8"
+                              rx="2"
+                              ry="2"
+                            />
+                            <rect
+                              x="2"
+                              y="14"
+                              width="20"
+                              height="8"
+                              rx="2"
+                              ry="2"
+                            />
+                            <line x1="6" y1="6" x2="6.01" y2="6" />
+                            <line x1="6" y1="18" x2="6.01" y2="18" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Headers Tab -->
+              <div class="tab-pane" data-pane="headers">
+                <div class="form-section">
+                  <h3 class="section-title">Headers</h3>
+                  <div class="subsection-header">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      onclick="addHeader()"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        width="16"
+                        height="16"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      Add Header
+                    </button>
+                  </div>
+                  <div class="key-value-table" id="headersTable">
+                    <div class="table-header">
+                      <span>Key</span>
+                      <span>Value</span>
+                      <span></span>
+                    </div>
+                    <div id="headersList">
+                      <!-- Headers will be added here -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Params Tab -->
+              <div class="tab-pane" data-pane="params">
+                <div class="form-section">
+                  <h3 class="section-title">Query Parameters</h3>
+                  <div class="subsection-header">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      onclick="addQueryParam()"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        width="16"
+                        height="16"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      Add Parameter
+                    </button>
+                  </div>
+                  <div class="key-value-table" id="queryParamsTable">
+                    <div class="table-header">
+                      <span>Key</span>
+                      <span>Value</span>
+                      <span></span>
+                    </div>
+                    <div id="queryParamsList">
+                      <!-- Query params will be added here -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Body Tab -->
+              <div class="tab-pane" data-pane="body">
+                <div class="form-section">
+                  <h3 class="section-title">Body</h3>
+                  <div class="subsection-header">
+                    <label for="bodyType">Body Type:</label>
+                    <select
+                      id="bodyType"
+                      name="bodyType"
+                      class="body-type-select"
+                      onchange="switchBodyType()"
+                    >
+                      <option value="none">None</option>
+                      <option value="json">JSON</option>
+                      <option value="form-data">Form Data</option>
+                      <option value="x-www-form-urlencoded">
+                        x-www-form-urlencoded
+                      </option>
+                      <option value="raw">Raw</option>
+                      <option value="xml">XML</option>
+                    </select>
+                  </div>
+
+                  <!-- Body Editors -->
+                  <div class="body-editors">
+                    <!-- JSON Editor -->
+                    <div
+                      id="jsonEditor"
+                      class="body-editor"
+                      style="display: none"
+                    >
+                      <div class="editor-toolbar">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          onclick="formatJson()"
+                        >
+                          Format
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          onclick="validateJson()"
+                        >
+                          Validate
+                        </button>
+                      </div>
+                      <textarea
+                        id="jsonBody"
+                        class="code-editor"
+                        placeholder="{&quot;email&quot;: &quot;{{
+                          email
+                        }}&quot;,&quot;name&quot;: &quot;{{ name }}&quot;}"
+                        rows="20"
+                      ></textarea>
+                    </div>
+
+                    <!-- Form Data -->
+                    <div
+                      id="formDataEditor"
+                      class="body-editor"
+                      style="display: none"
+                    >
+                      <div class="editor-toolbar">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          onclick="addFormData()"
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            width="16"
+                            height="16"
+                          >
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                          Add Field
+                        </button>
+                      </div>
+                      <div class="key-value-table">
+                        <div class="table-header">
+                          <span>Key</span>
+                          <span>Value</span>
+                          <span></span>
+                        </div>
+                        <div id="formDataList">
+                          <!-- Form data fields will be added here -->
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- URL Encoded -->
+                    <div
+                      id="urlencodedEditor"
+                      class="body-editor"
+                      style="display: none"
+                    >
+                      <div class="editor-toolbar">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          onclick="addUrlEncoded()"
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            width="16"
+                            height="16"
+                          >
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                          </svg>
+                          Add Field
+                        </button>
+                      </div>
+                      <div class="key-value-table">
+                        <div class="table-header">
+                          <span>Key</span>
+                          <span>Value</span>
+                          <span></span>
+                        </div>
+                        <div id="urlencodedList">
+                          <!-- URL encoded fields will be added here -->
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Raw -->
+                    <div
+                      id="rawEditor"
+                      class="body-editor"
+                      style="display: none"
+                    >
+                      <textarea
+                        id="rawBody"
+                        class="code-editor"
+                        placeholder="Enter raw body content..."
+                        rows="10"
+                      ></textarea>
+                    </div>
+
+                    <!-- XML -->
+                    <div
+                      id="xmlEditor"
+                      class="body-editor"
+                      style="display: none"
+                    >
+                      <div class="editor-toolbar">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          onclick="formatXml()"
+                        >
+                          Format
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          onclick="validateXml()"
+                        >
+                          Validate
+                        </button>
+                      </div>
+                      <textarea
+                        id="xmlBody"
+                        class="code-editor"
+                        placeholder="<?xml version='1.0' encoding='UTF-8'?>"
+                        rows="10"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Response Tab -->
+              <div class="tab-pane" data-pane="response">
+                <div class="form-section">
+                  <h3 class="section-title">Response Configuration</h3>
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="successPath">Success Path</label>
+                      <input
+                        type="text"
+                        id="successPath"
+                        name="successPath"
+                        class="form-control"
+                        placeholder="e.g., data.id or result.success"
+                      />
+                      <small class="help-text"
+                        >JSONPath to extract success indicator</small
+                      >
+                    </div>
+                    <div class="form-group">
+                      <label for="errorPath">Error Path</label>
+                      <input
+                        type="text"
+                        id="errorPath"
+                        name="errorPath"
+                        class="form-control"
+                        placeholder="e.g., error.message or errors[0].detail"
+                      />
+                      <small class="help-text"
+                        >JSONPath to extract error message</small
+                      >
+                    </div>
+                    <div class="form-group">
+                      <label for="dataFormat">Response Format</label>
+                      <select
+                        id="dataFormat"
+                        name="dataFormat"
+                        class="form-control"
+                      >
+                        <option value="json">JSON</option>
+                        <option value="xml">XML</option>
+                        <option value="text">Plain Text</option>
+                        <option value="html">HTML</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End of tab-content -->
+
+              <!-- Form Actions -->
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  onclick="cancelApiEdit()"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  id="deleteApiBtn"
+                  onclick="deleteCurrentApi()"
+                  style="display: none"
+                >
+                  Delete API
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-info"
+                  id="testApiBtn"
+                  onclick="testApi()"
+                  disabled
+                  title="Save API configuration before testing"
+                >
+                  Test API
+                </button>
+                <button type="submit" class="btn btn-primary">Save API</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Right Panel: Variable Sidebar -->
+          <div class="variable-panel">
+            <div class="panel-header" style="padding: 3px 20px">
+              <h3>Variables</h3>
+              <input
+                type="text"
+                class="variable-search"
+                id="variableSearch"
+                placeholder="Search variables..."
+              />
+            </div>
+
+            <div class="variable-sections">
+              <!-- Authentication -->
+              <div class="variable-section">
+                <div
+                  class="section-header"
+                  onclick="toggleSection('authVariables')"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <rect x="5" y="11" width="14" height="10" rx="2" ry="2" />
+                    <circle cx="12" cy="16" r="1" />
+                    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                  </svg>
+                  <span>Authentication</span>
+                  <svg
+                    class="chevron"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+                <div class="section-content" id="authVariables">
+                  <!-- Auth variables will be loaded here -->
+                </div>
+              </div>
+
+              <!-- Additional Fields -->
+              <div class="variable-section">
+                <div
+                  class="section-header"
+                  onclick="toggleSection('additionalFields')"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="21.17" y1="8" x2="12" y2="8" />
+                    <line x1="3.95" y1="6.06" x2="8.54" y2="14" />
+                    <line x1="10.88" y1="21.94" x2="15.46" y2="14" />
+                  </svg>
+                  <span>Additional Fields</span>
+                  <svg
+                    class="chevron"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+                <div class="section-content" id="additionalFields">
+                  <!-- Additional field variables will be loaded here -->
+                </div>
+              </div>
+
+              <!-- Feature Fields -->
+              <div class="variable-section">
+                <div
+                  class="section-header"
+                  onclick="toggleSection('featureFields')"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                    />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <span>Feature Fields</span>
+                  <svg
+                    class="chevron"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+                <div class="section-content" id="featureFields">
+                  <!-- Feature field variables will be loaded here -->
+                </div>
+              </div>
+
+              <!-- Extra Fields -->
+              <div class="variable-section">
+                <div
+                  class="section-header"
+                  onclick="toggleSection('extraFields')"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <path
+                      d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                    />
+                  </svg>
+                  <span>Extra Fields</span>
+                  <svg
+                    class="chevron"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
+                <div class="section-content" id="extraFields">
+                  <!-- Extra field variables will be loaded here -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- Test API Modal -->
-    <div id="testApiModal" class="modal" style="display: none;">
-        <div class="modal-overlay" onclick="closeTestModal()"></div>
-        <div class="modal-content modal-content-wide">
-            <div class="modal-header">
-                <h2>Test API Configuration</h2>
-                <button class="modal-close" onclick="closeTestModal()">&times;</button>
-            </div>
-            <div class="modal-body modal-body-split">
-                <!-- Left Panel: Configuration -->
-                <div class="test-config-panel">
-                    <!-- User Selection Section -->
-                    <div class="test-section">
-                        <div class="display_grid">
-                            <label>Select User</label>
-                            <select id="userSelect" class="form-control">
-                                <option value="">Select a user...</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="test-section">
-                        <div class="display_grid">
-                            <label>Select User Connection</label>
-                            <select id="userConnectionSelect" class="form-control" disabled>
-                                <option value="">Select a user first...</option>
-                            </select>
-                        </div>
-                        <div id="connectionInfo" class="connection-info" style="display: none;">
-                            <div class="info-item">
-                                <span class="info-label">Authentication Method:</span>
-                                <span id="authMethodDisplay"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Connection Status:</span>
-                                <span id="connectionStatusDisplay"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Variable Values Section -->
-                    <div class="test-section" id="variableValuesSection" style="display: none;">
-                        <label>Variable Values</label>
-                        <div id="variableInputs">
-                            <!-- Variable inputs will be dynamically added here -->
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="modal-actions">
-                        <button class="btn btn-secondary" onclick="closeTestModal()">Cancel</button>
-                        <button class="btn btn-primary" id="executeTestBtn" onclick="executeApiTest()" disabled>Execute Test</button>
-                    </div>
-                </div>
-
-                <!-- Right Panel: Response -->
-                <div class="test-response-panel">
-                    <div id="testResults" class="test-results">
-                        <div class="results-header">
-                            <h3>Response</h3>
-                            <div class="response-meta">
-                                <span id="responseStatus" class="response-status"></span>
-                                <span id="responseTime"></span>
-                                <span id="responseSize"></span>
-                            </div>
-                        </div>
-                        <div class="results-tabs">
-                            <button class="result-tab active" onclick="switchResultTab('body')">Body</button>
-                            <button class="result-tab" onclick="switchResultTab('headers')">Headers</button>
-                            <button class="result-tab" onclick="switchResultTab('request')">Request</button>
-                        </div>
-                        <div class="results-content">
-                            <div id="result-body" class="result-pane active">
-                                <pre id="responseBodyContent">Execute a test to see the response...</pre>
-                            </div>
-                            <div id="result-headers" class="result-pane" style="display: none;">
-                                <pre id="responseHeadersContent"></pre>
-                            </div>
-                            <div id="result-request" class="result-pane" style="display: none;">
-                                <pre id="requestDetailsContent"></pre>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="testApiModal" class="modal" style="display: none">
+      <div class="modal-overlay" onclick="closeTestModal()"></div>
+      <div class="modal-content modal-content-wide">
+        <div class="modal-header">
+          <h2>Test API Configuration</h2>
+          <button class="modal-close" onclick="closeTestModal()">
+            &times;
+          </button>
         </div>
+        <div class="modal-body modal-body-split">
+          <!-- Left Panel: Configuration -->
+          <div class="test-config-panel">
+            <!-- User Selection Section -->
+            <div class="test-section">
+              <div class="display_grid">
+                <label>Select User</label>
+                <select id="userSelect" class="form-control">
+                  <option value="">Select a user...</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="test-section">
+              <div class="display_grid">
+                <label>Select User Connection</label>
+                <select id="userConnectionSelect" class="form-control" disabled>
+                  <option value="">Select a user first...</option>
+                </select>
+              </div>
+              <div
+                id="connectionInfo"
+                class="connection-info"
+                style="display: none"
+              >
+                <div class="info-item">
+                  <span class="info-label">Authentication Method:</span>
+                  <span id="authMethodDisplay"></span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Connection Status:</span>
+                  <span id="connectionStatusDisplay"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Variable Values Section -->
+            <div
+              class="test-section"
+              id="variableValuesSection"
+              style="display: none"
+            >
+              <label>Variable Values</label>
+              <div id="variableInputs">
+                <!-- Variable inputs will be dynamically added here -->
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="modal-actions">
+              <button class="btn btn-secondary" onclick="closeTestModal()">
+                Cancel
+              </button>
+              <button
+                class="btn btn-primary"
+                id="executeTestBtn"
+                onclick="executeApiTest()"
+                disabled
+              >
+                Execute Test
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Panel: Response -->
+          <div class="test-response-panel">
+            <div id="testResults" class="test-results">
+              <div class="results-header">
+                <h3>Response</h3>
+                <div class="response-meta">
+                  <span id="responseStatus" class="response-status"></span>
+                  <span id="responseTime"></span>
+                  <span id="responseSize"></span>
+                </div>
+              </div>
+              <div class="results-tabs">
+                <button
+                  class="result-tab active"
+                  onclick="switchResultTab('body')"
+                >
+                  Body
+                </button>
+                <button class="result-tab" onclick="switchResultTab('headers')">
+                  Headers
+                </button>
+                <button class="result-tab" onclick="switchResultTab('request')">
+                  Request
+                </button>
+              </div>
+              <div class="results-content">
+                <div id="result-body" class="result-pane active">
+                  <pre id="responseBodyContent">
+Execute a test to see the response...</pre
+                  >
+                </div>
+                <div
+                  id="result-headers"
+                  class="result-pane"
+                  style="display: none"
+                >
+                  <pre id="responseHeadersContent"></pre>
+                </div>
+                <div
+                  id="result-request"
+                  class="result-pane"
+                  style="display: none"
+                >
+                  <pre id="requestDetailsContent"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="/js/dashboard.js"></script>
     <script src="/js/api-configuration.js"></script>
-</body>
+  </body>
 </html>

@@ -228,7 +228,11 @@ function initializeEventListeners() {
   document.getElementById('prevBtn').addEventListener('click', previousStep);
   document.getElementById('nextBtn').addEventListener('click', nextStep);
   document.getElementById('saveBtn').addEventListener('click', saveFeature);
-  document.getElementById('cancelBtn').addEventListener('click', cancelWizard);
+  document.getElementById('cancelBtn').addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    cancelWizard();
+  });
 
   // Step 1: Feature definition - auto-generate ID from name
   const featureNameInput = document.getElementById('featureName');
@@ -2239,7 +2243,7 @@ function saveExtraField() {
   validFieldNames = collectAllValidFields();
 
   closeExtraFieldModal();
-  renderExtraFields();
+  renderFieldsList();
 }
 
 function editExtraField(index) {
@@ -2253,7 +2257,7 @@ function deleteExtraField(index) {
     // Update valid field names for template variable validation
     validFieldNames = collectAllValidFields();
 
-    renderExtraFields();
+    renderFieldsList();
     showToast('Extra field deleted', 'success');
   }
 }
@@ -2430,14 +2434,43 @@ async function saveMapping() {
 // =====================================================
 
 function cancelWizard() {
-  if (
-    confirm(
-      'Are you sure you want to cancel? All unsaved changes will be lost.',
-    )
-  ) {
-    window.location.href = `/integration-detail/${wizardState.integrationId}`;
-  }
+  // Show custom confirmation modal instead of native confirm
+  const modal = document.getElementById('cancelConfirmModal');
+  modal.style.display = 'flex';
 }
+
+function closeCancelConfirmModal() {
+  const modal = document.getElementById('cancelConfirmModal');
+  modal.style.display = 'none';
+}
+
+function confirmCancel() {
+  closeCancelConfirmModal();
+  window.location.href = `/integration-detail/${wizardState.integrationId}`;
+}
+
+// Add event listeners for cancel confirmation modal
+document.addEventListener('DOMContentLoaded', () => {
+  const cancelConfirmNo = document.getElementById('cancelConfirmNo');
+  const cancelConfirmYes = document.getElementById('cancelConfirmYes');
+
+  if (cancelConfirmNo) {
+    cancelConfirmNo.addEventListener('click', closeCancelConfirmModal);
+  }
+  if (cancelConfirmYes) {
+    cancelConfirmYes.addEventListener('click', confirmCancel);
+  }
+
+  // Close modal when clicking outside
+  const cancelModal = document.getElementById('cancelConfirmModal');
+  if (cancelModal) {
+    cancelModal.addEventListener('click', e => {
+      if (e.target === cancelModal) {
+        closeCancelConfirmModal();
+      }
+    });
+  }
+});
 
 function showToast(message, type = 'success') {
   const toast = document.getElementById('toast');

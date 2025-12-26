@@ -60,7 +60,55 @@
       "status": "active",
       "createdAt": "2025-12-14T07:20:48.938Z",
       "updatedAt": "2025-12-14T08:39:58.669Z"
+    },
+    {
+      "id": "mapping_1766122362764_ivq2cg46e",
+      "featureTemplateId": "fetch_employee_detail",
+      "featureTemplateName": "fetch employee detail",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api_config",
+          "label": "API config",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        },
+        {
+          "fieldKey": "employee_id",
+          "label": "Emp ID",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "number",
+          "htmlType": "number",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 2
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-19T05:32:42.765Z",
+      "updatedAt": "2025-12-23T12:11:53.407Z"
     }
   ],
-  "lastUpdated": "2025-12-14T15:43:25.226Z"
+  "lastUpdated": "2025-12-23T12:11:53.407Z"
 }

@@ -60,6 +60,36 @@
       },
       "createdAt": "2025-12-14T07:23:02.197Z",
       "updatedAt": "2025-12-14T15:33:31.896Z"
+    },
+    {
+      "id": "api_1766122597515_yuh3enpct",
+      "featureId": "fetch_employee_detail",
+      "fieldId": "api_config",
+      "name": "api_config API",
+      "method": "POST",
+      "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "userId": "{{userid}}",
+          "token": "{{token}}",
+          "empId": "{{employee_id}}"
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json"
+      },
+      "createdAt": "2025-12-19T05:36:37.515Z",
+      "updatedAt": "2025-12-19T08:00:42.221Z"
     }
   ]
 }

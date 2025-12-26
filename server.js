@@ -384,11 +384,9 @@ app.patch('/api/integrations/:id/status', (req, res) => {
 
     // Align with panel-config.json status values
     if (!status || !['active', 'inactive', 'beta'].includes(status)) {
-      return res
-        .status(400)
-        .json({
-          error: 'Invalid status. Must be one of: active, inactive, beta',
-        });
+      return res.status(400).json({
+        error: 'Invalid status. Must be one of: active, inactive, beta',
+      });
     }
 
     const registryPath = path.join(__dirname, 'integrations', 'registry.json');
@@ -2281,7 +2279,7 @@ app.get('/api/integrations/:integrationId/all-apis', (req, res) => {
       const featureTemplate =
         featuresDefinition.features[mapping.featureTemplateId];
 
-      // Check if this mapping has any api-type fields enabled
+      // Check if this mapping has any api-type fields enabled in fieldMappings
       const apiFields = Object.entries(mapping.fieldMappings || {}).filter(
         ([fieldKey, fieldData]) => {
           // Check if field is enabled and is an api type field
@@ -2327,6 +2325,55 @@ app.get('/api/integrations/:integrationId/all-apis', (req, res) => {
             featureName: mapping.featureTemplateName,
             fieldLabel: fieldLabel,
             name: `${fieldKey} API`,
+            method: 'GET',
+            url: '',
+            headers: [],
+            queryParams: [],
+            bodyType: 'none',
+            body: {},
+            response: {
+              successPath: '',
+              errorPath: '',
+              dataFormat: 'json',
+            },
+            configured: false,
+          });
+        }
+      });
+
+      // Also check extraFields for api-type fields (created via new wizard)
+      const extraApiFields = (mapping.extraFields || []).filter(
+        field => field.type === 'api' || field.fieldKey?.includes('api'),
+      );
+
+      extraApiFields.forEach(extraField => {
+        const fieldKey = extraField.fieldKey;
+        const fieldLabel = extraField.label || fieldKey;
+
+        // Check if API is already configured
+        const configuredApi = configuredApis.find(
+          api =>
+            api.featureId === mapping.featureTemplateId &&
+            api.fieldId === fieldKey,
+        );
+
+        if (configuredApi) {
+          // API is configured, use configured data
+          allApis.push({
+            ...configuredApi,
+            featureName: mapping.featureTemplateName,
+            fieldLabel: fieldLabel,
+            configured: true,
+          });
+        } else {
+          // API is not configured, create placeholder
+          allApis.push({
+            id: `placeholder_${mapping.featureTemplateId}_${fieldKey}`,
+            featureId: mapping.featureTemplateId,
+            fieldId: fieldKey,
+            featureName: mapping.featureTemplateName,
+            fieldLabel: fieldLabel,
+            name: `${fieldLabel} API`,
             method: 'GET',
             url: '',
             headers: [],
@@ -2705,17 +2752,34 @@ app.get('/api/integrations/:integrationId/available-variables', (req, res) => {
               });
             }
           });
+          // Add extra fields with full metadata
+          if (mapping && mapping.extraFields) {
+            mapping.extraFields.forEach(field => {
+              variables.featureFields.push({
+                _id: field.fieldKey || field.name,
+                label: field.label || field.fieldKey || field.name,
+                htmlType: field.htmlType || 'text',
+                fieldType: field.fieldType || field.type || 'string',
+                required: field.required || false,
+                description: field.description || '',
+              });
+            });
+          }
         }
 
-        // Add extra fields
-        if (mapping && mapping.extraFields) {
-          mapping.extraFields.forEach(field => {
-            variables.extraFields.push({
-              _id: field.fieldKey || field.name,
-              label: field.label || field.fieldKey || field.name,
-            });
-          });
-        }
+        // Add extra fields with full metadata
+        // if (mapping && mapping.extraFields) {
+        //   mapping.extraFields.forEach(field => {
+        //     variables.extraFields.push({
+        //       _id: field.fieldKey || field.name,
+        //       label: field.label || field.fieldKey || field.name,
+        //       htmlType: field.htmlType || 'text',
+        //       fieldType: field.fieldType || field.type || 'string',
+        //       required: field.required || false,
+        //       description: field.description || '',
+        //     });
+        //   });
+        // }
       }
     }
 
