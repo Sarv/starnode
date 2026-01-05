@@ -1747,7 +1747,9 @@ app.post('/api/integrations/:id/feature-mappings', (req, res) => {
       customHandlers,
       customHandlers_for_feature,
       status,
+      category,
     } = req.body;
+    console.log('req.body', req.body);
 
     // Validation
     if (!featureTemplateId || !featureTemplateName) {
@@ -1795,6 +1797,7 @@ app.post('/api/integrations/:id/feature-mappings', (req, res) => {
       extraFields: extraFields || [],
       customHandlers: customHandlers || {},
       customHandlers_for_feature: customHandlers_for_feature || null,
+      category,
       status: status || 'active',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -3136,6 +3139,340 @@ app.get('/feature-integration-mapping', (req, res) => {
       ? '?' + new URLSearchParams(req.query).toString()
       : '';
   res.redirect(301, `/add-feature${queryString}`);
+});
+
+// =====================================================
+// CANONICAL FORMS - Page Route and API Endpoints
+// =====================================================
+
+// Canonical Forms Page
+app.get('/canonical-forms', (req, res) => {
+  res.render('canonical-forms', {
+    pageTitle: 'Canonical Forms',
+    activePage: 'canonical-forms',
+    extraCSS: ['/css/canonical-forms.css'],
+    showMobileMenu: true,
+    showSearch: false,
+    showUserProfile: true,
+    topbarActions: '',
+  });
+});
+
+// Helper function to read/write canonical data
+const CANONICAL_FILE = path.join(__dirname, 'canonical-scope-operation.json');
+
+function readCanonicalData() {
+  if (fs.existsSync(CANONICAL_FILE)) {
+    return JSON.parse(fs.readFileSync(CANONICAL_FILE, 'utf8'));
+  }
+  return {
+    version: '1.0.0',
+    scopes: [],
+    lastUpdated: new Date().toISOString(),
+  };
+}
+
+function writeCanonicalData(data) {
+  data.lastUpdated = new Date().toISOString();
+  fs.writeFileSync(CANONICAL_FILE, JSON.stringify(data, null, 2));
+}
+
+// GET all scopes
+app.get('/api/canonical/scopes', (req, res) => {
+  try {
+    const data = readCanonicalData();
+    res.json({ scopes: data.scopes });
+  } catch (error) {
+    console.error('Error reading canonical scopes:', error);
+    res.status(500).json({ error: 'Failed to load scopes' });
+  }
+});
+
+// POST create new scope
+app.post('/api/canonical/scopes', (req, res) => {
+  try {
+    const { id, label, description } = req.body;
+    if (!id || !label) {
+      return res.status(400).json({ error: 'ID and label are required' });
+    }
+
+    const data = readCanonicalData();
+    if (data.scopes.find(s => s.id === id)) {
+      return res.status(400).json({ error: 'Scope ID already exists' });
+    }
+
+    const newScope = {
+      id,
+      label,
+      description: description || '',
+      operations: [],
+      variables: [],
+    };
+
+    data.scopes.push(newScope);
+    writeCanonicalData(data);
+    res.status(201).json(newScope);
+  } catch (error) {
+    console.error('Error creating scope:', error);
+    res.status(500).json({ error: 'Failed to create scope' });
+  }
+});
+
+// PUT update scope
+app.put('/api/canonical/scopes/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { label, description } = req.body;
+
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === id);
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    if (label) scope.label = label;
+    if (description !== undefined) scope.description = description;
+
+    writeCanonicalData(data);
+    res.json(scope);
+  } catch (error) {
+    console.error('Error updating scope:', error);
+    res.status(500).json({ error: 'Failed to update scope' });
+  }
+});
+
+// DELETE scope
+app.delete('/api/canonical/scopes/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = readCanonicalData();
+    const index = data.scopes.findIndex(s => s.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    data.scopes.splice(index, 1);
+    writeCanonicalData(data);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting scope:', error);
+    res.status(500).json({ error: 'Failed to delete scope' });
+  }
+});
+
+// GET operations for a scope
+app.get('/api/canonical/scopes/:id/operations', (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === id);
+
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    res.json({ operations: scope.operations || [] });
+  } catch (error) {
+    console.error('Error loading operations:', error);
+    res.status(500).json({ error: 'Failed to load operations' });
+  }
+});
+
+// POST add operation to scope
+app.post('/api/canonical/scopes/:id/operations', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { id: opId, label, description } = req.body;
+
+    if (!opId || !label) {
+      return res
+        .status(400)
+        .json({ error: 'Operation ID and label are required' });
+    }
+
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === id);
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    if (!scope.operations) scope.operations = [];
+    if (scope.operations.find(o => o.id === opId)) {
+      return res.status(400).json({ error: 'Operation ID already exists' });
+    }
+
+    const newOperation = { id: opId, label, description: description || '' };
+    scope.operations.push(newOperation);
+    writeCanonicalData(data);
+    res.status(201).json(newOperation);
+  } catch (error) {
+    console.error('Error creating operation:', error);
+    res.status(500).json({ error: 'Failed to create operation' });
+  }
+});
+
+// PUT update operation
+app.put('/api/canonical/scopes/:scopeId/operations/:opId', (req, res) => {
+  try {
+    const { scopeId, opId } = req.params;
+    const { label, description } = req.body;
+
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === scopeId);
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    const operation = scope.operations?.find(o => o.id === opId);
+    if (!operation) {
+      return res.status(404).json({ error: 'Operation not found' });
+    }
+
+    if (label) operation.label = label;
+    if (description !== undefined) operation.description = description;
+
+    writeCanonicalData(data);
+    res.json(operation);
+  } catch (error) {
+    console.error('Error updating operation:', error);
+    res.status(500).json({ error: 'Failed to update operation' });
+  }
+});
+
+// DELETE operation
+app.delete('/api/canonical/scopes/:scopeId/operations/:opId', (req, res) => {
+  try {
+    const { scopeId, opId } = req.params;
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === scopeId);
+
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    const index = scope.operations?.findIndex(o => o.id === opId) ?? -1;
+    if (index === -1) {
+      return res.status(404).json({ error: 'Operation not found' });
+    }
+
+    scope.operations.splice(index, 1);
+    writeCanonicalData(data);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting operation:', error);
+    res.status(500).json({ error: 'Failed to delete operation' });
+  }
+});
+
+// GET variables for a scope
+app.get('/api/canonical/scopes/:id/variables', (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === id);
+
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    res.json({ variables: scope.variables || [] });
+  } catch (error) {
+    console.error('Error loading variables:', error);
+    res.status(500).json({ error: 'Failed to load variables' });
+  }
+});
+
+// POST add variable to scope
+app.post('/api/canonical/scopes/:id/variables', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { id: varId, label, description, fieldType } = req.body;
+
+    if (!varId || !label) {
+      return res
+        .status(400)
+        .json({ error: 'Variable ID and label are required' });
+    }
+
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === id);
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    if (!scope.variables) scope.variables = [];
+    if (scope.variables.find(v => v.id === varId)) {
+      return res.status(400).json({ error: 'Variable ID already exists' });
+    }
+
+    const newVariable = {
+      id: varId,
+      label,
+      description: description || '',
+      fieldType: fieldType || 'string',
+    };
+    scope.variables.push(newVariable);
+    writeCanonicalData(data);
+    res.status(201).json(newVariable);
+  } catch (error) {
+    console.error('Error creating variable:', error);
+    res.status(500).json({ error: 'Failed to create variable' });
+  }
+});
+
+// PUT update variable
+app.put('/api/canonical/scopes/:scopeId/variables/:varId', (req, res) => {
+  try {
+    const { scopeId, varId } = req.params;
+    const { label, description, fieldType } = req.body;
+
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === scopeId);
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    const variable = scope.variables?.find(v => v.id === varId);
+    if (!variable) {
+      return res.status(404).json({ error: 'Variable not found' });
+    }
+
+    if (label) variable.label = label;
+    if (description !== undefined) variable.description = description;
+    if (fieldType) variable.fieldType = fieldType;
+
+    writeCanonicalData(data);
+    res.json(variable);
+  } catch (error) {
+    console.error('Error updating variable:', error);
+    res.status(500).json({ error: 'Failed to update variable' });
+  }
+});
+
+// DELETE variable
+app.delete('/api/canonical/scopes/:scopeId/variables/:varId', (req, res) => {
+  try {
+    const { scopeId, varId } = req.params;
+    const data = readCanonicalData();
+    const scope = data.scopes.find(s => s.id === scopeId);
+
+    if (!scope) {
+      return res.status(404).json({ error: 'Scope not found' });
+    }
+
+    const index = scope.variables?.findIndex(v => v.id === varId) ?? -1;
+    if (index === -1) {
+      return res.status(404).json({ error: 'Variable not found' });
+    }
+
+    scope.variables.splice(index, 1);
+    writeCanonicalData(data);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting variable:', error);
+    res.status(500).json({ error: 'Failed to delete variable' });
+  }
 });
 
 // Start server

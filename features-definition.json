@@ -201,9 +201,7 @@
           "description": "",
           "fieldType": "string",
           "htmlType": "checkbox",
-          "possibleValues": [
-            "push"
-          ],
+          "possibleValues": ["push"],
           "multipleValueAllowed": false,
           "default": "push"
         },
@@ -234,10 +232,7 @@
           "fieldType": "string",
           "htmlType": "checkbox",
           "fillBy": "Admin",
-          "possibleValues": [
-            "pull",
-            "push"
-          ],
+          "possibleValues": ["pull", "push"],
           "multipleValueAllowed": false
         },
         "webhook": {
@@ -323,9 +318,7 @@
           "fieldType": "number",
           "htmlType": "select",
           "fillBy": "User",
-          "possibleValues": [
-            "Select Sheet"
-          ]
+          "possibleValues": ["Select Sheet"]
         },
         "testing_conditional": {
           "type": "conditional",

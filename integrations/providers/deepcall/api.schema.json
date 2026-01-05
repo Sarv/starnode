@@ -26,10 +26,21 @@
       "response": {
         "successPath": "",
         "errorPath": "",
-        "dataFormat": "json"
+        "dataFormat": "xml",
+        "canonicalTemplate": {
+          "scope": "employee",
+          "rawTemplate": "<employee id=\"{{canonical.employee.unique_id}}\" status=\"{{canonical.employee.status}}\">\n  <name>{{canonical.employee.name}}</name>\n  <dept>{{canonical.employee.dept}}</dept>\n</employee>",
+          "processedTemplate": {
+            "/employee/@id": "{{canonical.employee.unique_id}}",
+            "/employee/@status": "{{canonical.employee.status}}",
+            "/employee/name": "{{canonical.employee.name}}",
+            "/employee/dept": "{{canonical.employee.dept}}"
+          },
+          "responseFormat": "xml"
+        }
       },
       "createdAt": "2025-12-14T07:12:59.551Z",
-      "updatedAt": "2025-12-14T12:08:50.388Z"
+      "updatedAt": "2025-12-26T12:53:26.890Z"
     },
     {
       "id": "api_1765696982197_i2dhjk4ag",
@@ -65,7 +76,7 @@
       "id": "api_1766122597515_yuh3enpct",
       "featureId": "fetch_employee_detail",
       "fieldId": "api_config",
-      "name": "api_config API",
+      "name": "api API",
       "method": "POST",
       "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
       "headers": [
@@ -86,10 +97,20 @@
       "response": {
         "successPath": "",
         "errorPath": "",
-        "dataFormat": "json"
+        "dataFormat": "json",
+        "canonicalTemplate": {
+          "scope": "",
+          "rawTemplate": "{\n  \"emp_id\": \"{{canonical.employee.unique_id}}\",\n  \"department\": \"{{canonical.employee.dept}}\",\n  \"data\": {\n    \"designation\": \"{{canonical.employee.position}}\"\n  }\n}",
+          "processedTemplate": {
+            "emp_id": "{{canonical.employee.unique_id}}",
+            "department": "{{canonical.employee.dept}}",
+            "data.designation": "{{canonical.employee.position}}"
+          },
+          "responseFormat": "json"
+        }
       },
       "createdAt": "2025-12-19T05:36:37.515Z",
-      "updatedAt": "2025-12-19T08:00:42.221Z"
+      "updatedAt": "2025-12-26T13:03:47.428Z"
     }
   ]
 }

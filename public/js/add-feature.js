@@ -59,6 +59,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load integration details
   await loadIntegrationDetails();
 
+  // Load category scopes for the dropdown
+  await loadCategoryScopes();
+
   // If edit mode, load existing feature
   if (wizardState.editMappingId) {
     await loadExistingFeature();
@@ -164,6 +167,32 @@ async function loadFeatureTemplates() {
   } catch (error) {
     console.error('Error loading features:', error);
     showToast('Failed to load feature templates', 'error');
+  }
+}
+
+async function loadCategoryScopes() {
+  try {
+    const response = await fetch('/api/canonical/scopes');
+    const data = await response.json();
+
+    if (response.ok && data.scopes) {
+      const categorySelect = document.getElementById('featureCategory');
+      if (categorySelect) {
+        // Keep the default option
+        categorySelect.innerHTML =
+          '<option value="">Select category...</option>';
+
+        // Add scopes as options
+        data.scopes.forEach(scope => {
+          const option = document.createElement('option');
+          option.value = scope.id;
+          option.textContent = scope.label;
+          categorySelect.appendChild(option);
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error loading category scopes:', error);
   }
 }
 
