@@ -14,7 +14,8 @@ let wizardState = {
   featureId: null,
   featureName: null,
   featureDescription: '',
-  featureCategory: '',
+  featureCategory: '', // scope
+  featureOperation: '', // operation within the scope
   // Fields are stored in extraFields (Step 2)
   fieldMappings: {}, // kept for compatibility but will be empty for new features
   apiConfig: {
@@ -34,6 +35,7 @@ let customHandlersConfig_for_feature = null;
 // Auth data for template variable validation
 let integrationAuthSchema = null;
 let authTypesDefinition = null;
+let canonicalScopesData = []; // Store scopes for operation lookup
 let validFieldNames = [];
 
 // =====================================================
@@ -176,11 +178,13 @@ async function loadCategoryScopes() {
     const data = await response.json();
 
     if (response.ok && data.scopes) {
+      // Store scopes globally for operation lookup
+      canonicalScopesData = data.scopes;
+
       const categorySelect = document.getElementById('featureCategory');
       if (categorySelect) {
         // Keep the default option
-        categorySelect.innerHTML =
-          '<option value="">Select category...</option>';
+        categorySelect.innerHTML = '<option value="">Select scope...</option>';
 
         // Add scopes as options
         data.scopes.forEach(scope => {
@@ -189,10 +193,52 @@ async function loadCategoryScopes() {
           option.textContent = scope.label;
           categorySelect.appendChild(option);
         });
+
+        // Add "Other" option at the end
+        const otherOption = document.createElement('option');
+        otherOption.value = 'other';
+        otherOption.textContent = 'Other';
+        categorySelect.appendChild(otherOption);
       }
     }
   } catch (error) {
     console.error('Error loading category scopes:', error);
+  }
+}
+
+// Update operation dropdown based on selected scope
+function updateOperationDropdown(scopeId) {
+  const operationGroup = document.getElementById('operationGroup');
+  const operationSelect = document.getElementById('featureOperation');
+
+  if (!operationGroup || !operationSelect) return;
+
+  // If scope is "other" or empty, hide operation dropdown
+  if (!scopeId || scopeId === 'other') {
+    operationGroup.style.display = 'none';
+    operationSelect.value = '';
+    wizardState.featureOperation = '';
+    return;
+  }
+
+  // Find the scope and get its operations
+  const scope = canonicalScopesData.find(s => s.id === scopeId);
+
+  if (scope && scope.operations && scope.operations.length > 0) {
+    operationGroup.style.display = 'block';
+    operationSelect.innerHTML = '<option value="">Select operation...</option>';
+
+    scope.operations.forEach(op => {
+      const option = document.createElement('option');
+      option.value = op.id;
+      option.textContent = op.label;
+      operationSelect.appendChild(option);
+    });
+  } else {
+    // No operations for this scope, hide dropdown
+    operationGroup.style.display = 'none';
+    operationSelect.value = '';
+    wizardState.featureOperation = '';
   }
 }
 
@@ -297,6 +343,15 @@ function initializeEventListeners() {
   if (featureCategoryInput) {
     featureCategoryInput.addEventListener('change', e => {
       wizardState.featureCategory = e.target.value;
+      // Update operation dropdown based on selected scope
+      updateOperationDropdown(e.target.value);
+    });
+  }
+
+  const featureOperationInput = document.getElementById('featureOperation');
+  if (featureOperationInput) {
+    featureOperationInput.addEventListener('change', e => {
+      wizardState.featureOperation = e.target.value;
     });
   }
 
@@ -487,7 +542,9 @@ async function loadExistingFeature() {
       wizardState.featureId = mapping.featureTemplateId;
       wizardState.featureName = mapping.featureTemplateName;
       wizardState.featureDescription = mapping.description || '';
-      wizardState.featureCategory = mapping.category || '';
+      // Use scope if available, fallback to category for backward compatibility
+      wizardState.featureCategory = mapping.scope || mapping.category || '';
+      wizardState.featureOperation = mapping.operation || '';
       wizardState.apiConfig = mapping.apiConfig || wizardState.apiConfig;
       wizardState.extraFields = mapping.extraFields || [];
       wizardState.customHandlers_for_feature =
@@ -498,6 +555,7 @@ async function loadExistingFeature() {
       const idInput = document.getElementById('featureId');
       const descInput = document.getElementById('featureDescription');
       const categoryInput = document.getElementById('featureCategory');
+      const operationInput = document.getElementById('featureOperation');
 
       if (nameInput) nameInput.value = wizardState.featureName;
       if (idInput) {
@@ -505,7 +563,15 @@ async function loadExistingFeature() {
         idInput.dataset.manuallyEdited = 'true'; // Prevent auto-generation
       }
       if (descInput) descInput.value = wizardState.featureDescription;
-      if (categoryInput) categoryInput.value = wizardState.featureCategory;
+      if (categoryInput) {
+        categoryInput.value = wizardState.featureCategory;
+        // Update operation dropdown based on scope
+        updateOperationDropdown(wizardState.featureCategory);
+        // Set operation value after dropdown is populated
+        if (operationInput && wizardState.featureOperation) {
+          operationInput.value = wizardState.featureOperation;
+        }
+      }
 
       // Update UI elements
       document.getElementById(
@@ -549,7 +615,9 @@ async function saveFeature() {
       featureTemplateId: wizardState.featureId,
       featureTemplateName: wizardState.featureName,
       description: wizardState.featureDescription,
-      category: wizardState.featureCategory,
+      scope: wizardState.featureCategory, // canonical scope (e.g., "employee", "other")
+      operation: wizardState.featureOperation || null, // operation within scope (null if scope is "other")
+      category: wizardState.featureCategory, // kept for backward compatibility
       fieldMappings: {}, // Empty for direct feature creation
       apiConfig: wizardState.apiConfig,
       extraFields: wizardState.extraFields,
@@ -703,6 +771,9 @@ function validateCurrentStep() {
       // Validate feature name and ID
       const featureName = document.getElementById('featureName')?.value?.trim();
       const featureId = document.getElementById('featureId')?.value?.trim();
+      const featureCategory = document.getElementById('featureCategory')?.value;
+      const featureOperation =
+        document.getElementById('featureOperation')?.value;
 
       if (!featureName) {
         showToast('Please enter a feature name', 'error');
@@ -720,13 +791,30 @@ function validateCurrentStep() {
         );
         return false;
       }
+
+      // Validate scope is selected
+      if (!featureCategory) {
+        showToast('Please select a scope', 'error');
+        return false;
+      }
+
+      // Validate operation is selected (unless scope is "other")
+      if (featureCategory !== 'other' && !featureOperation) {
+        // Check if this scope has operations
+        const scope = canonicalScopesData.find(s => s.id === featureCategory);
+        if (scope && scope.operations && scope.operations.length > 0) {
+          showToast('Please select an operation', 'error');
+          return false;
+        }
+      }
+
       // Store in state
       wizardState.featureName = featureName;
       wizardState.featureId = featureId;
       wizardState.featureDescription =
         document.getElementById('featureDescription')?.value || '';
-      wizardState.featureCategory =
-        document.getElementById('featureCategory')?.value || '';
+      wizardState.featureCategory = featureCategory || '';
+      wizardState.featureOperation = featureOperation || '';
       break;
     case 3:
       // API config validation (optional)

@@ -518,24 +518,6 @@
                   </p>
 
                   <div class="form-group">
-                    <label for="canonicalScope">Select Scope</label>
-                    <select
-                      id="canonicalScope"
-                      name="canonicalScope"
-                      class="form-control"
-                      onchange="updateCanonicalPreview()"
-                      onfocus="loadCanonicalScopes()"
-                    >
-                      <option value="">Select a scope...</option>
-                      <!-- Scopes will be loaded dynamically -->
-                    </select>
-                    <small class="help-text"
-                      >Choose the canonical scope for this API's response
-                      mapping</small
-                    >
-                  </div>
-
-                  <div class="form-group">
                     <label for="canonicalTemplate">Response Template</label>
                     <div class="editor-toolbar">
                       <button
@@ -577,6 +559,23 @@
                       Paste your API response structure and replace values with
                       canonical variables using
                       <code>{{ canonical.scope.variable }}</code> syntax.
+                    </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="canonicalScope">Select Scope</label>
+                    <select
+                      id="canonicalScope"
+                      name="canonicalScope"
+                      class="form-control"
+                      onchange="updateCanonicalPreview()"
+                      onfocus="loadCanonicalScopes()"
+                    >
+                      <option value="">Select a scope...</option>
+                      <!-- Scopes will be loaded dynamically -->
+                    </select>
+                    <small class="help-text"
+                      >Choose the scope for canonical variables suggestions
                     </small>
                   </div>
 

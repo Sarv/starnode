@@ -5,40 +5,64 @@
       "id": "mapping_1765696302095_ksdvttis4",
       "featureTemplateId": "fetch_employees",
       "featureTemplateName": "Fetch Employees",
-      "fieldMappings": {
-        "api": {
-          "enabled": true,
-          "customHandlers": null
-        }
-      },
-      "apiConfig": {
-        "apiConfigId": null,
-        "method": "GET",
-        "endpoint": ""
-      },
-      "extraFields": [],
-      "customHandlers": {},
-      "customHandlers_for_feature": null,
-      "status": "active",
-      "createdAt": "2025-12-14T07:11:42.095Z",
-      "updatedAt": "2025-12-14T07:11:42.095Z"
-    },
-    {
-      "id": "mapping_1765696848938_kibyawxws",
-      "featureTemplateId": "get_employee_detail",
-      "featureTemplateName": "Employee Detail Fetch",
-      "fieldMappings": {
-        "api": {
-          "enabled": true,
-          "customHandlers": null
-        }
-      },
+      "fieldMappings": {},
       "apiConfig": {
         "apiConfigId": null,
         "method": "GET",
         "endpoint": ""
       },
       "extraFields": [
+        {
+          "fieldKey": "api_config",
+          "label": "api",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-14T07:11:42.095Z",
+      "updatedAt": "2026-01-08T11:07:14.758Z",
+      "scope": "employee",
+      "operation": "list",
+      "category": "employee"
+    },
+    {
+      "id": "mapping_1765696848938_kibyawxws",
+      "featureTemplateId": "get_employee_detail",
+      "featureTemplateName": "Employee Detail Fetch",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api_config",
+          "label": "api",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        },
         {
           "fieldKey": "employee_id",
           "label": "Employee Unique Id",
@@ -59,7 +83,10 @@
       "customHandlers_for_feature": null,
       "status": "active",
       "createdAt": "2025-12-14T07:20:48.938Z",
-      "updatedAt": "2025-12-14T08:39:58.669Z"
+      "updatedAt": "2026-01-08T11:08:19.967Z",
+      "scope": "employee",
+      "operation": "read",
+      "category": "employee"
     },
     {
       "id": "mapping_1766122362764_ivq2cg46e",
@@ -80,7 +107,7 @@
           "fieldType": "url",
           "htmlType": "url",
           "fillBy": "Admin",
-          "adminValue": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
+          "adminValue": "",
           "required": true,
           "default": null,
           "possibleValues": [],
@@ -107,8 +134,62 @@
       "customHandlers_for_feature": null,
       "status": "active",
       "createdAt": "2025-12-19T05:32:42.765Z",
-      "updatedAt": "2025-12-26T09:32:10.851Z"
+      "updatedAt": "2026-01-08T08:39:09.581Z",
+      "scope": "employee",
+      "operation": "read",
+      "category": "employee"
+    },
+    {
+      "id": "mapping_1767868315629_v2cf7761p",
+      "featureTemplateId": "get_employee_data",
+      "featureTemplateName": "Get Employee_data",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api_config",
+          "label": "api",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        },
+        {
+          "fieldKey": "emp_id",
+          "label": "employee id",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "number",
+          "htmlType": "number",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 2
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "scope": "employee",
+      "operation": "read",
+      "category": "employee",
+      "status": "active",
+      "createdAt": "2026-01-08T10:31:55.629Z",
+      "updatedAt": "2026-01-08T10:31:55.629Z"
     }
   ],
-  "lastUpdated": "2025-12-26T09:32:10.851Z"
+  "lastUpdated": "2026-01-08T11:08:19.967Z"
 }

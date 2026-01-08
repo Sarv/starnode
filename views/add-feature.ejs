@@ -106,11 +106,26 @@
               </div>
 
               <div class="form-group">
-                <label for="featureCategory">Category (Scope)</label>
-                <select id="featureCategory">
-                  <option value="">Select category...</option>
-                  <!-- Categories will be loaded dynamically from canonical scopes -->
+                <label for="featureCategory">Scope *</label>
+                <select id="featureCategory" required>
+                  <option value="">Select scope...</option>
+                  <!-- Scopes will be loaded dynamically from canonical scopes -->
+                  <!-- "Other" option will be added at the end -->
                 </select>
+                <small class="help-text"
+                  >The canonical scope this feature operates on</small
+                >
+              </div>
+
+              <div class="form-group" id="operationGroup" style="display: none">
+                <label for="featureOperation">Operation *</label>
+                <select id="featureOperation">
+                  <option value="">Select operation...</option>
+                  <!-- Operations loaded based on selected scope -->
+                </select>
+                <small class="help-text"
+                  >The type of operation this feature performs</small
+                >
               </div>
             </div>
           </div>

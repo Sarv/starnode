@@ -1747,6 +1747,8 @@ app.post('/api/integrations/:id/feature-mappings', (req, res) => {
       customHandlers,
       customHandlers_for_feature,
       status,
+      scope,
+      operation,
       category,
     } = req.body;
     console.log('req.body', req.body);
@@ -1797,6 +1799,8 @@ app.post('/api/integrations/:id/feature-mappings', (req, res) => {
       extraFields: extraFields || [],
       customHandlers: customHandlers || {},
       customHandlers_for_feature: customHandlers_for_feature || null,
+      scope: scope || null,
+      operation: operation || null,
       category,
       status: status || 'active',
       createdAt: new Date().toISOString(),
@@ -1835,6 +1839,9 @@ app.put('/api/integrations/:id/feature-mappings/:mappingId', (req, res) => {
       customHandlers,
       customHandlers_for_feature,
       status,
+      scope,
+      operation,
+      category,
     } = req.body;
 
     const featuresSchemaPath = path.join(
@@ -1897,6 +1904,10 @@ app.put('/api/integrations/:id/feature-mappings/:mappingId', (req, res) => {
         customHandlers_for_feature !== undefined
           ? customHandlers_for_feature
           : existingMapping.customHandlers_for_feature,
+      scope: scope !== undefined ? scope : existingMapping.scope,
+      operation:
+        operation !== undefined ? operation : existingMapping.operation,
+      category: category !== undefined ? category : existingMapping.category,
       status: status !== undefined ? status : existingMapping.status,
       updatedAt: new Date().toISOString(),
     };
@@ -2283,70 +2294,72 @@ app.get('/api/integrations/:integrationId/all-apis', (req, res) => {
         featuresDefinition.features[mapping.featureTemplateId];
 
       // Check if this mapping has any api-type fields enabled in fieldMappings
-      const apiFields = Object.entries(mapping.fieldMappings || {}).filter(
-        ([fieldKey, fieldData]) => {
-          // Check if field is enabled and is an api type field
-          return fieldData.enabled !== false && fieldKey.includes('api');
-        },
-      );
 
-      apiFields.forEach(([fieldKey]) => {
-        // Get field label from feature template
-        let fieldLabel = fieldKey; // default to fieldKey
-        if (
-          featureTemplate &&
-          featureTemplate.fields &&
-          featureTemplate.fields[fieldKey]
-        ) {
-          const fieldDef = featureTemplate.fields[fieldKey];
-          if (fieldDef && fieldDef.label) {
-            fieldLabel = fieldDef.label;
-          }
-        }
+      //TODO: commented below part
+      // const apiFields = Object.entries(mapping.fieldMappings || {}).filter(
+      //   ([fieldKey, fieldData]) => {
+      //     // Check if field is enabled and is an api type field
+      //     return fieldData.enabled !== false && fieldKey.includes('api');
+      //   },
+      // );
 
-        // Check if API is already configured
-        const configuredApi = configuredApis.find(
-          api =>
-            api.featureId === mapping.featureTemplateId &&
-            api.fieldId === fieldKey,
-        );
+      // apiFields.forEach(([fieldKey]) => {
+      //   // Get field label from feature template
+      //   let fieldLabel = fieldKey; // default to fieldKey
+      //   if (
+      //     featureTemplate &&
+      //     featureTemplate.fields &&
+      //     featureTemplate.fields[fieldKey]
+      //   ) {
+      //     const fieldDef = featureTemplate.fields[fieldKey];
+      //     if (fieldDef && fieldDef.label) {
+      //       fieldLabel = fieldDef.label;
+      //     }
+      //   }
 
-        if (configuredApi) {
-          // API is configured, use configured data
-          allApis.push({
-            ...configuredApi,
-            featureName: mapping.featureTemplateName,
-            fieldLabel: fieldLabel,
-            configured: true,
-          });
-        } else {
-          // API is not configured, create placeholder
-          allApis.push({
-            id: `placeholder_${mapping.featureTemplateId}_${fieldKey}`,
-            featureId: mapping.featureTemplateId,
-            fieldId: fieldKey,
-            featureName: mapping.featureTemplateName,
-            fieldLabel: fieldLabel,
-            name: `${fieldKey} API`,
-            method: 'GET',
-            url: '',
-            headers: [],
-            queryParams: [],
-            bodyType: 'none',
-            body: {},
-            response: {
-              successPath: '',
-              errorPath: '',
-              dataFormat: 'json',
-            },
-            configured: false,
-          });
-        }
-      });
+      //   // Check if API is already configured
+      //   const configuredApi = configuredApis.find(
+      //     api =>
+      //       api.featureId === mapping.featureTemplateId &&
+      //       api.fieldId === fieldKey,
+      //   );
+
+      //   if (configuredApi) {
+      //     // API is configured, use configured data
+      //     allApis.push({
+      //       ...configuredApi,
+      //       featureName: mapping.featureTemplateName,
+      //       fieldLabel: fieldLabel,
+      //       configured: true,
+      //     });
+      //   } else {
+      //     // API is not configured, create placeholder
+      //     allApis.push({
+      //       id: `placeholder_${mapping.featureTemplateId}_${fieldKey}`,
+      //       featureId: mapping.featureTemplateId,
+      //       fieldId: fieldKey,
+      //       featureName: mapping.featureTemplateName,
+      //       fieldLabel: fieldLabel,
+      //       name: `${fieldKey} API`,
+      //       method: 'GET',
+      //       url: '',
+      //       headers: [],
+      //       queryParams: [],
+      //       bodyType: 'none',
+      //       body: {},
+      //       response: {
+      //         successPath: '',
+      //         errorPath: '',
+      //         dataFormat: 'json',
+      //       },
+      //       configured: false,
+      //     });
+      //   }
+      // });
 
       // Also check extraFields for api-type fields (created via new wizard)
       const extraApiFields = (mapping.extraFields || []).filter(
-        field => field.type === 'api' || field.fieldKey?.includes('api'),
+        field => field.type === 'api' || field.fieldKey?.includes('api_config'),
       );
 
       extraApiFields.forEach(extraField => {

@@ -3,7 +3,7 @@
     {
       "id": "api_1765696379551_axnbkvjcp",
       "featureId": "fetch_employees",
-      "fieldId": "api",
+      "fieldId": "api_config",
       "name": "api API",
       "method": "POST",
       "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/List",
@@ -45,7 +45,7 @@
     {
       "id": "api_1765696982197_i2dhjk4ag",
       "featureId": "get_employee_detail",
-      "fieldId": "api",
+      "fieldId": "api_config",
       "name": "api API",
       "method": "POST",
       "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
@@ -111,6 +111,37 @@
       },
       "createdAt": "2025-12-19T05:36:37.515Z",
       "updatedAt": "2025-12-26T13:03:47.428Z"
+    },
+    {
+      "id": "api_1767868361354_49tm8g5wf",
+      "featureId": "get_employee_data",
+      "fieldId": "api_config",
+      "name": "api_config API",
+      "method": "POST",
+      "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "userId": "{{userid}}",
+          "token": "{{token}}",
+          "empId": "{{employee_id}}"
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json",
+        "canonicalTemplate": null
+      },
+      "createdAt": "2026-01-08T10:32:41.354Z",
+      "updatedAt": "2026-01-08T10:33:01.140Z"
     }
   ]
 }
