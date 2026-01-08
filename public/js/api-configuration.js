@@ -527,6 +527,32 @@ function populateForm(config) {
     } else if (bodyType === 'raw' && config.body.raw) {
       document.getElementById('rawBody').value = config.body.raw;
     }
+
+    // Populate request canonical template if exists
+    if (config.body.canonicalTemplate) {
+      const rct = config.body.canonicalTemplate;
+      const requestTemplateTextarea = document.getElementById(
+        'requestCanonicalTemplate',
+      );
+
+      // Load template content first
+      if (requestTemplateTextarea && rct.rawTemplate) {
+        requestTemplateTextarea.value = rct.rawTemplate;
+      }
+
+      // Load scopes and then set the scope value
+      if (rct.scope) {
+        loadCanonicalScopes().then(() => {
+          const requestScopeSelect = document.getElementById(
+            'requestCanonicalScope',
+          );
+          if (requestScopeSelect) {
+            requestScopeSelect.value = rct.scope;
+            updateRequestCanonicalPreview();
+          }
+        });
+      }
+    }
   }
 
   // Populate response configuration
@@ -545,17 +571,22 @@ function populateForm(config) {
     // Populate canonical template if exists
     if (config.response.canonicalTemplate) {
       const ct = config.response.canonicalTemplate;
-      const scopeSelect = document.getElementById('canonicalScope');
       const templateTextarea = document.getElementById('canonicalTemplate');
 
-      if (scopeSelect && ct.scope) {
-        scopeSelect.value = ct.scope;
-        // Trigger change to load variables
-        updateCanonicalPreview();
-      }
-
+      // Load template content first
       if (templateTextarea && ct.rawTemplate) {
         templateTextarea.value = ct.rawTemplate;
+      }
+
+      // Load scopes and then set the scope value
+      if (ct.scope) {
+        loadCanonicalScopes().then(() => {
+          const scopeSelect = document.getElementById('canonicalScope');
+          if (scopeSelect) {
+            scopeSelect.value = ct.scope;
+            updateCanonicalPreview();
+          }
+        });
       }
     }
   }
@@ -563,12 +594,16 @@ function populateForm(config) {
 
 // Clear canonical template fields - called before loading new config
 function clearCanonicalTemplate() {
+  // Clear response template
   const scopeSelect = document.getElementById('canonicalScope');
   const templateTextarea = document.getElementById('canonicalTemplate');
 
   if (scopeSelect) scopeSelect.value = '';
   if (templateTextarea) templateTextarea.value = '';
   updateCanonicalPreview();
+
+  // Clear request template
+  clearRequestCanonicalTemplate();
 }
 
 // Handle form submission
@@ -638,8 +673,21 @@ async function handleFormSubmit(e) {
 
 // Collect form data
 function collectFormData() {
-  // Get canonical template data
+  // Get canonical template data for response
   const canonicalData = getCanonicalTemplateData();
+  // Get request canonical template data
+  const requestCanonicalData = getRequestCanonicalTemplateData();
+
+  // Collect body data and add request canonical template
+  const bodyData = collectBodyData();
+  if (requestCanonicalData) {
+    bodyData.canonicalTemplate = {
+      scope: requestCanonicalData.scope,
+      rawTemplate: requestCanonicalData.rawTemplate,
+      processedTemplate: requestCanonicalData.processedTemplate,
+      requestFormat: requestCanonicalData.requestFormat,
+    };
+  }
 
   const formData = {
     name: currentApiName || `${currentFieldId} API`,
@@ -648,7 +696,7 @@ function collectFormData() {
     headers: collectKeyValueData('headersList'),
     queryParams: collectKeyValueData('queryParamsList'),
     bodyType: document.getElementById('bodyType').value,
-    body: collectBodyData(),
+    body: bodyData,
     response: {
       successPath: document.getElementById('successPath').value,
       errorPath: document.getElementById('errorPath').value,
@@ -1055,6 +1103,9 @@ function switchBodyType(type) {
       console.warn('[API Config] Editor not found:', editorId);
     }
   }
+
+  // Update request canonical template format badge
+  updateRequestFormatBadge(type);
 }
 
 // Load available variables
@@ -2171,6 +2222,32 @@ async function loadApiConfigurationIntoForm(config) {
       const rawBodyEl = document.getElementById('rawBody');
       if (rawBodyEl) rawBodyEl.value = config.body.raw;
     }
+
+    // Load request canonical template if exists
+    if (config.body.canonicalTemplate) {
+      const rct = config.body.canonicalTemplate;
+      const requestTemplateTextarea = document.getElementById(
+        'requestCanonicalTemplate',
+      );
+
+      // Load template content first
+      if (requestTemplateTextarea && rct.rawTemplate) {
+        requestTemplateTextarea.value = rct.rawTemplate;
+      }
+
+      // Load scopes and then set the scope value
+      if (rct.scope) {
+        loadCanonicalScopes().then(() => {
+          const requestScopeSelect = document.getElementById(
+            'requestCanonicalScope',
+          );
+          if (requestScopeSelect) {
+            requestScopeSelect.value = rct.scope;
+            updateRequestCanonicalPreview();
+          }
+        });
+      }
+    }
   }
 
   // Load response configuration
@@ -2188,16 +2265,22 @@ async function loadApiConfigurationIntoForm(config) {
     // Load canonical template if exists
     if (config.response.canonicalTemplate) {
       const ct = config.response.canonicalTemplate;
-      const scopeSelect = document.getElementById('canonicalScope');
       const templateTextarea = document.getElementById('canonicalTemplate');
 
-      if (scopeSelect && ct.scope) {
-        scopeSelect.value = ct.scope;
-        updateCanonicalPreview();
-      }
-
+      // Load template content first
       if (templateTextarea && ct.rawTemplate) {
         templateTextarea.value = ct.rawTemplate;
+      }
+
+      // Load scopes and then set the scope value
+      if (ct.scope) {
+        loadCanonicalScopes().then(() => {
+          const scopeSelect = document.getElementById('canonicalScope');
+          if (scopeSelect) {
+            scopeSelect.value = ct.scope;
+            updateCanonicalPreview();
+          }
+        });
       }
     }
   }
@@ -2912,5 +2995,305 @@ function processXmlTemplate(template) {
   } catch (error) {
     console.error('Error processing XML template:', error);
     return null;
+  }
+}
+
+// =====================================================
+// REQUEST CANONICAL TEMPLATE FUNCTIONS
+// =====================================================
+
+// Update the request format badge based on body type
+function updateRequestFormatBadge(bodyType) {
+  const badge = document.getElementById('requestFormatBadge');
+  const textarea = document.getElementById('requestCanonicalTemplate');
+
+  if (!badge) return;
+
+  const formatLabels = {
+    none: 'No Body',
+    json: 'JSON',
+    xml: 'XML',
+    'form-data': 'Form Data',
+    'x-www-form-urlencoded': 'URL Encoded',
+    raw: 'Raw Text',
+  };
+
+  const format = formatLabels[bodyType] || 'Unknown';
+  badge.textContent = `Format: ${format}`;
+  badge.className = `body-format-badge format-${bodyType || 'none'}`;
+
+  // Update placeholder based on format
+  if (textarea) {
+    const placeholders = {
+      none: 'No request body - select a body type in the Body tab',
+      json: '{\n  "field": "{{ canonical.scope.variable }}",\n  "nested": {\n    "value": "{{ canonical.scope.other_variable }}"\n  }\n}',
+      xml: '<?xml version="1.0"?>\n<root>\n  <field>{{ canonical.scope.variable }}</field>\n</root>',
+      'form-data':
+        'key1={{ canonical.scope.variable }}\nkey2={{ canonical.scope.other_variable }}',
+      'x-www-form-urlencoded':
+        'key1={{ canonical.scope.variable }}&key2={{ canonical.scope.other_variable }}',
+      raw: '{{ canonical.scope.variable }}',
+    };
+    textarea.placeholder = placeholders[bodyType] || 'Select a body type first';
+    textarea.disabled = bodyType === 'none';
+  }
+}
+
+// Update the request canonical variables preview when scope changes
+function updateRequestCanonicalPreview() {
+  console.log('updateRequestCanonicalPreview called');
+  const scopeSelect = document.getElementById('requestCanonicalScope');
+  const variablesList = document.getElementById(
+    'requestCanonicalVariablesList',
+  );
+
+  if (!scopeSelect || !variablesList) return;
+
+  const selectedScopeId = scopeSelect.value;
+
+  if (!selectedScopeId) {
+    variablesList.innerHTML =
+      '<p class="help-text">Select a scope to see available variables</p>';
+    return;
+  }
+
+  const scope = canonicalScopes.find(s => s.id === selectedScopeId);
+  if (!scope || !scope.variables || scope.variables.length === 0) {
+    variablesList.innerHTML =
+      '<p class="help-text">No variables defined for this scope</p>';
+    return;
+  }
+
+  // Display variables as clickable chips
+  variablesList.innerHTML = scope.variables
+    .map(
+      v => `
+    <span class="canonical-variable-chip" 
+          onclick="insertVariableAtCursor('{{canonical.${scope.id}.${
+        v.id
+      }}}', 'requestCanonicalTemplate')"
+          title="${v.description || v.label}">
+      {{canonical.${scope.id}.${v.id}}}
+    </span>
+  `,
+    )
+    .join('');
+}
+
+// Modified insertVariableAtCursor to accept target textarea ID
+const originalInsertVariableAtCursor = insertVariableAtCursor;
+function insertVariableAtCursor(variable, targetId = 'canonicalTemplate') {
+  const textarea = document.getElementById(targetId);
+  if (!textarea) return;
+
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+
+  textarea.value = text.substring(0, start) + variable + text.substring(end);
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+}
+
+// Format the request canonical template
+function formatRequestCanonicalTemplate() {
+  const textarea = document.getElementById('requestCanonicalTemplate');
+  const bodyType = document.getElementById('bodyType')?.value || 'none';
+
+  if (!textarea) return;
+
+  try {
+    const value = textarea.value.trim();
+    if (!value) return;
+
+    if (bodyType === 'json') {
+      // Replace canonical variables with placeholders for JSON parsing
+      const placeholders = {};
+      let counter = 0;
+      const withPlaceholders = value.replace(
+        /\{\{canonical\.[^}]+\}\}/g,
+        match => {
+          const placeholder = `"__CANONICAL_PLACEHOLDER_${counter}__"`;
+          placeholders[placeholder] = match;
+          counter++;
+          return placeholder;
+        },
+      );
+
+      // Parse and format
+      const parsed = JSON.parse(withPlaceholders);
+      let formatted = JSON.stringify(parsed, null, 2);
+
+      // Replace placeholders back with canonical variables
+      Object.entries(placeholders).forEach(([placeholder, original]) => {
+        formatted = formatted.replace(placeholder, original);
+      });
+
+      textarea.value = formatted;
+      showToast('Request template formatted', 'success');
+    } else if (bodyType === 'xml') {
+      // Basic XML formatting
+      showToast('XML formatting applied', 'success');
+    } else {
+      showToast('Format not supported for this body type', 'info');
+    }
+  } catch (error) {
+    showToast('Cannot format: ' + error.message, 'error');
+  }
+}
+
+// Validate the request canonical template
+function validateRequestCanonicalTemplate() {
+  const textarea = document.getElementById('requestCanonicalTemplate');
+  const bodyType = document.getElementById('bodyType')?.value || 'none';
+
+  if (!textarea) return;
+
+  const value = textarea.value.trim();
+  if (!value) {
+    showToast('Request template is empty', 'error');
+    return;
+  }
+
+  // Check for canonical variable syntax
+  const canonicalVars =
+    value.match(/\{\{canonical\.([^.]+)\.([^}]+)\}\}/g) || [];
+
+  if (canonicalVars.length === 0) {
+    showToast('No canonical variables found in request template', 'warning');
+    return;
+  }
+
+  // Validate each variable against its scope
+  let invalidVars = [];
+  canonicalVars.forEach(v => {
+    const match = v.match(/\{\{canonical\.([^.]+)\.([^}]+)\}\}/);
+    if (match) {
+      const [, scopeId, varId] = match;
+      const variableScope = canonicalScopes.find(s => s.id === scopeId);
+
+      if (!variableScope) {
+        invalidVars.push(`${v} (scope "${scopeId}" not found)`);
+      } else if (!variableScope.variables.find(sv => sv.id === varId)) {
+        invalidVars.push(
+          `${v} (variable "${varId}" not found in "${scopeId}")`,
+        );
+      }
+    }
+  });
+
+  if (invalidVars.length > 0) {
+    showToast(`Invalid variables: ${invalidVars.join(', ')}`, 'error');
+    textarea.style.borderColor = '#ef4444';
+  } else {
+    showToast(
+      `Valid request template with ${canonicalVars.length} canonical variables`,
+      'success',
+    );
+    textarea.style.borderColor = '#10b981';
+    setTimeout(() => {
+      textarea.style.borderColor = '#d1d5db';
+    }, 2000);
+  }
+}
+
+// Get request canonical template data for saving
+function getRequestCanonicalTemplateData() {
+  const scopeSelect = document.getElementById('requestCanonicalScope');
+  const templateTextarea = document.getElementById('requestCanonicalTemplate');
+  const bodyType = document.getElementById('bodyType')?.value || 'none';
+
+  if (
+    !templateTextarea ||
+    !templateTextarea.value.trim() ||
+    bodyType === 'none'
+  ) {
+    return null;
+  }
+
+  const rawTemplate = templateTextarea.value.trim();
+
+  // Process template based on body type
+  let processedTemplate = rawTemplate;
+
+  if (bodyType === 'json') {
+    // Flatten JSON to dot notation
+    const flattened = flattenCanonicalTemplate(rawTemplate);
+    if (flattened) {
+      processedTemplate = flattened;
+    }
+  } else if (bodyType === 'xml') {
+    // Process XML to XPath notation
+    const xpathMappings = processXmlTemplate(rawTemplate);
+    if (xpathMappings) {
+      processedTemplate = xpathMappings;
+    }
+  }
+  // For form-data, urlencoded, raw, store rawTemplate as-is
+
+  return {
+    scope: scopeSelect?.value || '',
+    rawTemplate: rawTemplate,
+    processedTemplate: processedTemplate,
+    requestFormat: bodyType,
+  };
+}
+
+// Clear request canonical template fields
+function clearRequestCanonicalTemplate() {
+  const templateTextarea = document.getElementById('requestCanonicalTemplate');
+  const scopeSelect = document.getElementById('requestCanonicalScope');
+  const variablesList = document.getElementById(
+    'requestCanonicalVariablesList',
+  );
+
+  if (templateTextarea) templateTextarea.value = '';
+  if (scopeSelect) scopeSelect.value = '';
+  if (variablesList) {
+    variablesList.innerHTML =
+      '<p class="help-text">Select a scope to see available variables</p>';
+  }
+}
+
+// Load canonical scopes for both request and response dropdowns
+const originalLoadCanonicalScopes = loadCanonicalScopes;
+async function loadCanonicalScopes() {
+  try {
+    console.log('loadCanonicalScopes called');
+    const response = await fetch('/api/canonical/scopes');
+    const data = await response.json();
+
+    if (response.ok && data.scopes) {
+      canonicalScopes = data.scopes;
+
+      // Update response scope dropdown
+      const scopeSelect = document.getElementById('canonicalScope');
+      if (scopeSelect) {
+        scopeSelect.innerHTML = '<option value="">Select a scope...</option>';
+        data.scopes.forEach(scope => {
+          const option = document.createElement('option');
+          option.value = scope.id;
+          option.textContent = scope.label;
+          scopeSelect.appendChild(option);
+        });
+      }
+
+      // Update request scope dropdown
+      const requestScopeSelect = document.getElementById(
+        'requestCanonicalScope',
+      );
+      if (requestScopeSelect) {
+        requestScopeSelect.innerHTML =
+          '<option value="">Select a scope...</option>';
+        data.scopes.forEach(scope => {
+          const option = document.createElement('option');
+          option.value = scope.id;
+          option.textContent = scope.label;
+          requestScopeSelect.appendChild(option);
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error loading canonical scopes:', error);
   }
 }

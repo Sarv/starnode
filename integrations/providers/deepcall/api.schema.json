@@ -76,7 +76,7 @@
       "id": "api_1766122597515_yuh3enpct",
       "featureId": "fetch_employee_detail",
       "fieldId": "api_config",
-      "name": "api API",
+      "name": "api_config API",
       "method": "POST",
       "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
       "headers": [
@@ -92,6 +92,12 @@
           "userId": "{{userid}}",
           "token": "{{token}}",
           "empId": "{{employee_id}}"
+        },
+        "canonicalTemplate": {
+          "scope": "employee",
+          "rawTemplate": "{\n  \"userId\": {{canonical.employee.email}},\n  \"empId\": {{canonical.employee.unique_id}}\n}",
+          "processedTemplate": "{\n  \"userId\": {{canonical.employee.email}},\n  \"empId\": {{canonical.employee.unique_id}}\n}",
+          "requestFormat": "json"
         }
       },
       "response": {
@@ -110,7 +116,7 @@
         }
       },
       "createdAt": "2025-12-19T05:36:37.515Z",
-      "updatedAt": "2025-12-26T13:03:47.428Z"
+      "updatedAt": "2026-01-08T13:24:33.466Z"
     },
     {
       "id": "api_1767868361354_49tm8g5wf",
@@ -126,22 +132,35 @@
         }
       ],
       "queryParams": [],
-      "bodyType": "json",
+      "bodyType": "form-data",
       "body": {
-        "json": {
-          "userId": "{{userid}}",
-          "token": "{{token}}",
-          "empId": "{{employee_id}}"
+        "formData": [
+          {
+            "key": "test_1",
+            "value": "{{emp_id}}",
+            "type": "text"
+          }
+        ],
+        "canonicalTemplate": {
+          "scope": "employee",
+          "rawTemplate": "test_1={{canonical.employee.unique_id}}",
+          "processedTemplate": "test_1={{canonical.employee.unique_id}}",
+          "requestFormat": "form-data"
         }
       },
       "response": {
         "successPath": "",
         "errorPath": "",
-        "dataFormat": "json",
-        "canonicalTemplate": null
+        "dataFormat": "text",
+        "canonicalTemplate": {
+          "scope": "",
+          "rawTemplate": "hello world {{canonical.leads.unique_id}}",
+          "processedTemplate": "hello world {{canonical.leads.unique_id}}",
+          "responseFormat": "text"
+        }
       },
       "createdAt": "2026-01-08T10:32:41.354Z",
-      "updatedAt": "2026-01-08T10:33:01.140Z"
+      "updatedAt": "2026-01-08T13:20:06.618Z"
     }
   ]
 }

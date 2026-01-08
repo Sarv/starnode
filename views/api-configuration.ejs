@@ -510,8 +510,83 @@
 
               <!-- Canonical Template Tab -->
               <div class="tab-pane" data-pane="canonical">
-                <div class="form-section">
-                  <h3 class="section-title">Canonical Response Template</h3>
+                <!-- Request Template Sub-section -->
+                <div class="form-section canonical-subsection">
+                  <h3 class="section-title">Request Template</h3>
+                  <p class="help-text" style="margin-bottom: 16px">
+                    Map canonical variables to API request body fields. The
+                    format matches your selected body type.
+                  </p>
+
+                  <div class="form-group">
+                    <label for="requestCanonicalTemplate"
+                      >Request Template</label
+                    >
+                    <div class="editor-toolbar">
+                      <span class="body-format-badge" id="requestFormatBadge"
+                        >Format: None</span
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        onclick="formatRequestCanonicalTemplate()"
+                      >
+                        Format
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        onclick="validateRequestCanonicalTemplate()"
+                      >
+                        Validate
+                      </button>
+                    </div>
+                    <textarea
+                      id="requestCanonicalTemplate"
+                      name="requestCanonicalTemplate"
+                      class="code-editor"
+                      placeholder="Select a body type first to enable request templates"
+                      rows="12"
+                    ></textarea>
+                    <small class="help-text">
+                      Define the request body structure using
+                      <code>{{ canonical.scope.variable }}</code> syntax.
+                    </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="requestCanonicalScope">Select Scope</label>
+                    <select
+                      id="requestCanonicalScope"
+                      name="requestCanonicalScope"
+                      class="form-control"
+                      onchange="updateRequestCanonicalPreview()"
+                      onfocus="loadCanonicalScopes()"
+                    >
+                      <option value="">Select a scope...</option>
+                      <!-- Scopes will be loaded dynamically -->
+                    </select>
+                    <small class="help-text"
+                      >Choose the scope for canonical variables suggestions
+                    </small>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Available Variables</label>
+                    <div
+                      id="requestCanonicalVariablesList"
+                      class="canonical-variables-list"
+                    >
+                      <p class="help-text">
+                        Select a scope to see available variables
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Response Template Sub-section -->
+                <div class="form-section canonical-subsection">
+                  <h3 class="section-title">Response Template</h3>
                   <p class="help-text" style="margin-bottom: 16px">
                     Map API response fields to canonical variables. This allows
                     standardized data mapping across different integrations.
@@ -534,13 +609,6 @@
                       >
                         Validate
                       </button>
-                      <!-- <button
-                        type="button"
-                        class="btn btn-sm btn-ghost"
-                        onclick="event.preventDefault(); insertCanonicalVariable()"
-                      >
-                        Insert Variable
-                      </button> -->
                     </div>
                     <textarea
                       id="canonicalTemplate"
@@ -553,7 +621,7 @@
     &quot;designation&quot;: &quot;{{ canonical.employee.position }}&quot;
   }
 }"
-                      rows="15"
+                      rows="12"
                     ></textarea>
                     <small class="help-text">
                       Paste your API response structure and replace values with
