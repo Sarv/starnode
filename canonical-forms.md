@@ -83,13 +83,22 @@ Canonical Forms provide a standardized way to define **scopes** (categories), **
 
 **Location:** Second pane in API Configuration page, next to "Response" tab
 
-**Features:**
+**Layout:** Two sub-sections - Request Template and Response Template
 
-- **Scope Selector**: Dropdown populated from canonical scopes
-- **Response Template**: Textarea for mapping API response to canonical variables
-- **Available Variables**: Clickable chips to insert variables at cursor
-- **Format Button**: Formats JSON while preserving canonical variables
-- **Validate Button**: Validates canonical variables against their scopes
+#### Request Template Section
+
+- **Format Badge**: Shows current body type (JSON, XML, form-data, etc.) - synced with Body tab
+- **Scope Selector**: Dropdown for canonical scope
+- **Template Editor**: Define request body structure with canonical variables
+- **Available Variables**: Clickable chips to insert variables
+
+#### Response Template Section
+
+- **Scope Selector**: Dropdown for canonical scope
+- **Template Editor**: Map API response to canonical variables
+- **Available Variables**: Clickable chips to insert variables
+- **Format Button**: Formats JSON preserving canonical variables
+- **Validate Button**: Validates variables against scopes
 
 ---
 
@@ -109,7 +118,25 @@ Canonical Forms provide a standardized way to define **scopes** (categories), **
 
 ## Storage in API Configuration
 
-Canonical templates are stored in `api.schema.json` under each API's `response` object:
+Canonical templates are stored in `api.schema.json`:
+
+### Request Body Template (`body.canonicalTemplate`)
+
+```json
+"body": {
+  "json": { ... },
+  "canonicalTemplate": {
+    "scope": "employee",
+    "rawTemplate": "{\n  \"user_id\": \"{{canonical.employee.unique_id}}\"\n}",
+    "processedTemplate": {
+      "user_id": "{{canonical.employee.unique_id}}"
+    },
+    "requestFormat": "json"
+  }
+}
+```
+
+### Response Template (`response.canonicalTemplate`)
 
 ```json
 "response": {
@@ -118,10 +145,9 @@ Canonical templates are stored in `api.schema.json` under each API's `response` 
   "dataFormat": "json",
   "canonicalTemplate": {
     "scope": "employee",
-    "rawTemplate": "{\n  \"emp_id\": \"{{canonical.employee.unique_id}}\",\n  \"dept\": \"{{canonical.employee.dept}}\"\n}",
+    "rawTemplate": "{\n  \"emp_id\": \"{{canonical.employee.unique_id}}\"\n}",
     "processedTemplate": {
-      "emp_id": "{{canonical.employee.unique_id}}",
-      "dept": "{{canonical.employee.dept}}"
+      "emp_id": "{{canonical.employee.unique_id}}"
     },
     "responseFormat": "json"
   }
@@ -182,15 +208,26 @@ The `Validate` button checks each canonical variable against its **own scope** (
 
 ### api-configuration.js
 
-| Function                             | Purpose                                  |
-| ------------------------------------ | ---------------------------------------- |
-| `loadCanonicalScopes()`              | Fetches scopes and populates dropdown    |
-| `updateCanonicalPreview()`           | Shows variable chips when scope changes  |
-| `insertVariableAtCursor(variable)`   | Inserts variable at cursor position      |
-| `formatCanonicalTemplate()`          | Formats JSON preserving canonical vars   |
-| `validateCanonicalTemplate()`        | Validates variables against their scopes |
-| `flattenCanonicalTemplate(template)` | Flattens nested JSON to dot notation     |
-| `getCanonicalTemplateData()`         | Collects template data for saving        |
+#### Response Template Functions
+
+| Function                      | Purpose                                  |
+| ----------------------------- | ---------------------------------------- |
+| `loadCanonicalScopes()`       | Fetches scopes, populates both dropdowns |
+| `updateCanonicalPreview()`    | Shows variable chips for response scope  |
+| `formatCanonicalTemplate()`   | Formats JSON preserving canonical vars   |
+| `validateCanonicalTemplate()` | Validates variables against scopes       |
+| `getCanonicalTemplateData()`  | Collects response template for saving    |
+
+#### Request Template Functions
+
+| Function                             | Purpose                                 |
+| ------------------------------------ | --------------------------------------- |
+| `updateRequestFormatBadge(bodyType)` | Updates format badge based on body type |
+| `updateRequestCanonicalPreview()`    | Shows variable chips for request scope  |
+| `formatRequestCanonicalTemplate()`   | Formats request template                |
+| `validateRequestCanonicalTemplate()` | Validates request template variables    |
+| `getRequestCanonicalTemplateData()`  | Collects request template for saving    |
+| `clearRequestCanonicalTemplate()`    | Clears request template fields          |
 
 ---
 
