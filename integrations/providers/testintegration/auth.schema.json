@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "bearer_token_method_1764578544478",
+      "authType": "bearer_token",
+      "label": "Bearer Token",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "headerName": "Authorization",
+        "prefix": "Bearer ",
+        "isDefault": true
+      },
+      "testConfig": {},
+      "additionalFields": [
+        {
+          "name": "org_id",
+          "label": "organization id",
+          "type": "number",
+          "required": true,
+          "placeholder": "please add your org id"
+        }
+      ]
+    }
+  ]
+}

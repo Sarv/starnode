@@ -27,14 +27,17 @@ This document provides comprehensive documentation for all REST API endpoints in
 ## ⚙️ Base Configuration
 
 ### Base URL
+
 ```
 http://localhost:3000
 ```
 
 ### Content Type
+
 All requests and responses use `application/json` content type unless otherwise specified.
 
 ### Authentication
+
 Currently, the system does not implement authentication tokens. User identification is done via `userId` parameter in requests.
 
 **Future:** OAuth 2.0 or JWT-based authentication will be implemented.
@@ -50,15 +53,18 @@ Retrieve detailed information about a specific user.
 **Endpoint:** `GET /api/users/:userId`
 
 **URL Parameters:**
+
 - `userId` (string, required) - Unique identifier for the user
 
 **Request Example:**
+
 ```http
 GET /api/users/user_123 HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -74,6 +80,7 @@ Host: localhost:3000
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -82,6 +89,7 @@ Host: localhost:3000
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -99,15 +107,18 @@ Retrieve a list of all active users in the system.
 **Endpoint:** `GET /api/users`
 
 **Query Parameters:**
+
 - `status` (string, optional) - Filter by user status (`active` or `inactive`). Default: all statuses
 
 **Request Example:**
+
 ```http
 GET /api/users?status=active HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -132,6 +143,7 @@ Host: localhost:3000
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -151,16 +163,19 @@ Retrieve a list of all available integrations with their metadata.
 **Endpoint:** `GET /api/integrations`
 
 **Query Parameters:**
+
 - `category` (string, optional) - Filter by category (e.g., `crm`, `payment`, `database`)
 - `status` (string, optional) - Filter by status (`active` or `inactive`). Default: `active`
 
 **Request Example:**
+
 ```http
 GET /api/integrations?category=crm&status=active HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -191,6 +206,7 @@ Host: localhost:3000
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -208,15 +224,18 @@ Retrieve the authentication schema for a specific integration, including availab
 **Endpoint:** `GET /api/integrations/:integrationId/auth-schema`
 
 **URL Parameters:**
+
 - `integrationId` (string, required) - Unique identifier for the integration
 
 **Request Example:**
+
 ```http
 GET /api/integrations/salesforce/auth-schema HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -288,6 +307,7 @@ Host: localhost:3000
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -296,6 +316,7 @@ Host: localhost:3000
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -315,6 +336,7 @@ Create a new user connection to an integration.
 **Endpoint:** `POST /api/user-integrations/connect`
 
 **Request Body:**
+
 ```json
 {
   "userId": "user_123",
@@ -332,6 +354,7 @@ Create a new user connection to an integration.
 ```
 
 **Request Fields:**
+
 - `userId` (string, required) - ID of the user creating the connection
 - `integrationId` (string, required) - ID of the integration to connect
 - `authMethodId` (string, required) - Authentication method to use
@@ -340,6 +363,7 @@ Create a new user connection to an integration.
 - `credentials` (object, required) - Authentication credentials (will be encrypted)
 
 **Success Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -360,6 +384,7 @@ Create a new user connection to an integration.
 ```
 
 **Error Response (400 Bad Request):**
+
 ```json
 {
   "success": false,
@@ -373,6 +398,7 @@ Create a new user connection to an integration.
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -381,6 +407,7 @@ Create a new user connection to an integration.
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -398,17 +425,20 @@ Retrieve all connections for a specific user.
 **Endpoint:** `GET /api/user-integrations/my-connections`
 
 **Query Parameters:**
+
 - `userId` (string, required) - ID of the user
 - `status` (string, optional) - Filter by status (`active` or `inactive`). Default: all statuses
 - `integrationId` (string, optional) - Filter by specific integration
 
 **Request Example:**
+
 ```http
 GET /api/user-integrations/my-connections?userId=user_123&status=active HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -485,6 +515,7 @@ Host: localhost:3000
 ```
 
 **Error Response (400 Bad Request):**
+
 ```json
 {
   "success": false,
@@ -493,6 +524,7 @@ Host: localhost:3000
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -510,15 +542,18 @@ Retrieve detailed information about a specific connection, including embedded in
 **Endpoint:** `GET /api/user-integrations/:connectionId`
 
 **URL Parameters:**
+
 - `connectionId` (string, required) - Unique identifier for the connection
 
 **Request Example:**
+
 ```http
 GET /api/user-integrations/conn_abc123xyz HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -557,11 +592,13 @@ Host: localhost:3000
 ```
 
 **Response Fields:**
+
 - `success` (boolean) - Always `true` for successful responses. Frontend should check this field before processing data
 - `connection` (object) - Complete connection details
   - `integration` (object) - Embedded integration metadata loaded from integration's auth.schema.json file
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -570,6 +607,7 @@ Host: localhost:3000
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -589,6 +627,7 @@ This endpoint is essential for the edit connection feature. When a user clicks t
 5. **Integration metadata is included** - No need for separate API call to load integration details
 
 **Example Usage:**
+
 ```javascript
 async function loadExistingConnection(connectionId) {
   try {
@@ -612,11 +651,12 @@ async function loadExistingConnection(connectionId) {
       displayIntegrationInfo(connection.integration);
 
       // Pre-fill connection name
-      document.getElementById('connectionName').value = connection.connectionName || '';
+      document.getElementById('connectionName').value =
+        connection.connectionName || '';
     } else {
       // If success is false or missing, redirect back
       showToast('Failed to load connection details', 'error');
-      setTimeout(() => window.location.href = '/my-connections.html', 2000);
+      setTimeout(() => (window.location.href = '/my-connections.html'), 2000);
     }
   } catch (error) {
     console.error('Error loading connection:', error);
@@ -626,6 +666,7 @@ async function loadExistingConnection(connectionId) {
 ```
 
 **Important Notes:**
+
 - **Always check `success` field** - Frontend must verify `data.success === true` before processing
 - **Integration metadata is embedded** - Saves an extra API call to `/api/integrations/:id`
 - **Credentials are decrypted** - Ready to use for pre-filling form fields (except password fields)
@@ -640,9 +681,11 @@ Update an existing connection's configuration, credentials, or authentication me
 **Endpoint:** `PUT /api/user-integrations/:connectionId`
 
 **URL Parameters:**
+
 - `connectionId` (string, required) - Unique identifier for the connection
 
 **Request Body:**
+
 ```json
 {
   "connectionName": "Salesforce Production v2",
@@ -659,6 +702,7 @@ Update an existing connection's configuration, credentials, or authentication me
 ```
 
 **Request Fields (all optional):**
+
 - `connectionName` (string) - Update connection name
 - `authMethodId` (string) - Update authentication method ID
 - `authMethodLabel` (string) - Update authentication method display label
@@ -667,6 +711,7 @@ Update an existing connection's configuration, credentials, or authentication me
 - `status` (string) - Update status (`active` or `inactive`)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -680,6 +725,7 @@ Update an existing connection's configuration, credentials, or authentication me
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -688,17 +734,17 @@ Update an existing connection's configuration, credentials, or authentication me
 ```
 
 **Error Response (400 Bad Request):**
+
 ```json
 {
   "success": false,
   "message": "Validation error",
-  "errors": [
-    "Invalid status value. Must be 'active' or 'inactive'"
-  ]
+  "errors": ["Invalid status value. Must be 'active' or 'inactive'"]
 }
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -717,6 +763,7 @@ When a user edits an existing connection through the Connection Wizard:
 4. **Smart password handling:** If password fields are left empty, they are omitted from the request and existing passwords are preserved
 
 **Example Edit Workflow:**
+
 ```javascript
 // Step 1: Load existing connection
 const response = await fetch('/api/user-integrations/conn_abc123xyz');
@@ -728,23 +775,24 @@ const updates = {
   authMethodId: connection.authMethodId,
   authMethodLabel: connection.authMethodLabel,
   configuredVariables: {
-    instance_url: 'https://newinstance.salesforce.com'
+    instance_url: 'https://newinstance.salesforce.com',
   },
   credentials: {
-    clientId: connection.credentials.decrypted.clientId
+    clientId: connection.credentials.decrypted.clientId,
     // clientSecret omitted - existing value will be preserved
-  }
+  },
 };
 
 // Step 3: Send PUT request
 const updateResponse = await fetch('/api/user-integrations/conn_abc123xyz', {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(updates)
+  body: JSON.stringify(updates),
 });
 ```
 
 **Security Notes:**
+
 - Password fields that are empty or omitted will preserve existing encrypted values
 - All provided credentials are re-encrypted before storage
 - Only fields included in the request body will be updated
@@ -758,15 +806,18 @@ Delete a user connection (soft delete by setting status to inactive).
 **Endpoint:** `DELETE /api/user-integrations/:connectionId`
 
 **URL Parameters:**
+
 - `connectionId` (string, required) - Unique identifier for the connection
 
 **Request Example:**
+
 ```http
 DELETE /api/user-integrations/conn_abc123xyz HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -776,6 +827,7 @@ Host: localhost:3000
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -784,6 +836,7 @@ Host: localhost:3000
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -805,9 +858,11 @@ Test a connection by making a sample API call to the integrated service.
 **Endpoint:** `POST /api/user-integrations/:connectionId/test`
 
 **URL Parameters:**
+
 - `connectionId` (string, required) - Unique identifier for the connection
 
 **Request Example:**
+
 ```http
 POST /api/user-integrations/conn_abc123xyz/test HTTP/1.1
 Host: localhost:3000
@@ -816,6 +871,7 @@ Host: localhost:3000
 **Request Body:** Empty (no body required)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -831,6 +887,7 @@ Host: localhost:3000
 ```
 
 **Error Response (400 Bad Request) - Connection Failed:**
+
 ```json
 {
   "success": false,
@@ -846,6 +903,7 @@ Host: localhost:3000
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -854,6 +912,7 @@ Host: localhost:3000
 ```
 
 **Error Response (500 Internal Server Error):**
+
 ```json
 {
   "success": false,
@@ -863,6 +922,7 @@ Host: localhost:3000
 ```
 
 **Side Effects:**
+
 - Updates `lastTestStatus` field with result (`success` or `error`)
 - Updates `lastTestMessage` field with result message
 - Updates `lastTestDate` field with current timestamp
@@ -887,9 +947,11 @@ All error responses follow this consistent format:
 ### Common Error Scenarios
 
 #### 1. Validation Errors (400 Bad Request)
+
 Returned when request data is invalid or missing required fields.
 
 **Example:**
+
 ```json
 {
   "success": false,
@@ -903,9 +965,11 @@ Returned when request data is invalid or missing required fields.
 ```
 
 #### 2. Resource Not Found (404 Not Found)
+
 Returned when requested resource doesn't exist.
 
 **Example:**
+
 ```json
 {
   "success": false,
@@ -914,9 +978,11 @@ Returned when requested resource doesn't exist.
 ```
 
 #### 3. Database Errors (500 Internal Server Error)
+
 Returned when database operations fail.
 
 **Example:**
+
 ```json
 {
   "success": false,
@@ -926,9 +992,11 @@ Returned when database operations fail.
 ```
 
 #### 4. Integration Errors (500 Internal Server Error)
+
 Returned when integration configuration is invalid.
 
 **Example:**
+
 ```json
 {
   "success": false,
@@ -938,9 +1006,11 @@ Returned when integration configuration is invalid.
 ```
 
 #### 5. Encryption Errors (500 Internal Server Error)
+
 Returned when credential encryption/decryption fails.
 
 **Example:**
+
 ```json
 {
   "success": false,
@@ -955,27 +1025,27 @@ Returned when credential encryption/decryption fails.
 
 ### HTTP Status Codes Used
 
-| Status Code | Meaning | Usage |
-|------------|---------|-------|
-| `200 OK` | Success | Successful GET, PUT, DELETE, or POST operations |
-| `201 Created` | Resource Created | Successful POST operation creating a new resource |
-| `400 Bad Request` | Client Error | Invalid request data or validation errors |
-| `404 Not Found` | Resource Not Found | Requested resource doesn't exist |
-| `500 Internal Server Error` | Server Error | Database errors, configuration errors, or unexpected failures |
+| Status Code                 | Meaning            | Usage                                                         |
+| --------------------------- | ------------------ | ------------------------------------------------------------- |
+| `200 OK`                    | Success            | Successful GET, PUT, DELETE, or POST operations               |
+| `201 Created`               | Resource Created   | Successful POST operation creating a new resource             |
+| `400 Bad Request`           | Client Error       | Invalid request data or validation errors                     |
+| `404 Not Found`             | Resource Not Found | Requested resource doesn't exist                              |
+| `500 Internal Server Error` | Server Error       | Database errors, configuration errors, or unexpected failures |
 
 ### Connection Test Status Values
 
-| Status | Meaning | Description |
-|--------|---------|-------------|
+| Status    | Meaning     | Description                                                  |
+| --------- | ----------- | ------------------------------------------------------------ |
 | `success` | Test Passed | Connection successfully authenticated and API call succeeded |
-| `error` | Test Failed | Connection failed (invalid credentials, network error, etc.) |
-| `null` | Not Tested | Connection has never been tested |
+| `error`   | Test Failed | Connection failed (invalid credentials, network error, etc.) |
+| `null`    | Not Tested  | Connection has never been tested                             |
 
 ### Connection Status Values
 
-| Status | Meaning | Description |
-|--------|---------|-------------|
-| `active` | Active | Connection is active and available for use |
+| Status     | Meaning  | Description                                     |
+| ---------- | -------- | ----------------------------------------------- |
+| `active`   | Active   | Connection is active and available for use      |
 | `inactive` | Inactive | Connection has been soft-deleted or deactivated |
 
 ---
@@ -983,25 +1053,30 @@ Returned when credential encryption/decryption fails.
 ## 🔐 Security Considerations
 
 ### 1. **Credential Encryption**
+
 - All credentials are encrypted using AES-256 before storage
 - Encryption key is stored in environment variables
 - Decryption only occurs when needed for API calls
 
 ### 2. **Input Validation**
+
 - All user inputs are validated before processing
 - SQL injection prevention through parameterized queries
 - XSS protection through input sanitization
 
 ### 3. **Sensitive Data Masking**
+
 - Password fields are masked in responses (`••••••••••••`)
 - Secret keys and tokens are never returned in plain text
 - Only encrypted versions are stored in database
 
 ### 4. **Rate Limiting** (Future)
+
 - API rate limiting will be implemented to prevent abuse
 - Per-user and per-endpoint limits
 
 ### 5. **Authentication** (Future)
+
 - OAuth 2.0 or JWT-based authentication
 - Role-based access control (RBAC)
 - API key management
@@ -1010,6 +1085,8 @@ Returned when credential encryption/decryption fails.
 
 ## 🎨 Feature Template Endpoints
 
+> [!NOTE] > **LEGACY**: Feature templates are deprecated. Features are now created directly within integrations via `/add-feature`. These endpoints are kept for backward compatibility.
+
 ### Get All Feature Templates
 
 Retrieve a list of all feature templates.
@@ -1017,12 +1094,14 @@ Retrieve a list of all feature templates.
 **Endpoint:** `GET /api/feature-templates`
 
 **Request Example:**
+
 ```http
 GET /api/feature-templates HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1058,15 +1137,18 @@ Retrieve a specific feature template.
 **Endpoint:** `GET /api/feature-templates/:id`
 
 **URL Parameters:**
+
 - `id` (string, required) - Feature template ID
 
 **Request Example:**
+
 ```http
 GET /api/feature-templates/create_contact HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1083,6 +1165,7 @@ Host: localhost:3000
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -1101,15 +1184,18 @@ Retrieve all feature mappings for a specific integration.
 **Endpoint:** `GET /api/integrations/:integrationId/feature-mappings`
 
 **URL Parameters:**
+
 - `integrationId` (string, required) - Integration ID
 
 **Request Example:**
+
 ```http
 GET /api/integrations/freshdesk/feature-mappings HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1151,8 +1237,8 @@ Host: localhost:3000
           "fillBy": "Admin",
           "required": true,
           "possibleValues": [
-            {"id": "contact", "label": "Contact"},
-            {"id": "lead", "label": "Lead"}
+            { "id": "contact", "label": "Contact" },
+            { "id": "lead", "label": "Lead" }
           ],
           "customHandlers": null,
           "adminValue": "contact",
@@ -1176,9 +1262,11 @@ Create a new feature mapping for an integration.
 **Endpoint:** `POST /api/integrations/:integrationId/feature-mappings`
 
 **URL Parameters:**
+
 - `integrationId` (string, required) - Integration ID
 
 **Request Body:**
+
 ```json
 {
   "featureTemplateId": "create_contact",
@@ -1219,6 +1307,7 @@ Create a new feature mapping for an integration.
 ```
 
 **Success Response (201 Created):**
+
 ```json
 {
   "success": true,
@@ -1232,6 +1321,7 @@ Create a new feature mapping for an integration.
 ```
 
 **Error Response (400 Bad Request):**
+
 ```json
 {
   "success": false,
@@ -1248,12 +1338,14 @@ Update an existing feature mapping.
 **Endpoint:** `PUT /api/integrations/:integrationId/feature-mappings/:mappingId`
 
 **URL Parameters:**
+
 - `integrationId` (string, required) - Integration ID
 - `mappingId` (string, required) - Mapping ID
 
 **Request Body:** Same as Create Feature Mapping
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1268,6 +1360,7 @@ Update an existing feature mapping.
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -1284,16 +1377,19 @@ Delete a feature mapping.
 **Endpoint:** `DELETE /api/integrations/:integrationId/feature-mappings/:mappingId`
 
 **URL Parameters:**
+
 - `integrationId` (string, required) - Integration ID
 - `mappingId` (string, required) - Mapping ID
 
 **Request Example:**
+
 ```http
 DELETE /api/integrations/freshdesk/feature-mappings/mapping_1764100935626_abc123 HTTP/1.1
 Host: localhost:3000
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -1302,6 +1398,7 @@ Host: localhost:3000
 ```
 
 **Error Response (404 Not Found):**
+
 ```json
 {
   "success": false,
@@ -1342,12 +1439,14 @@ Host: localhost:3000
 ## 🔄 Changelog
 
 ### Version 1.2 (2025-11-26)
+
 - **Feature Templates** - Added GET endpoints for feature templates
 - **Feature Mappings** - Added full CRUD endpoints for feature-integration mappings
 - **Table of Contents** - Updated with new endpoint sections
 - **Documentation** - Added comprehensive request/response examples for feature system
 
 ### Version 1.1 (2025-11-23)
+
 - **Enhanced PUT endpoint** - Added support for `authMethodId`, `authMethodLabel`, and `connectionName` fields
 - **Enhanced GET endpoint** - Now returns `success: true` field and embedded integration metadata
 - **Edit mode support** - Added comprehensive documentation for edit connection workflow
@@ -1355,6 +1454,7 @@ Host: localhost:3000
 - **Usage examples** - Added code examples for edit mode workflows
 
 ### Version 1.0 (2025-11-23)
+
 - Initial API documentation
 - Connection management endpoints
 - Connection testing endpoints
@@ -1378,6 +1478,7 @@ Host: localhost:3000
 ## 🆘 Support
 
 For issues or questions about the API:
+
 1. Check the error message in the response
 2. Verify request format matches documentation
 3. Check server logs for detailed error information

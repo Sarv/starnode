@@ -165,6 +165,47 @@
       },
       "createdAt": "2025-12-13T18:43:38.548Z",
       "updatedAt": "2025-12-13T18:43:38.548Z"
+    },
+    {
+      "id": "api_1767879961080_hllmvljd3",
+      "featureId": "get_contact",
+      "fieldId": "api_config",
+      "name": "api_config API",
+      "method": "POST",
+      "url": "https://{{sub_domain}}.deepcall.com/api/v2/Employee/profile",
+      "headers": [],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "userId": "{{userid}}",
+          "token": "{{token}}",
+          "empId": "{{employee_id}}"
+        },
+        "canonicalTemplate": {
+          "scope": "contacts",
+          "rawTemplate": "{\n  \"userId\": {{canonical.contacts.unique_id}},\n  \"token\": {{canonical.contacts.phone}},\n  \"empId\": {{canonical.employee.unique_id}}\n}",
+          "processedTemplate": "{\n  \"userId\": {{canonical.contacts.unique_id}},\n  \"token\": {{canonical.contacts.phone}},\n  \"empId\": {{canonical.employee.unique_id}}\n}",
+          "requestFormat": "json"
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json",
+        "canonicalTemplate": {
+          "scope": "",
+          "rawTemplate": "{\n  \"emp_id\": \"{{canonical.employee.unique_id}}\",\n  \"department\": \"{{canonical.employee.dept}}\",\n  \"data\": {\n    \"designation\": \"{{canonical.employee.position}}\"\n  }\n}",
+          "processedTemplate": {
+            "emp_id": "{{canonical.employee.unique_id}}",
+            "department": "{{canonical.employee.dept}}",
+            "data.designation": "{{canonical.employee.position}}"
+          },
+          "responseFormat": "json"
+        }
+      },
+      "createdAt": "2026-01-08T13:46:01.080Z",
+      "updatedAt": "2026-01-08T13:48:13.848Z"
     }
   ],
   "version": "1.0.0",

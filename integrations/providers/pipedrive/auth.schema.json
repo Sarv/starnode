@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "api_key_query_method_1764767320113",
+      "authType": "api_key_query",
+      "label": "API Key (Query Parameter)",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "paramName": "api_token",
+        "apiKeyValue": "{{apiKey}}",
+        "isDefault": true
+      },
+      "testConfig": {
+        "testUrl": "https://api.pipedrive.com/v1/deals",
+        "timeout": 10000
+      },
+      "additionalFields": []
+    }
+  ]
+}

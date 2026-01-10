@@ -1,7 +1,17 @@
 # Feature-Integration Mapping System
 
+> [!CAUTION] > **DEPRECATED**: This document describes the **old** 5-step Feature-Integration Mapping wizard which has been replaced by a simplified 3-step Add Feature wizard.
+>
+> **See**: [Updated Feature Creation Process](./updated_feature_creation_process.md) for the current approach.
+>
+> Key changes:
+>
+> - Features are now created directly within integrations (no templates)
+> - Wizard reduced from 5 steps to 3 steps
+> - URL changed from `/feature-integration-mapping` to `/add-feature`
+
 **Last Updated:** 2025-11-26
-**Purpose:** Complete guide to the Feature Template and Feature-Integration Mapping system
+**Purpose:** ~~Complete guide to the Feature Template and Feature-Integration Mapping system~~ **DEPRECATED - See updated process**
 
 ---
 
@@ -35,10 +45,12 @@ The Feature-Integration Mapping System enables flexible configuration of reusabl
 ### Real-World Example
 
 **Feature Template**: "Create Contact"
+
 - Works for Salesforce, HubSpot, Freshdesk, etc.
 - Template defines common fields: name, email, phone
 
 **Integration Mappings**:
+
 - **Salesforce**: Adds extra field "Account ID", custom handler for Salesforce API format
 - **HubSpot**: Adds extra field "Pipeline", different API endpoint
 - **Freshdesk**: Adds extra field "Ticket Priority", validation handler for email format
@@ -171,18 +183,18 @@ Same template, different configurations per integration!
 
 ### Field Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `type` | enum | Yes | Field behavior: `static`, `dynamic`, `conditional`, `api` |
-| `label` | string | Yes | Display name shown to users |
-| `required` | boolean | Yes | Whether field is mandatory |
-| `description` | string | No | Help text explaining the field |
-| `fieldType` | enum | Yes | Data type: `string`, `number`, `email`, `url`, `boolean` |
-| `htmlType` | enum | Yes | Input type: `text`, `number`, `email`, `url`, `checkbox`, `radio`, `select`, `textarea`, `date` |
-| `fillBy` | enum | Yes | Who provides value: `Admin` or `User` |
-| `possibleValues` | array | No | Options for select/radio/checkbox |
-| `default` | any | No | Default value |
-| `conditionalExpression` | string | No | Show field only if expression is true |
+| Property                | Type    | Required | Description                                                                                     |
+| ----------------------- | ------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `type`                  | enum    | Yes      | Field behavior: `static`, `dynamic`, `conditional`, `api`                                       |
+| `label`                 | string  | Yes      | Display name shown to users                                                                     |
+| `required`              | boolean | Yes      | Whether field is mandatory                                                                      |
+| `description`           | string  | No       | Help text explaining the field                                                                  |
+| `fieldType`             | enum    | Yes      | Data type: `string`, `number`, `email`, `url`, `boolean`                                        |
+| `htmlType`              | enum    | Yes      | Input type: `text`, `number`, `email`, `url`, `checkbox`, `radio`, `select`, `textarea`, `date` |
+| `fillBy`                | enum    | Yes      | Who provides value: `Admin` or `User`                                                           |
+| `possibleValues`        | array   | No       | Options for select/radio/checkbox                                                               |
+| `default`               | any     | No       | Default value                                                                                   |
+| `conditionalExpression` | string  | No       | Show field only if expression is true                                                           |
 
 ### Field Type Details
 
@@ -256,8 +268,8 @@ Map a feature template to a specific integration with custom configuration.
       "required": true,
       "default": null,
       "possibleValues": [
-        {"id": "Contact", "label": "Contact"},
-        {"id": "Lead", "label": "Lead"}
+        { "id": "Contact", "label": "Contact" },
+        { "id": "Lead", "label": "Lead" }
       ],
       "customHandlers": {
         "valueHandler": null,
@@ -281,12 +293,12 @@ Map a feature template to a specific integration with custom configuration.
 
 ### Field Mapping Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `enabled` | boolean | Whether field is active in this mapping |
-| `overrides` | object | Override template field properties (future) |
-| `customHandlers` | object | Custom functions for this field |
-| `adminValue` | any | Value set by admin (if `fillBy: "Admin"`) |
+| Property         | Type    | Description                                 |
+| ---------------- | ------- | ------------------------------------------- |
+| `enabled`        | boolean | Whether field is active in this mapping     |
+| `overrides`      | object  | Override template field properties (future) |
+| `customHandlers` | object  | Custom functions for this field             |
+| `adminValue`     | any     | Value set by admin (if `fillBy: "Admin"`)   |
 
 ---
 
@@ -297,11 +309,13 @@ Map a feature template to a specific integration with custom configuration.
 **Purpose**: Fixed configuration fields, values don't change
 
 **Characteristics**:
+
 - Value set once during configuration
 - No runtime fetching
 - Can be `fillBy: "Admin"` or `fillBy: "User"`
 
 **Example**:
+
 ```json
 {
   "type": "static",
@@ -313,6 +327,7 @@ Map a feature template to a specific integration with custom configuration.
 ```
 
 **Use Cases**:
+
 - Configuration options
 - Default values
 - Static tags or categories
@@ -324,11 +339,13 @@ Map a feature template to a specific integration with custom configuration.
 **Purpose**: Values fetched at runtime from API or computed
 
 **Characteristics**:
+
 - Value determined at runtime
 - Often populated by API calls
 - Usually `fillBy: "User"`
 
 **Example**:
+
 ```json
 {
   "type": "dynamic",
@@ -340,6 +357,7 @@ Map a feature template to a specific integration with custom configuration.
 ```
 
 **Use Cases**:
+
 - Dropdown populated from API (projects, users, categories)
 - Computed values based on other fields
 - Real-time data
@@ -353,11 +371,13 @@ Map a feature template to a specific integration with custom configuration.
 **Purpose**: Fields that appear only when conditions are met
 
 **Characteristics**:
+
 - Visibility controlled by `conditionalExpression`
 - Expression uses template syntax: `{{fieldKey}}`
 - Evaluated at runtime
 
 **Example**:
+
 ```json
 {
   "type": "conditional",
@@ -369,12 +389,14 @@ Map a feature template to a specific integration with custom configuration.
 ```
 
 **Expression Syntax**:
+
 - `{{field_key}}` - Reference other field values
 - `==`, `!=` - Equality operators
 - `and`, `or` - Logical operators
 - `'value'` - String literals
 
 **Use Cases**:
+
 - Advanced settings shown only when enabled
 - Fields dependent on other field values
 - Progressive disclosure
@@ -386,11 +408,13 @@ Map a feature template to a specific integration with custom configuration.
 **Purpose**: Fields requiring API endpoint configuration
 
 **Characteristics**:
+
 - Usually `fillBy: "Admin"`
 - Triggers "API Settings" button in UI
 - Stores API configuration details
 
 **Example**:
+
 ```json
 {
   "type": "api",
@@ -401,11 +425,13 @@ Map a feature template to a specific integration with custom configuration.
 ```
 
 **UI Behavior**:
+
 - Shows blue "API Settings" button instead of regular input
 - Clicking button opens API configuration panel
 - Displays endpoint, method, authentication details
 
 **Use Cases**:
+
 - Custom API endpoints
 - Webhook configurations
 - External service connections
@@ -423,12 +449,14 @@ Controls **who** provides the field value and **when**.
 **Storage**: Value stored in `adminValue` property
 
 **UI Behavior**:
+
 - Shows input field in mapping wizard
 - Value saved to `features.schema.json`
 - End users don't see or configure these fields
 - Displays in detail view as configured value
 
 **Example Flow**:
+
 ```
 Admin opens wizard
   → Configures "Default Tags" = ["vip", "customer"]
@@ -437,19 +465,25 @@ Admin opens wizard
 ```
 
 **Use Cases**:
+
 - API keys and credentials
 - Default settings applied to all users
 - Integration-wide configurations
 - Business rules and constants
 
 **Code Example**:
+
 ```javascript
 // In wizard - show input if fillBy === 'Admin'
 if (field.fillBy === 'Admin') {
-    adminValueInputContainer.innerHTML = generateValueInput(field, fieldKey, currentValue);
-    adminValueSection.style.display = 'block';
+  adminValueInputContainer.innerHTML = generateValueInput(
+    field,
+    fieldKey,
+    currentValue,
+  );
+  adminValueSection.style.display = 'block';
 } else {
-    adminValueSection.style.display = 'none';
+  adminValueSection.style.display = 'none';
 }
 ```
 
@@ -462,11 +496,13 @@ if (field.fillBy === 'Admin') {
 **Storage**: No `adminValue` stored
 
 **UI Behavior**:
+
 - No input field in mapping wizard
 - Shows "To be filled by user" in tables
 - User provides value when executing workflow/action
 
 **Example Flow**:
+
 ```
 Admin creates mapping (no value set)
   → User triggers "Create Contact" action
@@ -476,12 +512,14 @@ Admin creates mapping (no value set)
 ```
 
 **Use Cases**:
+
 - User-specific data (emails, names, phone numbers)
 - Per-execution values (which project, which task)
 - Dynamic user choices
 - Runtime parameters
 
 **Display in Tables**:
+
 ```html
 <!-- fillBy: Admin with value -->
 <span class="value-text">["vip", "customer"]</span>
@@ -497,14 +535,14 @@ Admin creates mapping (no value set)
 
 ### Choosing fillBy
 
-| Scenario | fillBy | Reason |
-|----------|--------|--------|
-| API Key | Admin | Same for all users, set once |
-| Default Priority | Admin | Business rule, consistent |
-| Contact Email | User | Different for each execution |
-| Which Project | User | User decides at runtime |
-| Webhook URL | Admin | Same endpoint for integration |
-| Custom Message | User | User provides each time |
+| Scenario         | fillBy | Reason                        |
+| ---------------- | ------ | ----------------------------- |
+| API Key          | Admin  | Same for all users, set once  |
+| Default Priority | Admin  | Business rule, consistent     |
+| Contact Email    | User   | Different for each execution  |
+| Which Project    | User   | User decides at runtime       |
+| Webhook URL      | Admin  | Same endpoint for integration |
+| Custom Message   | User   | User provides each time       |
 
 ---
 
@@ -523,6 +561,7 @@ There are two types of custom handler scopes in the feature mapping system:
 **Purpose**: Process individual field values
 
 **Available Handlers**:
+
 - `valueHandler`: Transform field value after entry
 - `validationHandler`: Validate field value before submission
 - `submitHandler`: Process field value before API submission
@@ -533,6 +572,7 @@ There are two types of custom handler scopes in the feature mapping system:
 **Scope**: Applies only to the specific field
 
 **Example**:
+
 ```json
 {
   "fieldMappings": {
@@ -556,11 +596,13 @@ There are two types of custom handler scopes in the feature mapping system:
 **Purpose**: Process entire feature data before API submission
 
 **Available Handlers**:
+
 - `submitHandler`: Transform complete feature payload before API call
 
 **Scope**: Applies to all feature data collectively
 
 **When to Use**:
+
 - Transform entire request payload structure
 - Combine multiple field values
 - Apply feature-wide business logic
@@ -568,6 +610,7 @@ There are two types of custom handler scopes in the feature mapping system:
 - Add metadata or authentication tokens
 
 **Example**:
+
 ```json
 {
   "featureTemplateId": "sync_contacts",
@@ -579,22 +622,23 @@ There are two types of custom handler scopes in the feature mapping system:
 ```
 
 **Function Signature**:
+
 ```javascript
 // Feature-level submit handler receives entire feature data
 function transformContactPayload(featureData) {
-    return {
-        api_version: '2.0',
-        data: {
-            contact: {
-                email: featureData.email,
-                name: featureData.name,
-                metadata: {
-                    source: 'integration_platform',
-                    timestamp: Date.now()
-                }
-            }
-        }
-    };
+  return {
+    api_version: '2.0',
+    data: {
+      contact: {
+        email: featureData.email,
+        name: featureData.name,
+        metadata: {
+          source: 'integration_platform',
+          timestamp: Date.now(),
+        },
+      },
+    },
+  };
 }
 ```
 
@@ -618,13 +662,13 @@ function transformContactPayload(featureData) {
 
 **Key Differences**:
 
-| Aspect | Field-Level | Feature-Level |
-|--------|------------|---------------|
-| Scope | Single field | Entire feature |
+| Aspect   | Field-Level                           | Feature-Level                |
+| -------- | ------------------------------------- | ---------------------------- |
+| Scope    | Single field                          | Entire feature               |
 | Location | `fieldMappings[field].customHandlers` | `customHandlers_for_feature` |
-| Input | Field value | Complete feature data |
-| Output | Transformed field value | Transformed payload |
-| Use Case | Field validation/formatting | Payload structuring |
+| Input    | Field value                           | Complete feature data        |
+| Output   | Transformed field value               | Transformed payload          |
+| Use Case | Field validation/formatting           | Payload structuring          |
 
 ---
 
@@ -637,24 +681,26 @@ function transformContactPayload(featureData) {
 **Property**: `customHandlers.valueHandler`
 
 **Examples**:
+
 ```javascript
 // Function name: "capitalizeFirstName"
 function capitalizeFirstName(value) {
-    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
 // Function name: "formatPhoneNumber"
 function formatPhoneNumber(value) {
-    return value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+  return value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
 }
 
 // Function name: "parseJSON"
 function parseJSON(value) {
-    return JSON.parse(value);
+  return JSON.parse(value);
 }
 ```
 
 **Use Cases**:
+
 - Format data (phone numbers, dates, currency)
 - Normalize values (trim, lowercase)
 - Parse complex structures
@@ -670,33 +716,35 @@ function parseJSON(value) {
 **Return**: `true` or error message string
 
 **Examples**:
+
 ```javascript
 // Function name: "validateEmailFormat"
 function validateEmailFormat(value) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) {
-        return "Invalid email format";
-    }
-    return true;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(value)) {
+    return 'Invalid email format';
+  }
+  return true;
 }
 
 // Function name: "validatePhoneNumber"
 function validatePhoneNumber(value) {
-    if (value.length < 10) {
-        return "Phone number must be at least 10 digits";
-    }
-    return true;
+  if (value.length < 10) {
+    return 'Phone number must be at least 10 digits';
+  }
+  return true;
 }
 
 // Function name: "validateAgainstAPI"
 async function validateAgainstAPI(value) {
-    const response = await fetch(`/api/validate?value=${value}`);
-    const result = await response.json();
-    return result.valid ? true : result.error;
+  const response = await fetch(`/api/validate?value=${value}`);
+  const result = await response.json();
+  return result.valid ? true : result.error;
 }
 ```
 
 **Use Cases**:
+
 - Format validation (email, phone, URL)
 - Range validation (min/max)
 - Cross-field validation
@@ -712,30 +760,32 @@ async function validateAgainstAPI(value) {
 **Property**: `customHandlers.submitHandler`
 
 **Examples**:
+
 ```javascript
 // Function name: "encryptSensitiveData"
 function encryptSensitiveData(value) {
-    return encrypt(value, SECRET_KEY);
+  return encrypt(value, SECRET_KEY);
 }
 
 // Function name: "addToRequestBody"
 function addToRequestBody(value, requestBody) {
-    requestBody.salesforce_object = value;
-    return requestBody;
+  requestBody.salesforce_object = value;
+  return requestBody;
 }
 
 // Function name: "convertToAPIFormat"
 function convertToAPIFormat(value) {
-    return {
-        type: "contact",
-        attributes: {
-            email: value
-        }
-    };
+  return {
+    type: 'contact',
+    attributes: {
+      email: value,
+    },
+  };
 }
 ```
 
 **Use Cases**:
+
 - Encrypt sensitive data
 - Build complex request structures
 - Add metadata
@@ -747,6 +797,7 @@ function convertToAPIFormat(value) {
 ### Handler Configuration
 
 **In Mapping**:
+
 ```json
 {
   "customHandlers": {
@@ -758,6 +809,7 @@ function convertToAPIFormat(value) {
 ```
 
 **Execution Order**:
+
 ```
 User enters value
   ↓
@@ -771,6 +823,7 @@ API Call
 ```
 
 **Important Notes**:
+
 - Handler names stored as strings
 - Functions executed at runtime
 - All handlers are optional
@@ -818,25 +871,26 @@ Add integration-specific fields not in the feature template.
 
 ### All Extra Field Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `fieldKey` | string | Yes | Unique identifier |
-| `label` | string | Yes | Display name |
-| `description` | string | No | Help text |
-| `type` | enum | Yes | `static`, `dynamic`, `api`, `conditional` |
-| `fieldType` | enum | Yes | `string`, `number`, `email`, `url`, `boolean` |
-| `htmlType` | enum | Yes | `text`, `checkbox`, `radio`, `select`, `textarea`, `url`, `date`, `number` |
-| `fillBy` | enum | Yes | `Admin` or `User` |
-| `required` | boolean | Yes | Is mandatory |
-| `default` | any | No | Default value |
-| `possibleValues` | array | No | Options for select/radio/checkbox |
-| `customHandlers` | object | No | Transform/validate/submit functions |
-| `adminValue` | any | No | Pre-filled value (if fillBy: Admin) |
-| `order` | number | Yes | Display order |
+| Property         | Type    | Required | Description                                                                |
+| ---------------- | ------- | -------- | -------------------------------------------------------------------------- |
+| `fieldKey`       | string  | Yes      | Unique identifier                                                          |
+| `label`          | string  | Yes      | Display name                                                               |
+| `description`    | string  | No       | Help text                                                                  |
+| `type`           | enum    | Yes      | `static`, `dynamic`, `api`, `conditional`                                  |
+| `fieldType`      | enum    | Yes      | `string`, `number`, `email`, `url`, `boolean`                              |
+| `htmlType`       | enum    | Yes      | `text`, `checkbox`, `radio`, `select`, `textarea`, `url`, `date`, `number` |
+| `fillBy`         | enum    | Yes      | `Admin` or `User`                                                          |
+| `required`       | boolean | Yes      | Is mandatory                                                               |
+| `default`        | any     | No       | Default value                                                              |
+| `possibleValues` | array   | No       | Options for select/radio/checkbox                                          |
+| `customHandlers` | object  | No       | Transform/validate/submit functions                                        |
+| `adminValue`     | any     | No       | Pre-filled value (if fillBy: Admin)                                        |
+| `order`          | number  | Yes      | Display order                                                              |
 
 ### Adding Extra Fields
 
 **In Wizard Step 4**:
+
 1. Click "Add Field" button
 2. Fill out extra field modal with all properties
 3. Configure possible values (if select/radio/checkbox)
@@ -845,6 +899,7 @@ Add integration-specific fields not in the feature template.
 6. Save
 
 **UI Components**:
+
 - Dynamic input generation based on `htmlType`
 - Possible values list builder
 - Custom handlers input fields
@@ -863,11 +918,13 @@ Location: `/feature-integration-mapping`
 **Purpose**: Choose which feature to map
 
 **UI**:
+
 - Search bar
 - Category filters (contacts, email, sms, leads, tasks)
 - Feature cards with name, description, category
 
 **Actions**:
+
 - Click feature card to select
 - Auto-advance to Step 2
 
@@ -878,6 +935,7 @@ Location: `/feature-integration-mapping`
 **Purpose**: Enable/disable fields and configure handlers
 
 **UI**: Professional table layout
+
 - **ENABLE** column - Checkbox to enable/disable field
 - **FIELD DETAILS** column - Field name, description, type, data type, required badge
 - **VALUE HANDLER** column - Custom transform function
@@ -887,6 +945,7 @@ Location: `/feature-integration-mapping`
 - **ACTIONS** column - Settings icon to configure
 
 **Features**:
+
 - Disable unwanted fields
 - Configure custom handlers per field
 - Set admin values for Admin-filled fields
@@ -894,6 +953,7 @@ Location: `/feature-integration-mapping`
 
 **Configuration Modal**:
 Opens when clicking settings icon:
+
 - Field label override
 - Description override
 - Custom handler inputs (valueHandler, validationHandler, submitHandler)
@@ -906,18 +966,21 @@ Opens when clicking settings icon:
 **Purpose**: Configure API endpoint
 
 **UI**:
+
 - API Config ID input (optional, for existing configs)
 - **OR** Quick Setup:
   - Method dropdown (GET, POST, PUT, PATCH, DELETE)
   - Endpoint input (supports placeholders: `/api/{field_name}`)
 
 **Example**:
+
 ```
 Method: POST
 Endpoint: /api/contacts/{object_type}
 ```
 
 **Notes**:
+
 - Leave config ID empty for new setup
 - Endpoint placeholders replaced at runtime
 - Full API management coming later
@@ -929,12 +992,14 @@ Endpoint: /api/contacts/{object_type}
 **Purpose**: Add integration-specific fields
 
 **UI**: Same table layout as Step 2
+
 - **FIELD DETAILS**, **VALUE HANDLER**, **VALIDITY HANDLER**, **SUBMIT HANDLER**, **VALUE**, **ACTIONS** columns
 - "Add Field" button opens modal
 - Edit and Delete actions per field
 
 **Add Field Modal**:
 Complete form with:
+
 - Field Key (unique ID)
 - Label
 - Description
@@ -957,6 +1022,7 @@ Complete form with:
 - Order input
 
 **Possible Values Builder**:
+
 ```
 Possible Values:
 [+] Add Value
@@ -977,6 +1043,7 @@ Possible Values:
 **Purpose**: Review entire configuration before saving
 
 **UI**:
+
 - Mapping summary
 - Feature name and template ID
 - Field count (enabled/total)
@@ -985,6 +1052,7 @@ Possible Values:
 - Action buttons: Save, Cancel
 
 **Save Action**:
+
 - Validates entire configuration
 - Generates unique mapping ID: `mapping_{timestamp}_{random}`
 - Saves to `/integrations/providers/{integrationId}/features.schema.json`
@@ -997,6 +1065,7 @@ Possible Values:
 **Access**: `/feature-integration-mapping?integrationId={id}&mappingId={mappingId}`
 
 **Behavior**:
+
 - Loads existing mapping
 - Pre-fills all wizard steps
 - Same flow as create
@@ -1022,9 +1091,15 @@ Possible Values:
       "id": "mapping_1764100935626_uikt58e78",
       "featureTemplateId": "create_contact",
       "featureTemplateName": "Create Contact",
-      "fieldMappings": { /* ... */ },
-      "apiConfig": { /* ... */ },
-      "extraFields": [ /* ... */ ],
+      "fieldMappings": {
+        /* ... */
+      },
+      "apiConfig": {
+        /* ... */
+      },
+      "extraFields": [
+        /* ... */
+      ],
       "customHandlers": {},
       "status": "active",
       "createdAt": "2025-11-26T10:00:00.000Z",
@@ -1053,7 +1128,9 @@ Possible Values:
 **Feature Mappings Tab**:
 
 #### Feature Pills (Tabs)
+
 Horizontal pill navigation:
+
 ```
 ┌──────────────┬──────────────┬──────────────┐
 │ Create Contact│ Send Email   │ Update Lead  │
@@ -1064,6 +1141,7 @@ Horizontal pill navigation:
 #### 2-Column Layout
 
 **Left Column**: Field Tables
+
 - **Template Fields** section
   - Table with all template fields
   - Shows enabled fields only
@@ -1073,6 +1151,7 @@ Horizontal pill navigation:
   - Integration-specific fields
 
 **Right Column**: API Configuration (Sticky)
+
 - Panel showing API details
 - Method and Endpoint
 - Edit and Delete buttons
@@ -1101,6 +1180,7 @@ Same professional table used in wizard:
 ```
 
 **API Settings Button**:
+
 - Shown for fields with `type: "api"`
 - Blue button with icon
 - Clicking updates right panel with field details
@@ -1114,6 +1194,7 @@ Same professional table used in wizard:
 **Purpose**: Generate appropriate HTML input based on field configuration
 
 **Supported Types**:
+
 - text, password, email, url, tel - `<input>` elements
 - number - `<input type="number">`
 - date - `<input type="date">`
@@ -1123,19 +1204,28 @@ Same professional table used in wizard:
 - radio - Radio button group
 
 **Features**:
+
 - Handles array values (checkbox groups)
 - Pre-fills current values
 - Uses possibleValues for options
 - Generates labels and containers
 
 **Example**:
+
 ```javascript
 // Field with select
-generateValueInput({
-    label: "Priority",
-    htmlType: "select",
-    possibleValues: [{id: "low", label: "Low"}, {id: "high", label: "High"}]
-}, "priority", "low");
+generateValueInput(
+  {
+    label: 'Priority',
+    htmlType: 'select',
+    possibleValues: [
+      { id: 'low', label: 'Low' },
+      { id: 'high', label: 'High' },
+    ],
+  },
+  'priority',
+  'low',
+);
 
 // Generates:
 // <label for="adminValue_priority">Priority</label>
@@ -1153,9 +1243,11 @@ generateValueInput({
 ### Feature Templates
 
 #### GET `/api/feature-templates`
+
 Get all feature templates
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -1166,9 +1258,11 @@ Get all feature templates
 ```
 
 #### GET `/api/feature-templates/:id`
+
 Get single feature template
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -1185,9 +1279,11 @@ Get single feature template
 ### Feature Mappings
 
 #### GET `/api/integrations/:integrationId/feature-mappings`
+
 Get all feature mappings for an integration
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -1198,9 +1294,11 @@ Get all feature mappings for an integration
 ```
 
 #### POST `/api/integrations/:integrationId/feature-mappings`
+
 Create new feature mapping
 
 **Request Body**:
+
 ```json
 {
   "featureTemplateId": "create_contact",
@@ -1212,6 +1310,7 @@ Create new feature mapping
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -1220,11 +1319,13 @@ Create new feature mapping
 ```
 
 #### PUT `/api/integrations/:integrationId/feature-mappings/:mappingId`
+
 Update existing feature mapping
 
 **Request Body**: Same as POST
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -1233,9 +1334,11 @@ Update existing feature mapping
 ```
 
 #### DELETE `/api/integrations/:integrationId/feature-mappings/:mappingId`
+
 Delete feature mapping
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -1250,6 +1353,7 @@ Delete feature mapping
 ### Template Design
 
 ✅ **DO**:
+
 - Keep templates generic and reusable
 - Use clear, descriptive field names
 - Provide helpful descriptions
@@ -1257,6 +1361,7 @@ Delete feature mapping
 - Set sensible defaults
 
 ❌ **DON'T**:
+
 - Make integration-specific templates
 - Use vague field names
 - Skip descriptions
@@ -1268,6 +1373,7 @@ Delete feature mapping
 ### Mapping Configuration
 
 ✅ **DO**:
+
 - Enable only needed fields
 - Set admin values for Admin-filled fields
 - Add meaningful handler function names
@@ -1275,6 +1381,7 @@ Delete feature mapping
 - Test the mapping after creation
 
 ❌ **DON'T**:
+
 - Enable all fields by default
 - Leave required Admin fields empty
 - Use generic handler names like "handler1"
@@ -1286,6 +1393,7 @@ Delete feature mapping
 ### Handler Functions
 
 ✅ **DO**:
+
 - Use descriptive function names
 - Handle errors gracefully
 - Return consistent types
@@ -1293,6 +1401,7 @@ Delete feature mapping
 - Keep handlers simple and focused
 
 ❌ **DON'T**:
+
 - Use abbreviations in names
 - Throw unhandled errors
 - Mix return types
@@ -1304,6 +1413,7 @@ Delete feature mapping
 ### fillBy Decision
 
 ✅ **Use Admin when**:
+
 - Same value for all users
 - Set once, rarely changes
 - Configuration or settings
@@ -1311,6 +1421,7 @@ Delete feature mapping
 - Business rules
 
 ✅ **Use User when**:
+
 - Different per execution
 - User provides at runtime
 - Dynamic or contextual data
@@ -1324,12 +1435,14 @@ Delete feature mapping
 ### Mapping not showing in detail page
 
 **Possible Causes**:
+
 - Mapping status is "inactive"
 - Wrong integration ID
 - File not saved properly
 - JSON syntax error
 
 **Solution**:
+
 ```bash
 # Check features.schema.json
 cat integrations/providers/{id}/features.schema.json
@@ -1342,11 +1455,13 @@ cat integrations/providers/{id}/features.schema.json
 ### Admin value not displaying
 
 **Possible Causes**:
+
 - Field fillBy is "User"
 - adminValue not set in mapping
 - Field is disabled
 
 **Solution**:
+
 - Verify fillBy: "Admin" in template
 - Check adminValue exists in fieldMappings
 - Ensure enabled: true
@@ -1356,11 +1471,13 @@ cat integrations/providers/{id}/features.schema.json
 ### Extra field not appearing
 
 **Possible Causes**:
+
 - Missing required properties
 - Invalid field type
 - Order conflict
 
 **Solution**:
+
 - Validate all required properties present
 - Check field type enum values
 - Verify unique order numbers
@@ -1370,11 +1487,13 @@ cat integrations/providers/{id}/features.schema.json
 ### Handler not executing
 
 **Possible Causes**:
+
 - Function doesn't exist
 - Function name typo
 - Handler throws error
 
 **Solution**:
+
 - Verify function is defined
 - Check exact spelling
 - Add try-catch in handler

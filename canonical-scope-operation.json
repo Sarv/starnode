@@ -1,0 +1,496 @@
+{
+  "version": "1.0.0",
+  "scopes": [
+    {
+      "id": "contacts",
+      "label": "Contacts",
+      "description": "Contact management operations and variables",
+      "operations": [
+        {
+          "id": "create",
+          "label": "Create Contact",
+          "description": "Create a new contact record"
+        },
+        {
+          "id": "read",
+          "label": "Read Contact",
+          "description": "Fetch contact details by ID"
+        },
+        {
+          "id": "update",
+          "label": "Update Contact",
+          "description": "Update existing contact"
+        },
+        {
+          "id": "delete",
+          "label": "Delete Contact",
+          "description": "Remove a contact"
+        },
+        {
+          "id": "list",
+          "label": "List Contacts",
+          "description": "Get all contacts"
+        },
+        {
+          "id": "search",
+          "label": "Search Contacts",
+          "description": "Search contacts by criteria"
+        }
+      ],
+      "variables": [
+        {
+          "id": "unique_id",
+          "label": "Unique ID",
+          "description": "Primary identifier",
+          "fieldType": "string"
+        },
+        {
+          "id": "first_name",
+          "label": "First Name",
+          "description": "Contact's first name",
+          "fieldType": "string"
+        },
+        {
+          "id": "last_name",
+          "label": "Last Name",
+          "description": "Contact's last name",
+          "fieldType": "string"
+        },
+        {
+          "id": "email",
+          "label": "Email",
+          "description": "Email address",
+          "fieldType": "string"
+        },
+        {
+          "id": "phone",
+          "label": "Phone",
+          "description": "Phone number",
+          "fieldType": "string"
+        }
+      ]
+    },
+    {
+      "id": "email",
+      "label": "Email",
+      "description": "Email communication operations and variables",
+      "operations": [
+        {
+          "id": "send",
+          "label": "Send Email",
+          "description": "Send an email message"
+        },
+        {
+          "id": "read",
+          "label": "Read Email",
+          "description": "Fetch email details"
+        },
+        {
+          "id": "list",
+          "label": "List Emails",
+          "description": "Get all emails"
+        },
+        {
+          "id": "delete",
+          "label": "Delete Email",
+          "description": "Delete an email"
+        }
+      ],
+      "variables": [
+        {
+          "id": "message_id",
+          "label": "Message ID",
+          "description": "Unique email identifier",
+          "fieldType": "string"
+        },
+        {
+          "id": "subject",
+          "label": "Subject",
+          "description": "Email subject line",
+          "fieldType": "string"
+        },
+        {
+          "id": "body",
+          "label": "Body",
+          "description": "Email body content",
+          "fieldType": "string"
+        },
+        {
+          "id": "from",
+          "label": "From",
+          "description": "Sender email address",
+          "fieldType": "string"
+        },
+        {
+          "id": "to",
+          "label": "To",
+          "description": "Recipient email address",
+          "fieldType": "string"
+        }
+      ]
+    },
+    {
+      "id": "sms",
+      "label": "SMS",
+      "description": "SMS and messaging operations and variables",
+      "operations": [
+        {
+          "id": "send",
+          "label": "Send SMS",
+          "description": "Send an SMS message"
+        },
+        {
+          "id": "read",
+          "label": "Read SMS",
+          "description": "Fetch SMS details"
+        },
+        {
+          "id": "list",
+          "label": "List SMS",
+          "description": "Get all SMS messages"
+        }
+      ],
+      "variables": [
+        {
+          "id": "message_id",
+          "label": "Message ID",
+          "description": "Unique SMS identifier",
+          "fieldType": "string"
+        },
+        {
+          "id": "from_number",
+          "label": "From Number",
+          "description": "Sender phone number",
+          "fieldType": "string"
+        },
+        {
+          "id": "to_number",
+          "label": "To Number",
+          "description": "Recipient phone number",
+          "fieldType": "string"
+        },
+        {
+          "id": "message",
+          "label": "Message",
+          "description": "SMS message content",
+          "fieldType": "string"
+        },
+        {
+          "id": "status",
+          "label": "Status",
+          "description": "Delivery status",
+          "fieldType": "string"
+        }
+      ]
+    },
+    {
+      "id": "leads",
+      "label": "Leads",
+      "description": "Lead management operations and variables",
+      "operations": [
+        {
+          "id": "create",
+          "label": "Create Lead",
+          "description": "Create a new lead"
+        },
+        {
+          "id": "read",
+          "label": "Read Lead",
+          "description": "Fetch lead details"
+        },
+        {
+          "id": "update",
+          "label": "Update Lead",
+          "description": "Update existing lead"
+        },
+        {
+          "id": "delete",
+          "label": "Delete Lead",
+          "description": "Remove a lead"
+        },
+        {
+          "id": "convert",
+          "label": "Convert Lead",
+          "description": "Convert lead to contact/deal"
+        },
+        {
+          "id": "list",
+          "label": "List Leads",
+          "description": "Get all leads"
+        }
+      ],
+      "variables": [
+        {
+          "id": "unique_id",
+          "label": "Unique ID",
+          "description": "Primary identifier",
+          "fieldType": "string"
+        },
+        {
+          "id": "name",
+          "label": "Name",
+          "description": "Lead name",
+          "fieldType": "string"
+        },
+        {
+          "id": "email",
+          "label": "Email",
+          "description": "Lead email",
+          "fieldType": "string"
+        },
+        {
+          "id": "source",
+          "label": "Source",
+          "description": "Lead source",
+          "fieldType": "string"
+        },
+        {
+          "id": "status",
+          "label": "Status",
+          "description": "Lead status",
+          "fieldType": "string"
+        }
+      ]
+    },
+    {
+      "id": "tasks",
+      "label": "Tasks",
+      "description": "Task and activity tracking operations and variables",
+      "operations": [
+        {
+          "id": "create",
+          "label": "Create Task",
+          "description": "Create a new task"
+        },
+        {
+          "id": "read",
+          "label": "Read Task",
+          "description": "Fetch task details"
+        },
+        {
+          "id": "update",
+          "label": "Update Task",
+          "description": "Update existing task"
+        },
+        {
+          "id": "delete",
+          "label": "Delete Task",
+          "description": "Remove a task"
+        },
+        {
+          "id": "complete",
+          "label": "Complete Task",
+          "description": "Mark task as complete"
+        },
+        {
+          "id": "list",
+          "label": "List Tasks",
+          "description": "Get all tasks"
+        }
+      ],
+      "variables": [
+        {
+          "id": "unique_id",
+          "label": "Unique ID",
+          "description": "Primary identifier",
+          "fieldType": "string"
+        },
+        {
+          "id": "title",
+          "label": "Title",
+          "description": "Task title",
+          "fieldType": "string"
+        },
+        {
+          "id": "description",
+          "label": "Description",
+          "description": "Task description",
+          "fieldType": "string"
+        },
+        {
+          "id": "due_date",
+          "label": "Due Date",
+          "description": "Task due date",
+          "fieldType": "date"
+        },
+        {
+          "id": "status",
+          "label": "Status",
+          "description": "Task status",
+          "fieldType": "string"
+        },
+        {
+          "id": "assignee",
+          "label": "Assignee",
+          "description": "Assigned user",
+          "fieldType": "string"
+        }
+      ]
+    },
+    {
+      "id": "tickets",
+      "label": "Tickets",
+      "description": "Ticket/support management operations and variables",
+      "operations": [
+        {
+          "id": "create",
+          "label": "Create Ticket",
+          "description": "Create a new ticket"
+        },
+        {
+          "id": "read",
+          "label": "Read Ticket",
+          "description": "Fetch ticket details"
+        },
+        {
+          "id": "update",
+          "label": "Update Ticket",
+          "description": "Update existing ticket"
+        },
+        {
+          "id": "delete",
+          "label": "Delete Ticket",
+          "description": "Remove a ticket"
+        },
+        {
+          "id": "close",
+          "label": "Close Ticket",
+          "description": "Close a ticket"
+        },
+        {
+          "id": "list",
+          "label": "List Tickets",
+          "description": "Get all tickets"
+        }
+      ],
+      "variables": [
+        {
+          "id": "unique_id",
+          "label": "Unique ID",
+          "description": "Primary identifier",
+          "fieldType": "string"
+        },
+        {
+          "id": "subject",
+          "label": "Subject",
+          "description": "Ticket subject",
+          "fieldType": "string"
+        },
+        {
+          "id": "description",
+          "label": "Description",
+          "description": "Ticket description",
+          "fieldType": "string"
+        },
+        {
+          "id": "priority",
+          "label": "Priority",
+          "description": "Ticket priority",
+          "fieldType": "string"
+        },
+        {
+          "id": "status",
+          "label": "Status",
+          "description": "Ticket status",
+          "fieldType": "string"
+        },
+        {
+          "id": "requester",
+          "label": "Requester",
+          "description": "Person who created ticket",
+          "fieldType": "string"
+        },
+        {
+          "id": "assignee",
+          "label": "Assignee",
+          "description": "Assigned agent",
+          "fieldType": "string"
+        }
+      ]
+    },
+    {
+      "id": "employee",
+      "label": "Employee",
+      "description": "Employee management operations and variables",
+      "operations": [
+        {
+          "id": "create",
+          "label": "Create Employee",
+          "description": "Create a new employee"
+        },
+        {
+          "id": "read",
+          "label": "Read Employee",
+          "description": "Fetch employee details"
+        },
+        {
+          "id": "update",
+          "label": "Update Employee",
+          "description": "Update existing employee"
+        },
+        {
+          "id": "delete",
+          "label": "Delete Employee",
+          "description": "Remove an employee"
+        },
+        {
+          "id": "list",
+          "label": "List Employees",
+          "description": "Get all employees"
+        }
+      ],
+      "variables": [
+        {
+          "id": "unique_id",
+          "label": "Unique ID",
+          "description": "Primary identifier",
+          "fieldType": "string"
+        },
+        {
+          "id": "name",
+          "label": "Name",
+          "description": "Employee name",
+          "fieldType": "string"
+        },
+        {
+          "id": "email",
+          "label": "Email",
+          "description": "Employee email",
+          "fieldType": "string"
+        },
+        {
+          "id": "dept",
+          "label": "Department",
+          "description": "Department name",
+          "fieldType": "string"
+        },
+        {
+          "id": "position",
+          "label": "Position",
+          "description": "Job position/designation",
+          "fieldType": "string"
+        },
+        {
+          "id": "status",
+          "label": "Status",
+          "description": "Employment status",
+          "fieldType": "string"
+        }
+      ]
+    },
+    {
+      "id": "organization",
+      "label": "Organization",
+      "description": "Organization management operations and variables",
+      "operations": [
+        {
+          "id": "list_organizations",
+          "label": "List Organizations",
+          "description": "get the list of all organizations"
+        }
+      ],
+      "variables": []
+    }
+  ],
+  "lastUpdated": "2025-12-26T09:24:16.016Z"
+}

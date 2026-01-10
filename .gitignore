@@ -14,3 +14,4 @@ convert-html-to-ejs.sh
 docs/planning-by-abhimanyu.txt
 docs/README.md
 docs/study
+docker-compose.yml

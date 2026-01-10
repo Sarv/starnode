@@ -3,8 +3,8 @@
     {
       "id": "api_1765696379551_axnbkvjcp",
       "featureId": "fetch_employees",
-      "fieldId": "api",
-      "name": "api API",
+      "fieldId": "api_config",
+      "name": "api_config API",
       "method": "POST",
       "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/List",
       "headers": [
@@ -26,15 +26,21 @@
       "response": {
         "successPath": "",
         "errorPath": "",
-        "dataFormat": "json"
+        "dataFormat": "json",
+        "canonicalTemplate": {
+          "scope": "employee",
+          "rawTemplate": "{\n  response:[\n\"unique_id\": \"{{canonical.employee.unique_id}}\",\n  \"roleName\": \"{{canonical.employee.dept}}\",\n  \"name\": \"{{canonical.employee.name}}\"\n  ]\n}",
+          "processedTemplate": "{\n  response:[\n\"unique_id\": \"{{canonical.employee.unique_id}}\",\n  \"roleName\": \"{{canonical.employee.dept}}\",\n  \"name\": \"{{canonical.employee.name}}\"\n  ]\n}",
+          "responseFormat": "json"
+        }
       },
       "createdAt": "2025-12-14T07:12:59.551Z",
-      "updatedAt": "2025-12-14T12:08:50.388Z"
+      "updatedAt": "2026-01-10T10:41:35.740Z"
     },
     {
       "id": "api_1765696982197_i2dhjk4ag",
       "featureId": "get_employee_detail",
-      "fieldId": "api",
+      "fieldId": "api_config",
       "name": "api API",
       "method": "POST",
       "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
@@ -60,6 +66,96 @@
       },
       "createdAt": "2025-12-14T07:23:02.197Z",
       "updatedAt": "2025-12-14T15:33:31.896Z"
+    },
+    {
+      "id": "api_1766122597515_yuh3enpct",
+      "featureId": "fetch_employee_detail",
+      "fieldId": "api_config",
+      "name": "api_config API",
+      "method": "POST",
+      "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "userId": "{{userid}}",
+          "token": "{{token}}",
+          "empId": "{{employee_id}}"
+        },
+        "canonicalTemplate": {
+          "scope": "employee",
+          "rawTemplate": "{\n  \"userId\": {{canonical.employee.email}},\n  \"empId\": {{canonical.employee.unique_id}}\n}",
+          "processedTemplate": "{\n  \"userId\": {{canonical.employee.email}},\n  \"empId\": {{canonical.employee.unique_id}}\n}",
+          "requestFormat": "json"
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json",
+        "canonicalTemplate": {
+          "scope": "",
+          "rawTemplate": "{\n  \"emp_id\": \"{{canonical.employee.unique_id}}\",\n  \"department\": \"{{canonical.employee.dept}}\",\n  \"data\": {\n    \"designation\": \"{{canonical.employee.position}}\"\n  }\n}",
+          "processedTemplate": {
+            "emp_id": "{{canonical.employee.unique_id}}",
+            "department": "{{canonical.employee.dept}}",
+            "data.designation": "{{canonical.employee.position}}"
+          },
+          "responseFormat": "json"
+        }
+      },
+      "createdAt": "2025-12-19T05:36:37.515Z",
+      "updatedAt": "2026-01-08T13:24:33.466Z"
+    },
+    {
+      "id": "api_1767868361354_49tm8g5wf",
+      "featureId": "get_employee_data",
+      "fieldId": "api_config",
+      "name": "api_config API",
+      "method": "POST",
+      "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/profile",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "application/json"
+        }
+      ],
+      "queryParams": [],
+      "bodyType": "form-data",
+      "body": {
+        "formData": [
+          {
+            "key": "test_1",
+            "value": "{{emp_id}}",
+            "type": "text"
+          }
+        ],
+        "canonicalTemplate": {
+          "scope": "employee",
+          "rawTemplate": "test_1={{canonical.employee.unique_id}}",
+          "processedTemplate": "test_1={{canonical.employee.unique_id}}",
+          "requestFormat": "form-data"
+        }
+      },
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "text",
+        "canonicalTemplate": {
+          "scope": "",
+          "rawTemplate": "hello world {{canonical.leads.unique_id}}",
+          "processedTemplate": "hello world {{canonical.leads.unique_id}}",
+          "responseFormat": "text"
+        }
+      },
+      "createdAt": "2026-01-08T10:32:41.354Z",
+      "updatedAt": "2026-01-08T13:20:06.618Z"
     }
   ]
 }
