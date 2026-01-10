@@ -785,6 +785,32 @@ app.get('/api/user-integrations/my-connections', async (req, res) => {
   }
 });
 
+// Get all connections for an integration (admin use)
+app.get('/api/connections', async (req, res) => {
+  try {
+    const { integrationId } = req.query;
+
+    if (!integrationId) {
+      return res
+        .status(400)
+        .json({ error: 'integrationId is required', connections: [] });
+    }
+
+    // Get all connections and filter by integrationId
+    const allConnections = await elasticsearch.getAllConnections();
+    const connections = allConnections.filter(
+      c => c.integrationId === integrationId,
+    );
+
+    res.json({ success: true, connections });
+  } catch (error) {
+    console.error('Error getting connections:', error);
+    res
+      .status(500)
+      .json({ error: 'Failed to get connections', connections: [] });
+  }
+});
+
 // Connect integration (save connection)
 app.post('/api/user-integrations/connect', async (req, res) => {
   try {
@@ -3487,6 +3513,642 @@ app.delete('/api/canonical/scopes/:scopeId/variables/:varId', (req, res) => {
     res.status(500).json({ error: 'Failed to delete variable' });
   }
 });
+
+// =====================================================
+// CANONICAL MAPPING - Page Route and API Endpoints
+// =====================================================
+
+// Helper functions for canonical mappings
+const CANONICAL_MAPPINGS_FILE = path.join(__dirname, 'canonical-mappings.json');
+
+function readCanonicalMappings() {
+  if (fs.existsSync(CANONICAL_MAPPINGS_FILE)) {
+    return JSON.parse(fs.readFileSync(CANONICAL_MAPPINGS_FILE, 'utf8'));
+  }
+  return {
+    version: '1.0.0',
+    mappings: [],
+    lastUpdated: null,
+  };
+}
+
+function writeCanonicalMappings(data) {
+  data.lastUpdated = new Date().toISOString();
+  fs.writeFileSync(CANONICAL_MAPPINGS_FILE, JSON.stringify(data, null, 2));
+}
+
+// Canonical Mapping Page
+app.get('/canonical-mapping', (req, res) => {
+  res.render('canonical-mapping', {
+    pageTitle: 'Canonical Mapping',
+    activePage: 'canonical-mapping',
+    extraCSS: ['/css/canonical-mapping.css'],
+    showMobileMenu: true,
+    showSearch: false,
+    showUserProfile: true,
+    topbarActions: '',
+  });
+});
+
+// GET all canonical mappings
+app.get('/api/canonical-mappings', (req, res) => {
+  try {
+    const data = readCanonicalMappings();
+    res.json({ success: true, mappings: data.mappings });
+  } catch (error) {
+    console.error('Error reading canonical mappings:', error);
+    res.status(500).json({ success: false, error: 'Failed to load mappings' });
+  }
+});
+
+// GET single canonical mapping
+app.get('/api/canonical-mappings/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = readCanonicalMappings();
+    const mapping = data.mappings.find(m => m.id === id);
+
+    if (!mapping) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Mapping not found' });
+    }
+
+    res.json({ success: true, mapping });
+  } catch (error) {
+    console.error('Error reading canonical mapping:', error);
+    res.status(500).json({ success: false, error: 'Failed to load mapping' });
+  }
+});
+
+// POST create canonical mapping
+app.post('/api/canonical-mappings', (req, res) => {
+  try {
+    const { name, integrationA, integrationB, variableMappings } = req.body;
+
+    if (!name || !integrationA || !integrationB) {
+      return res.status(400).json({
+        success: false,
+        error: 'Name, integrationA, and integrationB are required',
+      });
+    }
+
+    const data = readCanonicalMappings();
+    const id = `cm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const newMapping = {
+      id,
+      name,
+      integrationIds: [integrationA.integrationId, integrationB.integrationId],
+      integrationA,
+      integrationB,
+      variableMappings: variableMappings || [],
+      createdBy: { userId: 'admin', userType: 'admin' },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    data.mappings.push(newMapping);
+    writeCanonicalMappings(data);
+
+    res.status(201).json({ success: true, mapping: newMapping });
+  } catch (error) {
+    console.error('Error creating canonical mapping:', error);
+    res.status(500).json({ success: false, error: 'Failed to create mapping' });
+  }
+});
+
+// PUT update canonical mapping
+app.put('/api/canonical-mappings/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, integrationA, integrationB, variableMappings } = req.body;
+
+    const data = readCanonicalMappings();
+    const index = data.mappings.findIndex(m => m.id === id);
+
+    if (index === -1) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Mapping not found' });
+    }
+
+    const updatedMapping = {
+      ...data.mappings[index],
+      name: name || data.mappings[index].name,
+      integrationA: integrationA || data.mappings[index].integrationA,
+      integrationB: integrationB || data.mappings[index].integrationB,
+      variableMappings:
+        variableMappings || data.mappings[index].variableMappings,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Update integrationIds if integrations changed
+    if (integrationA || integrationB) {
+      updatedMapping.integrationIds = [
+        updatedMapping.integrationA.integrationId,
+        updatedMapping.integrationB.integrationId,
+      ];
+    }
+
+    data.mappings[index] = updatedMapping;
+    writeCanonicalMappings(data);
+
+    res.json({ success: true, mapping: updatedMapping });
+  } catch (error) {
+    console.error('Error updating canonical mapping:', error);
+    res.status(500).json({ success: false, error: 'Failed to update mapping' });
+  }
+});
+
+// DELETE canonical mapping
+app.delete('/api/canonical-mappings/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = readCanonicalMappings();
+    const index = data.mappings.findIndex(m => m.id === id);
+
+    if (index === -1) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Mapping not found' });
+    }
+
+    data.mappings.splice(index, 1);
+    writeCanonicalMappings(data);
+
+    res.json({ success: true, message: 'Mapping deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting canonical mapping:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete mapping' });
+  }
+});
+
+// GET features by scope and operation for an integration
+app.get('/api/integrations/:integrationId/features-by-scope', (req, res) => {
+  try {
+    const { integrationId } = req.params;
+    const { scope, operation } = req.query;
+
+    const featuresSchemaPath = path.join(
+      __dirname,
+      'integrations/providers',
+      integrationId,
+      'features.schema.json',
+    );
+
+    if (!fs.existsSync(featuresSchemaPath)) {
+      return res.json({ success: true, features: [] });
+    }
+
+    const schema = JSON.parse(fs.readFileSync(featuresSchemaPath, 'utf8'));
+    let features = schema.featureMappings || [];
+
+    // Filter by scope and operation if provided
+    if (scope) {
+      features = features.filter(f => f.scope === scope);
+    }
+    if (operation) {
+      features = features.filter(f => f.operation === operation);
+    }
+
+    // Return simplified feature list
+    const featureList = features.map(f => ({
+      id: f.id,
+      featureTemplateId: f.featureTemplateId,
+      featureTemplateName: f.featureTemplateName,
+      scope: f.scope,
+      operation: f.operation,
+    }));
+
+    res.json({ success: true, features: featureList });
+  } catch (error) {
+    console.error('Error fetching features by scope:', error);
+    res.status(500).json({ success: false, error: 'Failed to load features' });
+  }
+});
+
+// GET canonical variables from a feature's api.schema.json
+app.get(
+  '/api/integrations/:integrationId/features/:featureId/canonical-variables',
+  (req, res) => {
+    try {
+      const { integrationId, featureId } = req.params;
+
+      const apiSchemaPath = path.join(
+        __dirname,
+        'integrations/providers',
+        integrationId,
+        'api.schema.json',
+      );
+
+      if (!fs.existsSync(apiSchemaPath)) {
+        return res.json({
+          success: true,
+          variables: { request: [], response: [] },
+        });
+      }
+
+      const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+
+      // Find the API config for this feature
+      const apiConfig = apiSchema.apis?.find(
+        api => api.featureId === featureId,
+      );
+
+      if (!apiConfig) {
+        return res.json({
+          success: true,
+          variables: { request: [], response: [] },
+        });
+      }
+
+      const variables = { request: [], response: [] };
+      let canonicalMappings = {};
+
+      // Extract variables from request canonical template (body.canonicalTemplate)
+      if (apiConfig.body?.canonicalTemplate?.rawTemplate) {
+        const requestVars = extractCanonicalVariables(
+          apiConfig.body.canonicalTemplate.rawTemplate,
+        );
+        variables.request = requestVars;
+      }
+
+      // Extract variables from response canonical template
+      if (apiConfig.response?.canonicalTemplate) {
+        const responseVars = extractCanonicalVariablesWithKeys(
+          apiConfig.response.canonicalTemplate,
+        );
+        variables.response = responseVars.variables;
+        canonicalMappings = responseVars.mappings;
+      }
+
+      res.json({ success: true, variables, canonicalMappings });
+    } catch (error) {
+      console.error('Error fetching canonical variables:', error);
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to load variables' });
+    }
+  },
+);
+
+// Helper function to extract canonical variables from template
+function extractCanonicalVariables(template) {
+  const regex = /\{\{canonical\.([a-zA-Z_]+)\.([a-zA-Z_]+)\}\}/g;
+  const variables = [];
+  const seen = new Set();
+  let match;
+
+  while ((match = regex.exec(template)) !== null) {
+    const fullVar = match[0];
+    if (!seen.has(fullVar)) {
+      seen.add(fullVar);
+      variables.push({
+        variable: fullVar,
+        scope: match[1],
+        field: match[2],
+      });
+    }
+  }
+
+  return variables;
+}
+
+// Helper function to extract canonical variables with their response keys
+function extractCanonicalVariablesWithKeys(canonicalTemplate) {
+  const variables = [];
+  const mappings = {};
+  const seen = new Set();
+
+  // Parse from rawTemplate to find key -> canonical mappings
+  if (canonicalTemplate.rawTemplate) {
+    // Match patterns like "key": "{{canonical.scope.field}}" or key: {{canonical.scope.field}}
+    const regex =
+      /["']?([a-zA-Z_\.]+)["']?\s*:\s*["']?(\{\{canonical\.([a-zA-Z_]+)\.([a-zA-Z_]+)\}\})["']?/g;
+    let match;
+
+    while ((match = regex.exec(canonicalTemplate.rawTemplate)) !== null) {
+      const key = match[1].replace(/["']/g, '');
+      const canonical = match[2];
+      const scope = match[3];
+      const field = match[4];
+
+      if (!seen.has(canonical)) {
+        seen.add(canonical);
+        variables.push({
+          variable: canonical,
+          scope: scope,
+          field: field,
+          key: key, // The response key that maps to this canonical variable
+        });
+        mappings[key] = canonical;
+      }
+    }
+  }
+
+  // If processedTemplate is an object, also use it
+  if (
+    canonicalTemplate.processedTemplate &&
+    typeof canonicalTemplate.processedTemplate === 'object'
+  ) {
+    for (const [path, canonical] of Object.entries(
+      canonicalTemplate.processedTemplate,
+    )) {
+      if (typeof canonical === 'string' && canonical.includes('{{canonical.')) {
+        const match = canonical.match(
+          /\{\{canonical\.([a-zA-Z_]+)\.([a-zA-Z_]+)\}\}/,
+        );
+        if (match && !seen.has(canonical)) {
+          seen.add(canonical);
+          const cleanPath = path
+            .replace(/^\/+/, '')
+            .replace(/@/g, '')
+            .replace(/\//g, '.');
+          variables.push({
+            variable: canonical,
+            scope: match[1],
+            field: match[2],
+            key: cleanPath,
+          });
+          mappings[cleanPath] = canonical;
+        }
+      }
+    }
+  }
+
+  return { variables, mappings };
+}
+
+// Execute API and parse response using canonicalTemplate
+app.post('/api/canonical-mapping/execute-and-parse', async (req, res) => {
+  try {
+    const { integrationId, connectionId, featureId, selectedVariables } =
+      req.body;
+
+    if (!integrationId || !connectionId || !featureId) {
+      return res.status(400).json({
+        success: false,
+        error: 'integrationId, connectionId, and featureId are required',
+      });
+    }
+
+    // Load API configuration
+    const apiSchemaPath = path.join(
+      __dirname,
+      'integrations/providers',
+      integrationId,
+      'api.schema.json',
+    );
+
+    if (!fs.existsSync(apiSchemaPath)) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'API schema not found' });
+    }
+
+    const apiSchema = JSON.parse(fs.readFileSync(apiSchemaPath, 'utf8'));
+    const apiConfig = apiSchema.apis?.find(api => api.featureId === featureId);
+
+    if (!apiConfig) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'API configuration not found' });
+    }
+
+    // Get user connection
+    const elasticsearch = require('./services/elasticsearch');
+    const connection = await elasticsearch.getConnectionById(connectionId);
+
+    if (!connection) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Connection not found' });
+    }
+
+    // Decrypt credentials
+    const encryptionManager = require('./services/encryption');
+    if (connection.credentials?.encrypted) {
+      connection.credentials = encryptionManager.decrypt(
+        connection.credentials.encrypted,
+      );
+    } else if (connection.credentials?.decrypted) {
+      connection.credentials = connection.credentials.decrypted;
+    }
+
+    // Load auth schema
+    const authSchemaPath = path.join(
+      __dirname,
+      'integrations/providers',
+      integrationId,
+      'auth.schema.json',
+    );
+
+    if (!fs.existsSync(authSchemaPath)) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Auth schema not found' });
+    }
+
+    const authSchema = JSON.parse(fs.readFileSync(authSchemaPath, 'utf8'));
+    const authMethod = authSchema.authMethods.find(
+      m => m.id === connection.authMethodId,
+    );
+
+    if (!authMethod) {
+      return res
+        .status(404)
+        .json({ success: false, error: 'Auth method not found' });
+    }
+
+    // Get auth type
+    const authTypes = JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, 'auth-types-definition.json'),
+        'utf8',
+      ),
+    );
+    const authType = authTypes.authTypes[authMethod.authType];
+
+    // Execute API
+    const AuthenticationManager = require('./utils/AuthenticationManager/AuthenticationManager');
+    const authManager = new AuthenticationManager(
+      connection,
+      authType,
+      authMethod,
+    );
+
+    const allVariables = { ...connection.configuredVariables };
+
+    // Prepare request config
+    let params = apiConfig.params || {};
+    if (apiConfig.queryParams && Array.isArray(apiConfig.queryParams)) {
+      params = {};
+      apiConfig.queryParams.forEach(param => {
+        if (param.key && param.value !== undefined) {
+          params[param.key] = param.value;
+        }
+      });
+    }
+
+    const requestConfig = {
+      url: apiConfig.url,
+      method: apiConfig.method || 'GET',
+      headers: apiConfig.headers || {},
+      params: params,
+      body: apiConfig.body || null,
+    };
+
+    const response = await authManager.executeApiRequest(
+      requestConfig,
+      allVariables,
+    );
+
+    if (!response.success) {
+      return res.status(500).json({
+        success: false,
+        error: 'API request failed',
+        details: response,
+      });
+    }
+
+    // Parse the response using canonicalTemplate
+    const canonicalTemplate = apiConfig.response?.canonicalTemplate;
+    let records = [];
+    let canonicalMappings = {};
+
+    if (response.data) {
+      // Extract the array path - try common paths first
+      let dataArray = response.data;
+      const commonPaths = [
+        'response',
+        'data',
+        'results',
+        'items',
+        'records',
+        'list',
+      ];
+
+      if (!Array.isArray(dataArray)) {
+        for (const p of commonPaths) {
+          if (Array.isArray(response.data[p])) {
+            dataArray = response.data[p];
+            break;
+          }
+        }
+      }
+
+      if (Array.isArray(dataArray) && dataArray.length > 0) {
+        // If selectedVariables are provided, use them to build records
+        // Otherwise, use all keys from the first item
+        const keysToExtract =
+          selectedVariables && selectedVariables.length > 0
+            ? selectedVariables.map(v => v.key || v.field)
+            : Object.keys(dataArray[0] || {});
+
+        // Map each record, extracting only the selected keys
+        records = dataArray.map(item => {
+          const mappedRecord = {};
+
+          keysToExtract.forEach(key => {
+            // Handle nested paths (e.g., 'data.designation')
+            const value = getNestedValue(item, key);
+            mappedRecord[key] = value;
+          });
+
+          return mappedRecord;
+        });
+
+        // Build canonical mappings from selectedVariables if provided
+        if (selectedVariables && selectedVariables.length > 0) {
+          selectedVariables.forEach(v => {
+            canonicalMappings[v.key || v.field] = v.variable;
+          });
+        }
+      } else {
+        // dataArray is not an array, return error info
+        console.log(
+          'Response data is not an array:',
+          typeof dataArray,
+          Object.keys(response.data || {}),
+        );
+      }
+    }
+
+    res.json({
+      success: true,
+      records,
+      canonicalMappings,
+      rawResponse: response.data,
+    });
+  } catch (error) {
+    console.error('Error executing and parsing API:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Helper: Extract array path from template
+function extractArrayPathFromTemplate(template) {
+  // Look for patterns like "response:[" or "data:[" in the template
+  const match = template.match(/["']?(\w+)["']?\s*:\s*\[/);
+  if (match) {
+    return match[1];
+  }
+  return null;
+}
+
+// Helper: Extract canonical mappings from template
+function extractCanonicalMappingsFromTemplate(canonicalTemplate) {
+  const mappings = {};
+
+  // If processedTemplate is an object with path -> canonical mappings
+  if (
+    canonicalTemplate.processedTemplate &&
+    typeof canonicalTemplate.processedTemplate === 'object'
+  ) {
+    for (const [path, canonical] of Object.entries(
+      canonicalTemplate.processedTemplate,
+    )) {
+      if (typeof canonical === 'string' && canonical.includes('{{canonical.')) {
+        // Remove leading slashes and xml-style paths
+        const cleanPath = path
+          .replace(/^\/+/, '')
+          .replace(/@/g, '')
+          .replace(/\//g, '.');
+        mappings[cleanPath] = canonical;
+      }
+    }
+  }
+
+  // Also parse from rawTemplate
+  if (canonicalTemplate.rawTemplate) {
+    // Match patterns like "key": "{{canonical.scope.field}}" or key: {{canonical.scope.field}}
+    const regex =
+      /["']?([a-zA-Z_\.]+)["']?\s*:\s*["']?(\{\{canonical\.[a-zA-Z_]+\.[a-zA-Z_]+\}\})["']?/g;
+    let match;
+    while ((match = regex.exec(canonicalTemplate.rawTemplate)) !== null) {
+      const key = match[1].replace(/["']/g, '');
+      mappings[key] = match[2];
+    }
+  }
+
+  return mappings;
+}
+
+// Helper: Get nested value from object
+function getNestedValue(obj, path) {
+  if (!obj || !path) return undefined;
+
+  const keys = path.split('.');
+  let value = obj;
+
+  for (const key of keys) {
+    if (value === null || value === undefined) return undefined;
+    value = value[key];
+  }
+
+  return value;
+}
 
 // Start server
 app.listen(PORT, () => {

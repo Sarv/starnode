@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastUpdated": "2025-12-14T14:33:02.158Z",
+  "lastUpdated": "2026-01-10T12:37:12.378Z",
   "description": "Master registry of all third-party software integrations",
   "integrations": [
     {
@@ -49,7 +49,7 @@
       "docsUrl": "https://github.com/n8n-io/n8n/tree/master/packages/nodes-base/nodes/Freshdesk",
       "status": "active",
       "createdAt": "2025-11-21T12:00:25.793Z",
-      "updatedAt": "2025-12-13T18:21:49.081Z"
+      "updatedAt": "2026-01-10T12:37:12.378Z"
     },
     {
       "id": "hubspot",

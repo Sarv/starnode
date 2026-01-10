@@ -4,7 +4,7 @@
       "id": "api_1765696379551_axnbkvjcp",
       "featureId": "fetch_employees",
       "fieldId": "api_config",
-      "name": "api API",
+      "name": "api_config API",
       "method": "POST",
       "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/List",
       "headers": [
@@ -26,21 +26,16 @@
       "response": {
         "successPath": "",
         "errorPath": "",
-        "dataFormat": "xml",
+        "dataFormat": "json",
         "canonicalTemplate": {
           "scope": "employee",
-          "rawTemplate": "<employee id=\"{{canonical.employee.unique_id}}\" status=\"{{canonical.employee.status}}\">\n  <name>{{canonical.employee.name}}</name>\n  <dept>{{canonical.employee.dept}}</dept>\n</employee>",
-          "processedTemplate": {
-            "/employee/@id": "{{canonical.employee.unique_id}}",
-            "/employee/@status": "{{canonical.employee.status}}",
-            "/employee/name": "{{canonical.employee.name}}",
-            "/employee/dept": "{{canonical.employee.dept}}"
-          },
-          "responseFormat": "xml"
+          "rawTemplate": "{\n  response:[\n\"unique_id\": \"{{canonical.employee.unique_id}}\",\n  \"roleName\": \"{{canonical.employee.dept}}\",\n  \"name\": \"{{canonical.employee.name}}\"\n  ]\n}",
+          "processedTemplate": "{\n  response:[\n\"unique_id\": \"{{canonical.employee.unique_id}}\",\n  \"roleName\": \"{{canonical.employee.dept}}\",\n  \"name\": \"{{canonical.employee.name}}\"\n  ]\n}",
+          "responseFormat": "json"
         }
       },
       "createdAt": "2025-12-14T07:12:59.551Z",
-      "updatedAt": "2025-12-26T12:53:26.890Z"
+      "updatedAt": "2026-01-10T10:41:35.740Z"
     },
     {
       "id": "api_1765696982197_i2dhjk4ag",

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head', { pageTitle: pageTitle, extraCSS: extraCSS })
+    %>
+  </head>
+  <body>
+    <%- include('partials/sidebar', { activePage: activePage }) %>
+
+    <main class="main-content">
+      <%- include('partials/topbar', { pageTitle: pageTitle, showMobileMenu:
+      showMobileMenu, showSearch: showSearch, showUserProfile: showUserProfile,
+      topbarActions: topbarActions }) %>
+
+      <!-- Canonical Mapping Container -->
+      <div class="canonical-mapping-container">
+        <!-- Header -->
+        <div class="page-header">
+          <div class="header-info">
+            <h1 class="page-title">Canonical Mapping</h1>
+            <p class="page-subtitle">
+              Map records between integrations using canonical variables
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-primary" id="addMappingBtn">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                width="18"
+                height="18"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add New Mapping
+            </button>
+          </div>
+        </div>
+
+        <!-- Mappings Table -->
+        <div class="mappings-table-container">
+          <table class="mappings-table" id="mappingsTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Integration A</th>
+                <th>Integration B</th>
+                <th>Variables Mapped</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="mappingsTableBody">
+              <!-- Mappings will be rendered here -->
+            </tbody>
+          </table>
+          <div class="empty-state" id="emptyState" style="display: none">
+            <div class="empty-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                width="48"
+                height="48"
+              >
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M8 15h8" />
+                <path d="M12 11v8" />
+              </svg>
+            </div>
+            <h3>No Mappings Yet</h3>
+            <p>
+              Create your first canonical mapping to enable data transformation
+              between integrations.
+            </p>
+            <button class="btn btn-primary" onclick="openAddModal()">
+              Add New Mapping
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add/Edit Mapping Modal -->
+      <div class="modal-overlay" id="mappingModal" style="display: none">
+        <div class="modal-content modal-xlarge">
+          <div class="modal-header">
+            <h2 id="modalTitle">Add New Mapping</h2>
+            <button class="modal-close" onclick="closeModal()">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                width="24"
+                height="24"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Mapping Name -->
+            <div class="form-group">
+              <label for="mappingName">Mapping Name</label>
+              <input
+                type="text"
+                id="mappingName"
+                class="form-control"
+                placeholder="e.g., Deepcall Agent ↔ Freshdesk Contact"
+              />
+            </div>
+
+            <!-- Integration Panels Grid -->
+            <div class="integrations-grid">
+              <!-- Integration A -->
+              <div class="integration-panel">
+                <h3 class="panel-title">Integration A</h3>
+
+                <!-- Software Selection -->
+                <div class="form-group">
+                  <label for="integrationA">Software</label>
+                  <select
+                    id="integrationA"
+                    class="form-control"
+                    onchange="onIntegrationChange('A')"
+                  >
+                    <option value="">Select integration...</option>
+                  </select>
+                </div>
+
+                <!-- User Connection -->
+                <div class="form-group">
+                  <label for="connectionA">User Connection</label>
+                  <select id="connectionA" class="form-control" disabled>
+                    <option value="">Select connection...</option>
+                  </select>
+                </div>
+
+                <!-- Scope -->
+                <div class="form-group">
+                  <label for="scopeA">Scope</label>
+                  <select
+                    id="scopeA"
+                    class="form-control"
+                    onchange="onScopeChange('A')"
+                    disabled
+                  >
+                    <option value="">Select scope...</option>
+                  </select>
+                </div>
+
+                <!-- Operation -->
+                <div class="form-group">
+                  <label for="operationA">Operation</label>
+                  <select
+                    id="operationA"
+                    class="form-control"
+                    onchange="onOperationChange('A')"
+                    disabled
+                  >
+                    <option value="">Select operation...</option>
+                  </select>
+                </div>
+
+                <!-- Feature -->
+                <div class="form-group">
+                  <label for="featureA">Feature</label>
+                  <select
+                    id="featureA"
+                    class="form-control"
+                    onchange="onFeatureChange('A')"
+                    disabled
+                  >
+                    <option value="">Select feature...</option>
+                  </select>
+                </div>
+
+                <!-- Variables Checkboxes -->
+                <div class="variables-section" id="variablesSectionA">
+                  <div class="section-label">Select Variables:</div>
+                  <div class="variables-checkboxes" id="variablesCheckboxesA">
+                    <span class="no-vars"
+                      >Select a feature to see variables</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Load Button -->
+                <button
+                  class="btn btn-secondary btn-load"
+                  id="loadBtnA"
+                  onclick="loadApiData('A')"
+                  disabled
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <path d="M21 12a9 9 0 11-6.219-8.56" />
+                  </svg>
+                  Load Data
+                </button>
+
+                <!-- Primary Key Selection -->
+                <div
+                  class="primary-key-section"
+                  id="primaryKeySectionA"
+                  style="display: none"
+                >
+                  <label for="primaryKeyA">Primary Key:</label>
+                  <select
+                    id="primaryKeyA"
+                    class="form-control"
+                    onchange="onPrimaryKeyChange('A')"
+                  >
+                    <option value="">Select primary key...</option>
+                  </select>
+                </div>
+
+                <!-- Loaded Data Table -->
+                <div
+                  class="loaded-data-section"
+                  id="loadedDataSectionA"
+                  style="display: none"
+                >
+                  <div class="section-label">Loaded Records:</div>
+                  <div class="data-table-wrapper">
+                    <table class="data-table" id="dataTableA">
+                      <thead id="dataTableHeadA"></thead>
+                      <tbody id="dataTableBodyA"></tbody>
+                    </table>
+                  </div>
+                  <div class="selected-record" id="selectedRecordA">
+                    <span class="no-selection">No record selected</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mapping Arrow -->
+              <div class="mapping-arrow">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  width="32"
+                  height="32"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span>↔</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  width="32"
+                  height="32"
+                  style="transform: rotate(180deg)"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
+
+              <!-- Integration B -->
+              <div class="integration-panel">
+                <h3 class="panel-title">Integration B</h3>
+
+                <!-- Software Selection -->
+                <div class="form-group">
+                  <label for="integrationB">Software</label>
+                  <select
+                    id="integrationB"
+                    class="form-control"
+                    onchange="onIntegrationChange('B')"
+                  >
+                    <option value="">Select integration...</option>
+                  </select>
+                </div>
+
+                <!-- User Connection -->
+                <div class="form-group">
+                  <label for="connectionB">User Connection</label>
+                  <select id="connectionB" class="form-control" disabled>
+                    <option value="">Select connection...</option>
+                  </select>
+                </div>
+
+                <!-- Scope -->
+                <div class="form-group">
+                  <label for="scopeB">Scope</label>
+                  <select
+                    id="scopeB"
+                    class="form-control"
+                    onchange="onScopeChange('B')"
+                    disabled
+                  >
+                    <option value="">Select scope...</option>
+                  </select>
+                </div>
+
+                <!-- Operation -->
+                <div class="form-group">
+                  <label for="operationB">Operation</label>
+                  <select
+                    id="operationB"
+                    class="form-control"
+                    onchange="onOperationChange('B')"
+                    disabled
+                  >
+                    <option value="">Select operation...</option>
+                  </select>
+                </div>
+
+                <!-- Feature -->
+                <div class="form-group">
+                  <label for="featureB">Feature</label>
+                  <select
+                    id="featureB"
+                    class="form-control"
+                    onchange="onFeatureChange('B')"
+                    disabled
+                  >
+                    <option value="">Select feature...</option>
+                  </select>
+                </div>
+
+                <!-- Variables Checkboxes -->
+                <div class="variables-section" id="variablesSectionB">
+                  <div class="section-label">Select Variables:</div>
+                  <div class="variables-checkboxes" id="variablesCheckboxesB">
+                    <span class="no-vars"
+                      >Select a feature to see variables</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Load Button -->
+                <button
+                  class="btn btn-secondary btn-load"
+                  id="loadBtnB"
+                  onclick="loadApiData('B')"
+                  disabled
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    width="16"
+                    height="16"
+                  >
+                    <path d="M21 12a9 9 0 11-6.219-8.56" />
+                  </svg>
+                  Load Data
+                </button>
+
+                <!-- Primary Key Selection -->
+                <div
+                  class="primary-key-section"
+                  id="primaryKeySectionB"
+                  style="display: none"
+                >
+                  <label for="primaryKeyB">Primary Key:</label>
+                  <select
+                    id="primaryKeyB"
+                    class="form-control"
+                    onchange="onPrimaryKeyChange('B')"
+                  >
+                    <option value="">Select primary key...</option>
+                  </select>
+                </div>
+
+                <!-- Loaded Data Table -->
+                <div
+                  class="loaded-data-section"
+                  id="loadedDataSectionB"
+                  style="display: none"
+                >
+                  <div class="section-label">Loaded Records:</div>
+                  <div class="data-table-wrapper">
+                    <table class="data-table" id="dataTableB">
+                      <thead id="dataTableHeadB"></thead>
+                      <tbody id="dataTableBodyB"></tbody>
+                    </table>
+                  </div>
+                  <div class="selected-record" id="selectedRecordB">
+                    <span class="no-selection">No record selected</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mapping Summary -->
+            <div
+              class="mapping-summary"
+              id="mappingSummary"
+              style="display: none"
+            >
+              <h3>Mapping Summary</h3>
+              <div class="summary-content">
+                <div class="summary-side" id="summaryA">
+                  <span class="summary-label">Integration A:</span>
+                  <span class="summary-value" id="summaryValueA">-</span>
+                </div>
+                <div class="summary-arrow">↔</div>
+                <div class="summary-side" id="summaryB">
+                  <span class="summary-label">Integration B:</span>
+                  <span class="summary-value" id="summaryValueB">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">
+              Cancel
+            </button>
+            <!-- Save disabled for now per user request -->
+            <!-- <button class="btn btn-primary" id="saveMappingBtn" onclick="saveMapping()">Save Mapping</button> -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div class="modal-overlay" id="deleteModal" style="display: none">
+        <div class="modal-content modal-small">
+          <div class="modal-header">
+            <h2>Delete Mapping</h2>
+            <button class="modal-close" onclick="closeDeleteModal()">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                width="24"
+                height="24"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Are you sure you want to delete this mapping? This action cannot
+              be undone.
+            </p>
+            <p class="delete-name" id="deleteMappingName"></p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeDeleteModal()">
+              Cancel
+            </button>
+            <button
+              class="btn btn-danger"
+              id="confirmDeleteBtn"
+              onclick="confirmDelete()"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="/js/canonical-mapping.js"></script>
+  </body>
+</html>

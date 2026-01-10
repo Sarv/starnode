@@ -329,7 +329,43 @@
       "status": "active",
       "createdAt": "2025-12-18T21:00:36.840Z",
       "updatedAt": "2025-12-18T21:00:36.840Z"
+    },
+    {
+      "id": "mapping_1768049701063_0v9rsvj12",
+      "featureTemplateId": "get_agents",
+      "featureTemplateName": "get agents",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api",
+          "label": "api",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "scope": "employee",
+      "operation": "list",
+      "category": "employee",
+      "status": "active",
+      "createdAt": "2026-01-10T12:55:01.063Z",
+      "updatedAt": "2026-01-10T12:55:01.063Z"
     }
   ],
-  "lastUpdated": "2025-12-18T21:00:36.840Z"
+  "lastUpdated": "2026-01-10T12:55:01.063Z"
 }
