@@ -43,7 +43,7 @@
       "fieldId": "api",
       "name": "api API",
       "method": "GET",
-      "url": "https://sarv.freshdesk.com/api/v2/agents",
+      "url": "https://sarv.freshdesk.com/api/v2/contacts",
       "headers": [],
       "queryParams": [],
       "bodyType": "none",
@@ -52,10 +52,11 @@
         "successPath": "",
         "errorPath": "",
         "dataFormat": "json",
+        "schemaTemplate": "",
         "canonicalTemplate": null
       },
       "createdAt": "2026-01-10T12:55:34.593Z",
-      "updatedAt": "2026-01-10T12:55:34.593Z"
+      "updatedAt": "2026-01-10T11:17:12.288Z"
     }
   ]
 }
