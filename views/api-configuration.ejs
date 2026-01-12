@@ -505,6 +505,61 @@
                       </select>
                     </div>
                   </div>
+
+                  <!-- Response Template Section -->
+                  <div
+                    class="form-section"
+                    style="
+                      margin-top: 24px;
+                      border-top: 1px solid var(--border-color);
+                      padding-top: 20px;
+                    "
+                  >
+                    <h4
+                      class="section-title"
+                      style="font-size: 14px; margin-bottom: 8px"
+                    >
+                      Response Template
+                    </h4>
+                    <p class="help-text" style="margin-bottom: 12px">
+                      Define the expected API response structure. Use "string",
+                      "int", or "boolean" as values to mark data types.
+                    </p>
+                    <div class="editor-toolbar">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        onclick="formatResponseTemplate()"
+                      >
+                        Format
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        onclick="validateResponseTemplate()"
+                      >
+                        Validate
+                      </button>
+                    </div>
+                    <textarea
+                      id="responseTemplate"
+                      name="responseTemplate"
+                      class="code-editor"
+                      placeholder='{
+  "response": [
+    { "name": "string", "id": "int" }
+  ],
+  "status": "string"
+}'
+                      rows="12"
+                    ></textarea>
+                    <small class="help-text">
+                      Example:
+                      <code
+                        >{ "name": "string", "items": [{ "id": "int" }] }</code
+                      >
+                    </small>
+                  </div>
                 </div>
               </div>
 
@@ -982,6 +1037,7 @@ Execute a test to see the response...</pre
     </div>
 
     <script src="/js/dashboard.js"></script>
+    <script src="/js/response-template-utils.js"></script>
     <script src="/js/api-configuration.js"></script>
   </body>
 </html>

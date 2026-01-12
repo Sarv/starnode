@@ -52,11 +52,133 @@
         "successPath": "",
         "errorPath": "",
         "dataFormat": "json",
-        "schemaTemplate": "",
-        "canonicalTemplate": null
+        "template": [
+          {
+            "path": "[0].active",
+            "type": "boolean"
+          },
+          {
+            "path": "[0].address",
+            "type": "string"
+          },
+          {
+            "path": "[0].description",
+            "type": "string"
+          },
+          {
+            "path": "[0].email",
+            "type": "string"
+          },
+          {
+            "path": "[0].id",
+            "type": "int"
+          },
+          {
+            "path": "[0].job_title",
+            "type": "string"
+          },
+          {
+            "path": "[0].language",
+            "type": "string"
+          },
+          {
+            "path": "[0].mobile",
+            "type": "string"
+          },
+          {
+            "path": "[0].name",
+            "type": "string"
+          },
+          {
+            "path": "[0].phone",
+            "type": "int"
+          },
+          {
+            "path": "[0].time_zone",
+            "type": "string"
+          },
+          {
+            "path": "[0].twitter_id",
+            "type": "string"
+          },
+          {
+            "path": "[0].facebook_id",
+            "type": "string"
+          },
+          {
+            "path": "[0].created_at",
+            "type": "string"
+          },
+          {
+            "path": "[0].updated_at",
+            "type": "string"
+          },
+          {
+            "path": "[0].csat_rating",
+            "type": "string"
+          },
+          {
+            "path": "[0].preferred_source",
+            "type": "string"
+          },
+          {
+            "path": "[0].contact_type",
+            "type": "string"
+          },
+          {
+            "path": "[0].first_seen",
+            "type": "string"
+          },
+          {
+            "path": "[0].last_seen",
+            "type": "string"
+          },
+          {
+            "path": "[0].company_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].unique_external_id",
+            "type": "string"
+          },
+          {
+            "path": "[0].first_name",
+            "type": "string"
+          },
+          {
+            "path": "[0].last_name",
+            "type": "string"
+          },
+          {
+            "path": "[0].visitor_id",
+            "type": "string"
+          },
+          {
+            "path": "[0].org_contact_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].org_contact_id_str",
+            "type": "int"
+          },
+          {
+            "path": "[0].guest_name",
+            "type": "string"
+          },
+          {
+            "path": "[0].guest_profile_pic",
+            "type": "string"
+          }
+        ],
+        "canonicalTemplate": {
+          "scope": "employee",
+          "rawTemplate": "[\n  {\n    \"active\": \"{{canonical.employee.status}}\",\n    \"description\": \"{{canonical.employee.dept}}\",\n    \"email\": \"{{canonical.employee.email}}\",\n    \"id\": \"{{canonical.employee.unique_id}}\",\n    \"job_title\": \"{{canonical.employee.position}}\",\n    \"first_name\": \"{{canonical.employee.name}}\",\n  }\n]",
+          "processedTemplate": "[\n  {\n    \"active\": \"{{canonical.employee.status}}\",\n    \"description\": \"{{canonical.employee.dept}}\",\n    \"email\": \"{{canonical.employee.email}}\",\n    \"id\": \"{{canonical.employee.unique_id}}\",\n    \"job_title\": \"{{canonical.employee.position}}\",\n    \"first_name\": \"{{canonical.employee.name}}\",\n  }\n]",
+          "responseFormat": "json"
+        }
       },
       "createdAt": "2026-01-10T12:55:34.593Z",
-      "updatedAt": "2026-01-10T11:17:12.288Z"
+      "updatedAt": "2026-01-12T10:44:32.721Z"
     }
   ]
 }

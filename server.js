@@ -2613,9 +2613,8 @@ app.post(
       }
 
       // Decrypt credentials if they're encrypted
-      const encryptionManager = require('./services/encryption');
       if (connection.credentials && connection.credentials.encrypted) {
-        connection.credentials = encryptionManager.decrypt(
+        connection.credentials = encryption.decrypt(
           connection.credentials.encrypted,
         );
       } else if (connection.credentials && connection.credentials.decrypted) {
@@ -3917,7 +3916,6 @@ app.post('/api/canonical-mapping/execute-and-parse', async (req, res) => {
     }
 
     // Get user connection
-    const elasticsearch = require('./services/elasticsearch');
     const connection = await elasticsearch.getConnectionById(connectionId);
 
     if (!connection) {
@@ -3927,9 +3925,8 @@ app.post('/api/canonical-mapping/execute-and-parse', async (req, res) => {
     }
 
     // Decrypt credentials
-    const encryptionManager = require('./services/encryption');
     if (connection.credentials?.encrypted) {
-      connection.credentials = encryptionManager.decrypt(
+      connection.credentials = encryption.decrypt(
         connection.credentials.encrypted,
       );
     } else if (connection.credentials?.decrypted) {

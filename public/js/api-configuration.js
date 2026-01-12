@@ -535,9 +535,37 @@ function populateForm(config) {
         'requestCanonicalTemplate',
       );
 
-      // Load template content first
-      if (requestTemplateTextarea && rct.rawTemplate) {
-        requestTemplateTextarea.value = rct.rawTemplate;
+      if (requestTemplateTextarea) {
+        // Check if processedTemplate is in the new array format
+        if (
+          Array.isArray(rct.processedTemplate) &&
+          rct.processedTemplate.length > 0
+        ) {
+          try {
+            const reconstructed = reconstructFromPathArray(
+              rct.processedTemplate,
+            );
+            if (reconstructed) {
+              requestTemplateTextarea.value = JSON.stringify(
+                reconstructed,
+                null,
+                2,
+              );
+            }
+          } catch (error) {
+            console.error(
+              'Error reconstructing request canonical template:',
+              error,
+            );
+            // Fall back to rawTemplate
+            if (rct.rawTemplate) {
+              requestTemplateTextarea.value = rct.rawTemplate;
+            }
+          }
+        } else if (rct.rawTemplate) {
+          // Use rawTemplate for backwards compatibility
+          requestTemplateTextarea.value = rct.rawTemplate;
+        }
       }
 
       // Load scopes and then set the scope value
@@ -573,9 +601,30 @@ function populateForm(config) {
       const ct = config.response.canonicalTemplate;
       const templateTextarea = document.getElementById('canonicalTemplate');
 
-      // Load template content first
-      if (templateTextarea && ct.rawTemplate) {
-        templateTextarea.value = ct.rawTemplate;
+      if (templateTextarea) {
+        // Check if processedTemplate is in the new array format
+        if (
+          Array.isArray(ct.processedTemplate) &&
+          ct.processedTemplate.length > 0
+        ) {
+          try {
+            const reconstructed = reconstructFromPathArray(
+              ct.processedTemplate,
+            );
+            if (reconstructed) {
+              templateTextarea.value = JSON.stringify(reconstructed, null, 2);
+            }
+          } catch (error) {
+            console.error('Error reconstructing canonical template:', error);
+            // Fall back to rawTemplate
+            if (ct.rawTemplate) {
+              templateTextarea.value = ct.rawTemplate;
+            }
+          }
+        } else if (ct.rawTemplate) {
+          // Use rawTemplate for backwards compatibility
+          templateTextarea.value = ct.rawTemplate;
+        }
       }
 
       // Load scopes and then set the scope value
@@ -587,6 +636,28 @@ function populateForm(config) {
             updateCanonicalPreview();
           }
         });
+      }
+    }
+
+    // Populate response template if exists
+    if (config.response.template && config.response.template.length > 0) {
+      const responseTemplateTextarea =
+        document.getElementById('responseTemplate');
+      if (responseTemplateTextarea) {
+        try {
+          const reconstructed = reconstructTemplateFromPathArray(
+            config.response.template,
+          );
+          if (reconstructed) {
+            responseTemplateTextarea.value = JSON.stringify(
+              reconstructed,
+              null,
+              2,
+            );
+          }
+        } catch (error) {
+          console.error('Error reconstructing response template:', error);
+        }
       }
     }
   }
@@ -604,6 +675,9 @@ function clearCanonicalTemplate() {
 
   // Clear request template
   clearRequestCanonicalTemplate();
+
+  // Clear response template (structure definition)
+  clearResponseTemplate();
 }
 
 // Handle form submission
@@ -701,6 +775,8 @@ function collectFormData() {
       successPath: document.getElementById('successPath').value,
       errorPath: document.getElementById('errorPath').value,
       dataFormat: document.getElementById('dataFormat')?.value || 'json',
+      // Response template (path-type array)
+      template: getResponseTemplateData(),
       // Canonical template mapping
       canonicalTemplate: canonicalData
         ? {
@@ -2230,9 +2306,37 @@ async function loadApiConfigurationIntoForm(config) {
         'requestCanonicalTemplate',
       );
 
-      // Load template content first
-      if (requestTemplateTextarea && rct.rawTemplate) {
-        requestTemplateTextarea.value = rct.rawTemplate;
+      if (requestTemplateTextarea) {
+        // Check if processedTemplate is in the new array format
+        if (
+          Array.isArray(rct.processedTemplate) &&
+          rct.processedTemplate.length > 0
+        ) {
+          try {
+            const reconstructed = reconstructFromPathArray(
+              rct.processedTemplate,
+            );
+            if (reconstructed) {
+              requestTemplateTextarea.value = JSON.stringify(
+                reconstructed,
+                null,
+                2,
+              );
+            }
+          } catch (error) {
+            console.error(
+              'Error reconstructing request canonical template:',
+              error,
+            );
+            // Fall back to rawTemplate
+            if (rct.rawTemplate) {
+              requestTemplateTextarea.value = rct.rawTemplate;
+            }
+          }
+        } else if (rct.rawTemplate) {
+          // Use rawTemplate for backwards compatibility
+          requestTemplateTextarea.value = rct.rawTemplate;
+        }
       }
 
       // Load scopes and then set the scope value
@@ -2267,9 +2371,30 @@ async function loadApiConfigurationIntoForm(config) {
       const ct = config.response.canonicalTemplate;
       const templateTextarea = document.getElementById('canonicalTemplate');
 
-      // Load template content first
-      if (templateTextarea && ct.rawTemplate) {
-        templateTextarea.value = ct.rawTemplate;
+      if (templateTextarea) {
+        // Check if processedTemplate is in the new array format
+        if (
+          Array.isArray(ct.processedTemplate) &&
+          ct.processedTemplate.length > 0
+        ) {
+          try {
+            const reconstructed = reconstructFromPathArray(
+              ct.processedTemplate,
+            );
+            if (reconstructed) {
+              templateTextarea.value = JSON.stringify(reconstructed, null, 2);
+            }
+          } catch (error) {
+            console.error('Error reconstructing canonical template:', error);
+            // Fall back to rawTemplate
+            if (ct.rawTemplate) {
+              templateTextarea.value = ct.rawTemplate;
+            }
+          }
+        } else if (ct.rawTemplate) {
+          // Use rawTemplate for backwards compatibility
+          templateTextarea.value = ct.rawTemplate;
+        }
       }
 
       // Load scopes and then set the scope value
@@ -2281,6 +2406,28 @@ async function loadApiConfigurationIntoForm(config) {
             updateCanonicalPreview();
           }
         });
+      }
+    }
+
+    // Load response template if exists
+    if (config.response.template && config.response.template.length > 0) {
+      const responseTemplateTextarea =
+        document.getElementById('responseTemplate');
+      if (responseTemplateTextarea) {
+        try {
+          const reconstructed = reconstructTemplateFromPathArray(
+            config.response.template,
+          );
+          if (reconstructed) {
+            responseTemplateTextarea.value = JSON.stringify(
+              reconstructed,
+              null,
+              2,
+            );
+          }
+        } catch (error) {
+          console.error('Error reconstructing response template:', error);
+        }
       }
     }
   }
@@ -2908,10 +3055,13 @@ function getCanonicalTemplateData() {
   let processedTemplate = rawTemplate;
 
   if (responseFormat === 'json') {
-    // Flatten JSON to dot notation
-    const flattened = flattenCanonicalTemplate(rawTemplate);
-    if (flattened) {
-      processedTemplate = flattened;
+    // Parse JSON to path-var array format
+    try {
+      processedTemplate = parseCanonicalTemplateToPathArray(rawTemplate);
+    } catch (error) {
+      console.error('Error parsing canonical template:', error);
+      // Fall back to raw template if parsing fails
+      processedTemplate = rawTemplate;
     }
   } else if (responseFormat === 'xml') {
     // Process XML to XPath notation
@@ -3217,10 +3367,13 @@ function getRequestCanonicalTemplateData() {
   let processedTemplate = rawTemplate;
 
   if (bodyType === 'json') {
-    // Flatten JSON to dot notation
-    const flattened = flattenCanonicalTemplate(rawTemplate);
-    if (flattened) {
-      processedTemplate = flattened;
+    // Parse JSON to path-var array format
+    try {
+      processedTemplate = parseCanonicalTemplateToPathArray(rawTemplate);
+    } catch (error) {
+      console.error('Error parsing request canonical template:', error);
+      // Fall back to raw template if parsing fails
+      processedTemplate = rawTemplate;
     }
   } else if (bodyType === 'xml') {
     // Process XML to XPath notation
@@ -3295,5 +3448,97 @@ async function loadCanonicalScopes() {
     }
   } catch (error) {
     console.error('Error loading canonical scopes:', error);
+  }
+}
+
+// =====================================================
+// RESPONSE TEMPLATE FUNCTIONS
+// =====================================================
+
+/**
+ * Get response template data for saving
+ * Parses the template textarea and returns flattened path-type array
+ * @returns {Array|null} - Array of {path, type} objects or null if empty/invalid
+ */
+function getResponseTemplateData() {
+  const templateTextarea = document.getElementById('responseTemplate');
+  if (!templateTextarea || !templateTextarea.value.trim()) {
+    return null;
+  }
+
+  try {
+    return parseTemplateToPathArray(templateTextarea.value);
+  } catch (error) {
+    console.error('Error parsing response template:', error);
+    return null;
+  }
+}
+
+/**
+ * Format response template JSON in the textarea
+ */
+function formatResponseTemplate() {
+  const textarea = document.getElementById('responseTemplate');
+  if (!textarea || !textarea.value.trim()) {
+    showToast('No template to format', 'info');
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(textarea.value);
+    textarea.value = JSON.stringify(parsed, null, 2);
+    showToast('Response template formatted', 'success');
+    textarea.style.borderColor = '#10b981';
+    setTimeout(() => {
+      textarea.style.borderColor = '';
+    }, 2000);
+  } catch (error) {
+    showToast('Invalid JSON: ' + error.message, 'error');
+    textarea.style.borderColor = '#ef4444';
+  }
+}
+
+/**
+ * Validate response template
+ * Checks if the JSON is valid and all type annotations are correct
+ */
+function validateResponseTemplate() {
+  const textarea = document.getElementById('responseTemplate');
+  if (!textarea || !textarea.value.trim()) {
+    showToast('No template to validate', 'info');
+    return;
+  }
+
+  try {
+    const pathArray = parseTemplateToPathArray(textarea.value);
+    if (pathArray.length === 0) {
+      showToast(
+        'Template is empty or has no valid type annotations',
+        'warning',
+      );
+      return;
+    }
+
+    showToast(`Valid template with ${pathArray.length} field(s)`, 'success');
+    textarea.style.borderColor = '#10b981';
+    setTimeout(() => {
+      textarea.style.borderColor = '';
+    }, 2000);
+
+    // Log parsed paths for debugging
+    console.log('Parsed response template:', pathArray);
+  } catch (error) {
+    showToast('Invalid template: ' + error.message, 'error');
+    textarea.style.borderColor = '#ef4444';
+  }
+}
+
+/**
+ * Clear response template textarea
+ */
+function clearResponseTemplate() {
+  const textarea = document.getElementById('responseTemplate');
+  if (textarea) {
+    textarea.value = '';
   }
 }
