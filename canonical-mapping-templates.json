@@ -1,0 +1,18 @@
+[
+  {
+    "id": "template_1768457809260_b68zlahun",
+    "name": "Agent Mapping template",
+    "sideA": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "sideB": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "createdAt": "2026-01-15T06:16:49.260Z",
+    "updatedAt": "2026-01-15T06:16:49.260Z"
+  }
+]

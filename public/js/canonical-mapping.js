@@ -37,7 +37,7 @@ const sideState = {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadMappings();
+  await loadTemplates();
   await loadIntegrations();
   await loadScopes();
 
@@ -518,7 +518,7 @@ function renderPrimaryKeyDropdown(side) {
   const options = variables
     .map(
       v =>
-        `<option value="${escapeHtml(v.key)}">${escapeHtml(
+        `<option value="${escapeHtml(v.variable)}">${escapeHtml(
           v.key,
         )} (${escapeHtml(v.variable)})</option>`,
     )
@@ -621,6 +621,9 @@ function onPrimaryKeyChange(side) {
       selectRecord(side, index);
     }
   }
+
+  // Update save template button visibility
+  updateSaveTemplateButtonState();
 }
 
 // Update mapping summary
@@ -725,4 +728,182 @@ function showToast(message, type = 'info') {
     toast.classList.add('toast-hide');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+// ===== Template Management Functions =====
+
+// Update visibility of Save Template button
+function updateSaveTemplateButtonState() {
+  const nameField = document.getElementById('mappingName');
+  const primaryKeyA = document.getElementById('primaryKeyA');
+  const primaryKeyB = document.getElementById('primaryKeyB');
+  const saveBtn = document.getElementById('saveTemplateBtn');
+
+  // Show Save Template button if name and both primary keys are selected
+  if (
+    nameField &&
+    nameField.value &&
+    primaryKeyA &&
+    primaryKeyA.value &&
+    primaryKeyB &&
+    primaryKeyB.value
+  ) {
+    saveBtn.style.display = 'inline-block';
+  } else {
+    saveBtn.style.display = 'none';
+  }
+}
+
+// Save template
+async function saveTemplate() {
+  const name = document.getElementById('mappingName').value;
+  const scopeA = document.getElementById('scopeA').value;
+  const operationA = document.getElementById('operationA').value;
+  const primaryKeyA = document.getElementById('primaryKeyA').value;
+
+  const scopeB = document.getElementById('scopeB').value;
+  const operationB = document.getElementById('operationB').value;
+  const primaryKeyB = document.getElementById('primaryKeyB').value;
+
+  if (
+    !name ||
+    !scopeA ||
+    !operationA ||
+    !primaryKeyA ||
+    !scopeB ||
+    !operationB ||
+    !primaryKeyB
+  ) {
+    showToast('Please fill in all required fields', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/mapping-templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        sideA: {
+          scope: scopeA,
+          operation: operationA,
+          primaryKeyCanonical: primaryKeyA,
+        },
+        sideB: {
+          scope: scopeB,
+          operation: operationB,
+          primaryKeyCanonical: primaryKeyB,
+        },
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast('Template saved successfully', 'success');
+      closeModal();
+      // Reload templates list (you'll need to add this function)
+      await loadTemplates();
+    } else {
+      showToast(data.error || 'Failed to save template', 'error');
+    }
+  } catch (error) {
+    console.error('Error saving template:', error);
+    showToast('Failed to save template', 'error');
+  }
+}
+
+// Load templates
+async function loadTemplates() {
+  try {
+    const response = await fetch('/api/mapping-templates');
+    const data = await response.json();
+
+    const templates = data.templates || [];
+    renderTemplatesTable(templates);
+  } catch (error) {
+    console.error('Error loading templates:', error);
+    showToast('Failed to load templates', 'error');
+  }
+}
+
+// Render templates table
+function renderTemplatesTable(templates) {
+  const tbody = document.getElementById('mappingsTableBody');
+  const emptyState = document.getElementById('emptyState');
+  const table = document.getElementById('mappingsTable');
+
+  if (templates.length === 0) {
+    table.style.display = 'none';
+    emptyState.style.display = 'block';
+    return;
+  }
+
+  table.style.display = 'table';
+  emptyState.style.display = 'none';
+
+  tbody.innerHTML = templates
+    .map(
+      template => `
+        <tr>
+          <td><strong>${escapeHtml(template.name)}</strong></td>
+          <td>
+            <span class="scope-badge">${escapeHtml(
+              template.sideA.scope,
+            )}</span> / 
+            <span class="operation-badge">${escapeHtml(
+              template.sideA.operation,
+            )}</span>
+          </td>
+          <td>
+            <span class="scope-badge">${escapeHtml(
+              template.sideB.scope,
+            )}</span> / 
+            <span class="operation-badge">${escapeHtml(
+              template.sideB.operation,
+            )}</span>
+          </td>
+          <td>
+            <code>${escapeHtml(template.sideA.primaryKeyCanonical)}</code> ↔ 
+            <code>${escapeHtml(template.sideB.primaryKeyCanonical)}</code>
+          </td>
+          <td>${formatDate(template.createdAt)}</td>
+          <td>
+            <button class="btn-icon" onclick="deleteTemplate('${escapeHtml(
+              template.id,
+            )}')" title="Delete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      `,
+    )
+    .join('');
+}
+
+// Delete template
+async function deleteTemplate(templateId) {
+  if (!confirm('Are you sure you want to delete this template?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/mapping-templates/${templateId}`, {
+      method: 'DELETE',
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showToast('Template deleted successfully', 'success');
+      await loadTemplates();
+    } else {
+      showToast(data.error || 'Failed to delete template', 'error');
+    }
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    showToast('Failed to delete template', 'error');
+  }
 }

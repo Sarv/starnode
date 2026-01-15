@@ -3549,6 +3549,202 @@ app.get('/canonical-mapping', (req, res) => {
   });
 });
 
+// Template Management Endpoints
+const TEMPLATES_FILE = path.join(__dirname, 'canonical-mapping-templates.json');
+
+// Get all templates
+app.get('/api/mapping-templates', (req, res) => {
+  try {
+    if (!fs.existsSync(TEMPLATES_FILE)) {
+      return res.json({ templates: [] });
+    }
+    const templates = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+    res.json({ templates });
+  } catch (error) {
+    console.error('Error loading templates:', error);
+    res.status(500).json({ error: 'Failed to load templates' });
+  }
+});
+
+// Create template
+app.post('/api/mapping-templates', (req, res) => {
+  try {
+    const { name, sideA, sideB } = req.body;
+
+    if (!name || !sideA || !sideB) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const templates = fs.existsSync(TEMPLATES_FILE)
+      ? JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'))
+      : [];
+
+    const newTemplate = {
+      id: `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name,
+      sideA: {
+        scope: sideA.scope,
+        operation: sideA.operation,
+        primaryKeyCanonical: sideA.primaryKeyCanonical,
+      },
+      sideB: {
+        scope: sideB.scope,
+        operation: sideB.operation,
+        primaryKeyCanonical: sideB.primaryKeyCanonical,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    templates.push(newTemplate);
+    fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(templates, null, 2));
+
+    res.json({ success: true, template: newTemplate });
+  } catch (error) {
+    console.error('Error creating template:', error);
+    res.status(500).json({ error: 'Failed to create template' });
+  }
+});
+
+// Delete template
+app.delete('/api/mapping-templates/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!fs.existsSync(TEMPLATES_FILE)) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    const templates = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+    const filtered = templates.filter(t => t.id !== id);
+
+    if (filtered.length === templates.length) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(filtered, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    res.status(500).json({ error: 'Failed to delete template' });
+  }
+});
+
+// ===== Record Mapping APIs =====
+
+// Get features by scope and operation for an integration
+app.get('/api/integrations/:id/apis-by-scope', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scope, operation } = req.query;
+
+    if (!scope || !operation) {
+      return res
+        .status(400)
+        .json({ error: 'Scope and operation are required' });
+    }
+
+    const integrationDir = path.join(__dirname, 'integrations/providers', id);
+    const featuresSchemaPath = path.join(
+      integrationDir,
+      'features.schema.json',
+    );
+
+    if (!fs.existsSync(featuresSchemaPath)) {
+      return res.json({ features: [] });
+    }
+
+    const featuresSchema = JSON.parse(
+      fs.readFileSync(featuresSchemaPath, 'utf8'),
+    );
+
+    // Find features matching the scope and operation
+    const matchingFeatures = (featuresSchema.featureMappings || []).filter(
+      feature => {
+        return feature.scope === scope && feature.operation === operation;
+      },
+    );
+
+    // Map to simpler feature format
+    const features = matchingFeatures.map(feature => ({
+      id: feature.featureTemplateId,
+      name: feature.featureTemplateName,
+      scope: feature.scope,
+      operation: feature.operation,
+    }));
+
+    res.json({ features });
+  } catch (error) {
+    console.error('Error finding features by scope:', error);
+    res.status(500).json({ error: 'Failed to find features' });
+  }
+});
+
+// Save record mappings
+app.post('/api/record-mappings', async (req, res) => {
+  try {
+    const { templateId, integrations, mappings } = req.body;
+
+    if (!templateId || !integrations || !mappings) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Extract integration IDs for order-independent lookup
+    const integrationIds = Object.keys(integrations).sort();
+
+    const mappingDocument = {
+      templateId,
+      integrationIds,
+      integrations,
+      mappings,
+    };
+
+    const saved = await elasticsearch.saveRecordMapping(mappingDocument);
+    res.json({ success: true, mapping: saved });
+  } catch (error) {
+    console.error('Error saving record mapping:', error);
+    res.status(500).json({ error: 'Failed to save record mapping' });
+  }
+});
+
+// Get record mappings
+app.get('/api/record-mappings', async (req, res) => {
+  try {
+    const { templateId, integrationIds, recordId, integrationId } = req.query;
+
+    const query = {};
+    if (templateId) query.templateId = templateId;
+    if (integrationIds) {
+      query.integrationIds = Array.isArray(integrationIds)
+        ? integrationIds
+        : [integrationIds];
+    }
+    if (recordId && integrationId) {
+      query.recordId = recordId;
+      query.integrationId = integrationId;
+    }
+
+    const mappings = await elasticsearch.getRecordMappings(query);
+    res.json({ success: true, mappings });
+  } catch (error) {
+    console.error('Error getting record mappings:', error);
+    res.status(500).json({ error: 'Failed to get record mappings' });
+  }
+});
+
+// Record mapping page route
+app.get('/record-mapping', (req, res) => {
+  res.render('record-mapping', {
+    pageTitle: 'Record Mapping',
+    activePage: 'record-mapping',
+    extraCSS: ['/css/record-mapping.css'],
+    showMobileMenu: true,
+    showSearch: false,
+    showUserProfile: true,
+    topbarActions: '',
+  });
+});
+
 // GET all canonical mappings
 app.get('/api/canonical-mappings', (req, res) => {
   try {

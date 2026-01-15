@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head', { pageTitle: pageTitle, extraCSS: extraCSS })
+    %>
+  </head>
+  <body>
+    <%- include('partials/sidebar', { activePage: activePage }) %>
+
+    <main class="main-content">
+      <%- include('partials/topbar', { pageTitle: pageTitle, showMobileMenu:
+      showMobileMenu, showSearch: showSearch, showUserProfile: showUserProfile,
+      topbarActions: topbarActions }) %>
+
+      <!-- Record Mapping Container -->
+      <div class="record-mapping-container">
+        <!-- Header -->
+        <div class="page-header">
+          <div class="header-info">
+            <h1 class="page-title">Record Mapping</h1>
+            <p class="page-subtitle">
+              Use templates to map specific records between integrations
+            </p>
+          </div>
+        </div>
+
+        <!-- Template Selection -->
+        <div class="template-selection-card">
+          <div class="card-header">
+            <h3>Select Template</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="templateSelect">Mapping Template</label>
+              <select id="templateSelect" class="form-control">
+                <option value="">Choose a template...</option>
+              </select>
+            </div>
+            <div
+              id="templateDetails"
+              class="template-details"
+              style="display: none"
+            >
+              <div class="detail-row">
+                <span class="detail-label">Side A:</span>
+                <span id="templateSideA" class="detail-value"></span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Side B:</span>
+                <span id="templateSideB" class="detail-value"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mapping Interface -->
+        <div
+          id="mappingInterface"
+          class="mapping-interface"
+          style="display: none"
+        >
+          <!-- Two Column Layout -->
+          <div class="mapping-columns">
+            <!-- Side A -->
+            <div class="mapping-column">
+              <div class="column-header">
+                <h3>Side A</h3>
+                <span id="scopeInfoA" class="scope-info"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="integrationA">Software</label>
+                <select id="integrationA" class="form-control">
+                  <option value="">Select software...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="connectionA">Connection</label>
+                <select id="connectionA" class="form-control" disabled>
+                  <option value="">Select connection...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="featureA">Feature</label>
+                <select id="featureA" class="form-control" disabled>
+                  <option value="">Waiting for software selection...</option>
+                </select>
+              </div>
+
+              <div
+                class="variables-section"
+                id="variablesSectionA"
+                style="display: none"
+              >
+                <label>Select Variables to Display</label>
+                <div
+                  class="variables-checkboxes"
+                  id="variablesCheckboxesA"
+                ></div>
+              </div>
+
+              <button class="btn btn-secondary" id="loadDataA" disabled>
+                Load Data
+              </button>
+
+              <div
+                id="dataTableContainerA"
+                class="data-table-container"
+                style="display: none"
+              >
+                <h4>Records <span id="recordCountA"></span></h4>
+                <div class="table-wrapper">
+                  <table class="record-table" id="recordTableA">
+                    <thead id="tableHeadA"></thead>
+                    <tbody id="tableBodyA"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mapping Arrow -->
+            <div class="mapping-arrow-container">
+              <div class="mapping-arrow">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  width="32"
+                  height="32"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Side B -->
+            <div class="mapping-column">
+              <div class="column-header">
+                <h3>Side B</h3>
+                <span id="scopeInfoB" class="scope-info"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="integrationB">Software</label>
+                <select id="integrationB" class="form-control">
+                  <option value="">Select software...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="connectionB">Connection</label>
+                <select id="connectionB" class="form-control" disabled>
+                  <option value="">Select connection...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="featureB">Feature</label>
+                <select id="featureB" class="form-control" disabled>
+                  <option value="">Waiting for software selection...</option>
+                </select>
+              </div>
+
+              <div
+                class="variables-section"
+                id="variablesSectionB"
+                style="display: none"
+              >
+                <label>Select Variables to Display</label>
+                <div
+                  class="variables-checkboxes"
+                  id="variablesCheckboxesB"
+                ></div>
+              </div>
+
+              <button class="btn btn-secondary" id="loadDataB" disabled>
+                Load Data
+              </button>
+
+              <div
+                id="dataTableContainerB"
+                class="data-table-container"
+                style="display: none"
+              >
+                <h4>Records <span id="recordCountB"></span></h4>
+                <div class="table-wrapper">
+                  <table class="record-table" id="recordTableB">
+                    <thead id="tableHeadB"></thead>
+                    <tbody id="tableBodyB"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mappings List -->
+          <div class="mappings-list-card">
+            <div class="card-header">
+              <h3>Record Mappings</h3>
+              <button class="btn btn-primary" id="saveMappingsBtn" disabled>
+                Save Mappings
+              </button>
+            </div>
+            <div class="card-body">
+              <div id="mappingsList" class="mappings-list">
+                <div class="empty-mappings">
+                  Click records from both sides to create mappings
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Container -->
+      <div id="toastContainer" class="toast-container"></div>
+    </main>
+
+    <script src="/js/record-mapping.js"></script>
+  </body>
+</html>

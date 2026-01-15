@@ -19,6 +19,7 @@ const INDEXES = {
   USER_CONNECTIONS: 'user_integration_connections',
   INTEGRATIONS: 'integrations_registry',
   FEATURE_CONFIGS: 'integration_feature_configs',
+  RECORD_MAPPINGS: 'canonical_record_mappings',
 };
 
 /**
@@ -599,6 +600,137 @@ async function deleteConnection(connectionId) {
   }
 }
 
+// ===== Record Mappings Functions =====
+
+/**
+ * Create record mappings index if it doesn't exist
+ */
+async function createRecordMappingsIndex() {
+  try {
+    const exists = await client.indices.exists({
+      index: INDEXES.RECORD_MAPPINGS,
+    });
+    if (!exists) {
+      await client.indices.create({
+        index: INDEXES.RECORD_MAPPINGS,
+        body: {
+          mappings: {
+            properties: {
+              id: { type: 'keyword' },
+              templateId: { type: 'keyword' },
+              integrationIds: { type: 'keyword' }, // Array for order-independent lookup
+              integrations: {
+                type: 'object',
+                enabled: true,
+              },
+              mappings: {
+                type: 'nested', // For efficient querying of individual mappings
+              },
+              createdAt: { type: 'date' },
+              updatedAt: { type: 'date' },
+            },
+          },
+        },
+      });
+      console.log('✅ Created canonical_record_mappings index');
+    }
+  } catch (error) {
+    console.error('Error creating record mappings index:', error);
+    throw error;
+  }
+}
+
+/**
+ * Save or update record mapping
+ */
+async function saveRecordMapping(mapping) {
+  try {
+    await createRecordMappingsIndex();
+
+    const document = {
+      ...mapping,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (!mapping.id) {
+      document.id = `mapping_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      document.createdAt = document.updatedAt;
+    }
+
+    await client.index({
+      index: INDEXES.RECORD_MAPPINGS,
+      id: document.id,
+      body: document,
+      refresh: true,
+    });
+
+    return document;
+  } catch (error) {
+    console.error('Error saving record mapping:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get record mappings
+ * @param {Object} query - Query parameters
+ * @param {string} query.templateId - Filter by template ID
+ * @param {Array<string>} query.integrationIds - Filter by integration IDs (order-independent)
+ * @param {string} query.recordId - Find mapping for specific record (with integration ID)
+ * @param {string} query.integrationId - Integration ID for recordId lookup
+ */
+async function getRecordMappings(query = {}) {
+  try {
+    await createRecordMappingsIndex();
+
+    const must = [];
+
+    if (query.templateId) {
+      must.push({ term: { templateId: query.templateId } });
+    }
+
+    if (query.integrationIds && query.integrationIds.length > 0) {
+      // Order-independent lookup using terms query
+      must.push({ terms: { integrationIds: query.integrationIds } });
+    }
+
+    if (query.recordId && query.integrationId) {
+      // Find mapping containing specific record
+      must.push({
+        nested: {
+          path: 'mappings',
+          query: {
+            term: { [`mappings.${query.integrationId}`]: query.recordId },
+          },
+        },
+      });
+    }
+
+    const searchQuery = {
+      index: INDEXES.RECORD_MAPPINGS,
+      body: {
+        query: must.length > 0 ? { bool: { must } } : { match_all: {} },
+        sort: [{ createdAt: 'desc' }],
+      },
+    };
+
+    const result = await client.search(searchQuery);
+    return result.hits.hits.map(hit => hit._source);
+  } catch (error) {
+    if (
+      error.meta &&
+      error.meta.body &&
+      error.meta.body.error.type === 'index_not_found_exception'
+    ) {
+      return [];
+    }
+    console.error('Error getting record mappings:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   client,
   INDEXES,
@@ -623,4 +755,7 @@ module.exports = {
   getConnectionById,
   updateConnection,
   deleteConnection,
+  // Record mapping functions
+  saveRecordMapping,
+  getRecordMappings,
 };
