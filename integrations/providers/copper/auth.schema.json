@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "api_key_header_method_1764769102852",
+      "authType": "api_key_header",
+      "label": "API Key (Header)",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "headerName": "X-PW-AccessToken",
+        "prefix": "",
+        "apiKeyValue": "{{apiKey}}",
+        "isDefault": true
+      },
+      "testConfig": {
+        "testUrl": "https://api.copper.com/developer_api/v1/account",
+        "timeout": 10000
+      },
+      "additionalFields": [
+        {
+          "name": "email",
+          "label": "user email",
+          "type": "string",
+          "required": true,
+          "placeholder": "please enter your email",
+          "useAs": "header",
+          "fillBy": "user",
+          "encrypted": true,
+          "htmlType": "email",
+          "headerName": "X-PW-UserEmail"
+        },
+        {
+          "name": "application",
+          "label": "application",
+          "type": "string",
+          "required": true,
+          "placeholder": "",
+          "useAs": "header",
+          "fillBy": "admin",
+          "encrypted": false,
+          "htmlType": "text",
+          "default": "developer_api",
+          "defaultValue": "developer_api",
+          "headerName": "X-PW-Application"
+        }
+      ]
+    }
+  ]
+}

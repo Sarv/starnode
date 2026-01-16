@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "authMethods": [
+    {
+      "id": "basic_auth_method_1764851712100",
+      "authType": "basic_auth",
+      "label": "Basic Authentication",
+      "isDefault": true,
+      "priority": 1,
+      "config": {
+        "username": "{{username}}",
+        "password": "{{password}}",
+        "isDefault": true
+      },
+      "testConfig": {
+        "testUrl": "https://api.twilio.com/2010-04-01/Accounts/{{account_ssid}}.json",
+        "timeout": 10000
+      },
+      "additionalFields": [
+        {
+          "name": "account_ssid",
+          "label": "Account SSID",
+          "type": "string",
+          "required": true,
+          "placeholder": "Enter your username (SSID)",
+          "useAs": "variable",
+          "fillBy": "user",
+          "encrypted": false,
+          "htmlType": "text"
+        }
+      ]
+    }
+  ]
+}

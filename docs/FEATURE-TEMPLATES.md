@@ -1,8 +1,15 @@
 # Feature Templates System
 
+> [!CAUTION] > **DEPRECATED**: This document describes the **old** feature template system which has been replaced by direct feature creation within integrations. Features are now created directly via the 3-step Add Feature wizard.
+>
+> **See**: [Updated Feature Creation Process](./updated_feature_creation_process.md) for the current approach.
+>
+> The Feature Templates page has been removed from the sidebar. Legacy endpoints are kept for backward compatibility.
+
 **Last Updated**: 2025-11-24
-**Status**: Active Development
+**Status**: ~~Active Development~~ **DEPRECATED**
 **Related Files**:
+
 - `public/feature-templates.html`
 - `public/js/feature-templates.js`
 - `public/css/feature-templates.css`
@@ -11,6 +18,7 @@
 ---
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [Why Feature Templates?](#why-feature-templates)
 3. [System Architecture](#system-architecture)
@@ -52,6 +60,7 @@ The **Feature Templates System** is the foundation of our integration platform. 
 ### The Problem
 
 Different software platforms (CRMs, email tools, HR systems, etc.) have different features, but many features are conceptually similar:
+
 - "Fetch Contacts" exists in Salesforce, HubSpot, Zoho, and 50+ other CRMs
 - Each CRM has a different API, but the **concept** is the same
 
@@ -119,12 +128,12 @@ Features contain **fields** that collect information. Each field has a **type** 
 
 ### Summary Table
 
-| Field Type | When Value Provided | Can Change | Example Use Case |
-|------------|-------------------|------------|------------------|
-| **API** | During Feature-Integration Mapping | No (per mapping) | API endpoint details |
-| **Static** | Once at feature activation | No (unless reconfigured) | From email address, API key |
-| **Dynamic** | At runtime (each execution) | Yes (every time) | Recipient email, contact name |
-| **Conditional** | Based on expression evaluation | Yes (when condition changes) | Optional fields, dependent values |
+| Field Type      | When Value Provided                | Can Change                   | Example Use Case                  |
+| --------------- | ---------------------------------- | ---------------------------- | --------------------------------- |
+| **API**         | During Feature-Integration Mapping | No (per mapping)             | API endpoint details              |
+| **Static**      | Once at feature activation         | No (unless reconfigured)     | From email address, API key       |
+| **Dynamic**     | At runtime (each execution)        | Yes (every time)             | Recipient email, contact name     |
+| **Conditional** | Based on expression evaluation     | Yes (when condition changes) | Optional fields, dependent values |
 
 ---
 
@@ -134,47 +143,52 @@ Every field has these properties:
 
 ### Core Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `field_key` | string | ✅ Yes | Unique identifier (lowercase, underscore, numbers only) |
-| `label` | string | ✅ Yes | User-friendly display name |
-| `type` | enum | ✅ Yes | Field type: `api`, `static`, `dynamic`, `conditional` |
-| `required` | boolean | ✅ Yes | Whether field is mandatory |
-| `description` | string | ❌ No | Help text for users |
+| Property      | Type    | Required | Description                                             |
+| ------------- | ------- | -------- | ------------------------------------------------------- |
+| `field_key`   | string  | ✅ Yes   | Unique identifier (lowercase, underscore, numbers only) |
+| `label`       | string  | ✅ Yes   | User-friendly display name                              |
+| `type`        | enum    | ✅ Yes   | Field type: `api`, `static`, `dynamic`, `conditional`   |
+| `required`    | boolean | ✅ Yes   | Whether field is mandatory                              |
+| `description` | string  | ❌ No    | Help text for users                                     |
 
 ### Data Type Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `fieldType` | enum | ✅ Yes | Data type: `string`, `number`, `boolean`, `email`, `url`, `text`, `html`, `json`, `array`, `object` |
-| `htmlType` | enum | ✅ Yes | HTML input type: `text`, `textarea`, `number`, `email`, `url`, `password`, `select`, `checkbox`, `radio` |
+| Property    | Type | Required | Description                                                                                              |
+| ----------- | ---- | -------- | -------------------------------------------------------------------------------------------------------- |
+| `fieldType` | enum | ✅ Yes   | Data type: `string`, `number`, `boolean`, `email`, `url`, `text`, `html`, `json`, `array`, `object`      |
+| `htmlType`  | enum | ✅ Yes   | HTML input type: `text`, `textarea`, `number`, `email`, `url`, `password`, `select`, `checkbox`, `radio` |
 
 ### Optional Properties
 
-| Property | Type | Required | Field Types | Description |
-|----------|------|----------|-------------|-------------|
-| `default` | any | ❌ No | `static` | Default value for static fields |
-| `possibleValues` | array | ❌ No | All (when htmlType is `select`, `checkbox`, `radio`) | List of allowed values |
-| `multipleValueAllowed` | boolean | ❌ No | All (when htmlType is `select` or `checkbox`) | Allow selecting multiple values |
-| `conditionalExpression` | string | ✅ Yes (for conditional type) | `conditional` | Logical expression using {{field_name}} syntax |
+| Property                | Type    | Required                      | Field Types                                          | Description                                    |
+| ----------------------- | ------- | ----------------------------- | ---------------------------------------------------- | ---------------------------------------------- |
+| `default`               | any     | ❌ No                         | `static`                                             | Default value for static fields                |
+| `possibleValues`        | array   | ❌ No                         | All (when htmlType is `select`, `checkbox`, `radio`) | List of allowed values                         |
+| `multipleValueAllowed`  | boolean | ❌ No                         | All (when htmlType is `select` or `checkbox`)        | Allow selecting multiple values                |
+| `conditionalExpression` | string  | ✅ Yes (for conditional type) | `conditional`                                        | Logical expression using {{field_name}} syntax |
 
 ---
 
 ## Field Type: API Configuration
 
 ### Purpose
+
 Represents an API call that needs to be made. API details (endpoint, method, headers) are provided **later** during Feature-Integration Mapping.
 
 ### When to Use
+
 - Feature requires making an HTTP API call
 - API details vary per integration
 
 ### Configuration
+
 During **template creation**:
+
 - ❌ Do NOT collect API endpoint, method, headers
 - ✅ Only mark field as type "API"
 
 During **mapping** (future):
+
 - ✅ Collect: HTTP method, endpoint URL, headers, body, parameters
 
 ### Example
@@ -199,9 +213,11 @@ During **mapping** (future):
 ## Field Type: Static
 
 ### Purpose
+
 Value is set **once** during feature activation/configuration and remains constant.
 
 ### When to Use
+
 - Configuration values that don't change per execution
 - API keys, credentials
 - Default settings
@@ -209,6 +225,7 @@ Value is set **once** during feature activation/configuration and remains consta
 - Company-specific values
 
 ### Properties
+
 - Can have `default` value
 - Value provided at setup time
 - Doesn't change unless manually reconfigured
@@ -230,6 +247,7 @@ Value is set **once** during feature activation/configuration and remains consta
 ```
 
 ### Use Case
+
 **Sending emails**: The "from" address is configured once and used for all emails sent through this integration.
 
 ---
@@ -237,15 +255,18 @@ Value is set **once** during feature activation/configuration and remains consta
 ## Field Type: Dynamic
 
 ### Purpose
+
 Value is provided **at runtime** during each workflow execution. Changes every time.
 
 ### When to Use
+
 - Values that change with each execution
 - User-provided data
 - Workflow variables
 - Mapped values from previous steps
 
 ### Properties
+
 - No `default` value (meaningless for dynamic fields)
 - Value comes from workflow execution context
 - Different every time feature runs
@@ -266,6 +287,7 @@ Value is provided **at runtime** during each workflow execution. Changes every t
 ```
 
 ### Use Case
+
 **Sending emails**: The "to" address is different for each email (comes from contact list, form submission, etc.).
 
 ---
@@ -273,14 +295,17 @@ Value is provided **at runtime** during each workflow execution. Changes every t
 ## Field Type: Conditional
 
 ### Purpose
+
 Field is shown/required only when a **condition** is met based on other fields.
 
 ### When to Use
+
 - Optional fields that depend on selections
 - Fields that only apply in certain cases
 - Cascading/dependent form fields
 
 ### Properties
+
 - Must have `conditionalExpression`
 - Expression references other fields using `{{field_name}}` syntax
 - Evaluated at runtime or during form filling
@@ -302,9 +327,11 @@ Field is shown/required only when a **condition** is met based on other fields.
 ```
 
 ### Explanation
+
 The `webhook` field is only shown/required when the `push_pull` field has value `"push"`.
 
 ### Expression Syntax
+
 See [Conditional Expressions](#conditional-expressions) section below.
 
 ---
@@ -315,17 +342,17 @@ The `htmlType` property determines how the field is rendered in the UI.
 
 ### Available Types
 
-| HTML Type | Description | Example Use Case | Supports possibleValues |
-|-----------|-------------|------------------|------------------------|
-| `text` | Single-line text input | Names, short strings | No |
-| `textarea` | Multi-line text input | Descriptions, long text | No |
-| `number` | Numeric input with +/- controls | Age, quantity, price | No |
-| `email` | Email input with validation | Email addresses | No |
-| `url` | URL input with validation | Website, webhook URL | No |
-| `password` | Password input (masked) | API keys, passwords | No |
-| `select` | Dropdown menu | Status, country, category | ✅ Yes (required) |
-| `checkbox` | Multiple checkboxes | Tags, permissions | ✅ Yes (required) |
-| `radio` | Radio buttons (single choice) | Gender, priority | ✅ Yes (required) |
+| HTML Type  | Description                     | Example Use Case          | Supports possibleValues |
+| ---------- | ------------------------------- | ------------------------- | ----------------------- |
+| `text`     | Single-line text input          | Names, short strings      | No                      |
+| `textarea` | Multi-line text input           | Descriptions, long text   | No                      |
+| `number`   | Numeric input with +/- controls | Age, quantity, price      | No                      |
+| `email`    | Email input with validation     | Email addresses           | No                      |
+| `url`      | URL input with validation       | Website, webhook URL      | No                      |
+| `password` | Password input (masked)         | API keys, passwords       | No                      |
+| `select`   | Dropdown menu                   | Status, country, category | ✅ Yes (required)       |
+| `checkbox` | Multiple checkboxes             | Tags, permissions         | ✅ Yes (required)       |
+| `radio`    | Radio buttons (single choice)   | Gender, priority          | ✅ Yes (required)       |
 
 ### HTML Types Requiring possibleValues
 
@@ -350,6 +377,7 @@ When using `select`, `checkbox`, or `radio`, you **must** provide `possibleValue
 ## Possible Values System
 
 ### Purpose
+
 Define a list of allowed values for dropdown, checkbox, or radio fields.
 
 ### Structure
@@ -364,11 +392,13 @@ Define a list of allowed values for dropdown, checkbox, or radio fields.
 ### Properties
 
 **possibleValues** (array of strings):
+
 - List of allowed options
 - User can only select from these values
 - Required when `htmlType` is `select`, `checkbox`, or `radio`
 
 **multipleValueAllowed** (boolean):
+
 - Only applicable for `select` and `checkbox`
 - If `true`: User can select multiple values
 - If `false`: User can select only one value
@@ -377,6 +407,7 @@ Define a list of allowed values for dropdown, checkbox, or radio fields.
 ### Examples
 
 #### Single Select Dropdown
+
 ```json
 {
   "priority": {
@@ -391,6 +422,7 @@ Define a list of allowed values for dropdown, checkbox, or radio fields.
 ```
 
 #### Multi-Select Dropdown
+
 ```json
 {
   "tags": {
@@ -405,6 +437,7 @@ Define a list of allowed values for dropdown, checkbox, or radio fields.
 ```
 
 #### Checkboxes (Always Multi-Select)
+
 ```json
 {
   "permissions": {
@@ -419,6 +452,7 @@ Define a list of allowed values for dropdown, checkbox, or radio fields.
 ```
 
 #### Radio Buttons (Always Single Select)
+
 ```json
 {
   "gender": {
@@ -435,6 +469,7 @@ Define a list of allowed values for dropdown, checkbox, or radio fields.
 ### UI Behavior
 
 **During field creation**:
+
 1. Select `htmlType` as `select`, `checkbox`, or `radio`
 2. "Possible Values" input section appears
 3. Add values one by one
@@ -455,16 +490,16 @@ Conditional expressions use **`{{field_name}}`** syntax to reference other field
 
 ### Operators
 
-| Operator | Description | Example |
-|----------|-------------|---------|
-| `==` | Equals | `{{status}} == 'active'` |
-| `!=` | Not equals | `{{type}} != 'guest'` |
-| `>` | Greater than | `{{age}} > 18` |
-| `<` | Less than | `{{price}} < 100` |
-| `>=` | Greater than or equal | `{{quantity}} >= 10` |
-| `<=` | Less than or equal | `{{score}} <= 50` |
-| `AND` | Logical AND | `{{age}} >= 18 AND {{country}} == 'US'` |
-| `OR` | Logical OR | `{{type}} == 'premium' OR {{type}} == 'enterprise'` |
+| Operator | Description           | Example                                             |
+| -------- | --------------------- | --------------------------------------------------- |
+| `==`     | Equals                | `{{status}} == 'active'`                            |
+| `!=`     | Not equals            | `{{type}} != 'guest'`                               |
+| `>`      | Greater than          | `{{age}} > 18`                                      |
+| `<`      | Less than             | `{{price}} < 100`                                   |
+| `>=`     | Greater than or equal | `{{quantity}} >= 10`                                |
+| `<=`     | Less than or equal    | `{{score}} <= 50`                                   |
+| `AND`    | Logical AND           | `{{age}} >= 18 AND {{country}} == 'US'`             |
+| `OR`     | Logical OR            | `{{type}} == 'premium' OR {{type}} == 'enterprise'` |
 
 ### Grouping with Parentheses
 
@@ -477,47 +512,58 @@ Use parentheses to group conditions:
 ### Examples
 
 #### Simple Condition
+
 ```json
 {
   "conditionalExpression": "{{push_pull}}=='push'"
 }
 ```
+
 **Meaning**: Show this field only when `push_pull` field has value "push".
 
 #### Multiple Conditions with AND
+
 ```json
 {
   "conditionalExpression": "{{age}} >= 18 AND {{country}} == 'US'"
 }
 ```
+
 **Meaning**: Show this field only when age is 18 or more AND country is US.
 
 #### Multiple Conditions with OR
+
 ```json
 {
   "conditionalExpression": "{{type}} == 'premium' OR {{type}} == 'enterprise'"
 }
 ```
+
 **Meaning**: Show this field when type is either "premium" or "enterprise".
 
 #### Complex Nested Conditions
+
 ```json
 {
   "conditionalExpression": "(({{subscription}} == 'paid' AND {{plan}} != 'basic') OR {{is_admin}} == true)"
 }
 ```
+
 **Meaning**: Show this field when:
+
 - (User has paid subscription AND plan is not basic) OR
 - User is an admin
 
 ### Field Reference Validation
 
 The system automatically validates that:
+
 1. ✅ All referenced fields use `{{field_name}}` syntax
 2. ✅ All referenced fields actually exist in the feature
 3. ✅ Fields cannot reference themselves
 
 **Error Examples**:
+
 - ❌ `field_name == 'value'` → Error: "No fields referenced. Use {{field_name}} syntax"
 - ❌ `{{nonexistent}} == 'value'` → Error: "Referenced field(s) do not exist: {{nonexistent}}"
 - ❌ `{{webhook}} == 'value'` (in webhook field itself) → Error: "Field cannot reference itself"
@@ -529,6 +575,7 @@ The system automatically validates that:
 ### Field Key Validation
 
 **Rules**:
+
 - Lowercase letters only
 - Numbers allowed
 - Underscores allowed
@@ -542,6 +589,7 @@ The system automatically validates that:
 ### Required Fields
 
 **During field creation**:
+
 - ✅ Field Key
 - ✅ Field Label
 - ✅ Field Type (`api`, `static`, `dynamic`, `conditional`)
@@ -549,12 +597,14 @@ The system automatically validates that:
 - ✅ HTML Type (`htmlType`)
 
 **Conditionally required**:
+
 - `possibleValues`: Required when `htmlType` is `select`, `checkbox`, or `radio`
 - `conditionalExpression`: Required when field `type` is `conditional`
 
 ### Conditional Expression Validation
 
 **Checks**:
+
 1. Expression must use `{{field_name}}` syntax
 2. All referenced fields must exist
 3. Field cannot reference itself
@@ -563,6 +613,7 @@ The system automatically validates that:
 ### Possible Values Validation
 
 **Checks**:
+
 - At least one value must be added
 - Values cannot be empty strings
 - Duplicate values not allowed
@@ -644,6 +695,7 @@ The system automatically validates that:
 **URL**: `http://localhost:3000/feature-templates.html`
 
 **Sections**:
+
 1. **Header**: Page title, stats, add feature button
 2. **Category Filters**: Filter features by category
 3. **Search**: Search features by name/description
@@ -653,6 +705,7 @@ The system automatically validates that:
 ### Features Table
 
 **Columns**:
+
 - Checkbox (for bulk actions)
 - Name (with icon and ID)
 - Category (with color badge)
@@ -666,12 +719,14 @@ The system automatically validates that:
 ### Feature Modal
 
 **Tabs/Sections**:
+
 1. **Basic Information**: ID, name, description, category
 2. **Field Definitions**: List of fields with add/edit/remove actions
 
 ### Field Modal
 
 **Form Groups** (dynamically shown based on field type):
+
 - Field Key
 - Field Label
 - Field Type (API, Static, Dynamic, Conditional)
@@ -689,9 +744,11 @@ The system automatically validates that:
 ## API Endpoints
 
 ### GET /api/feature-templates
+
 **Purpose**: Fetch all feature templates
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -701,9 +758,11 @@ The system automatically validates that:
 ```
 
 ### GET /api/feature-templates/:id
+
 **Purpose**: Fetch single feature template
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -712,9 +771,11 @@ The system automatically validates that:
 ```
 
 ### POST /api/feature-templates
+
 **Purpose**: Create new feature template
 
 **Request Body**:
+
 ```json
 {
   "id": "feature_id",
@@ -726,6 +787,7 @@ The system automatically validates that:
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -734,11 +796,13 @@ The system automatically validates that:
 ```
 
 ### PUT /api/feature-templates/:id
+
 **Purpose**: Update existing feature template
 
 **Request Body**: Same as POST
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -747,9 +811,11 @@ The system automatically validates that:
 ```
 
 ### DELETE /api/feature-templates/:id
+
 **Purpose**: Delete feature template
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -889,7 +955,13 @@ The system automatically validates that:
       "fieldType": "array",
       "htmlType": "checkbox",
       "required": true,
-      "possibleValues": ["important", "vip", "follow-up", "hot-lead", "cold-lead"],
+      "possibleValues": [
+        "important",
+        "vip",
+        "follow-up",
+        "hot-lead",
+        "cold-lead"
+      ],
       "multipleValueAllowed": true,
       "description": "Select one or more tags"
     }
@@ -904,11 +976,13 @@ The system automatically validates that:
 ### Naming Conventions
 
 **Feature IDs**:
+
 - Use lowercase with underscores
 - Be descriptive: `create_contact`, `send_email`, `fetch_leads`
 - Avoid abbreviations unless well-known
 
 **Field Keys**:
+
 - Use lowercase with underscores
 - Be descriptive: `contact_name`, `email_address`, `webhook_url`
 - Avoid generic names like `field1`, `value`
@@ -916,6 +990,7 @@ The system automatically validates that:
 ### Field Organization
 
 **Order fields logically**:
+
 1. API configuration (if present)
 2. Required static fields
 3. Required dynamic fields
@@ -925,16 +1000,19 @@ The system automatically validates that:
 ### Description Guidelines
 
 **Be clear and helpful**:
+
 - ✅ "Email address of the recipient (provided at runtime)"
 - ❌ "Email address"
 
 **Explain when/how field is used**:
+
 - ✅ "Only shown when 'Send Copy' is enabled"
 - ❌ "CC email"
 
 ### Conditional Expressions
 
 **Keep them simple**:
+
 - ✅ `{{status}} == 'active'`
 - ❌ `(({{a}}=='x' AND {{b}}=='y') OR ({{c}}!='z' AND {{d}}>5)) AND {{e}}<=10`
 
@@ -952,6 +1030,7 @@ The system automatically validates that:
 ### Issue: Conditional Expression Not Working
 
 **Check**:
+
 1. Are you using `{{field_name}}` syntax?
 2. Does the referenced field exist?
 3. Is the field name spelled correctly?
@@ -960,6 +1039,7 @@ The system automatically validates that:
 ### Issue: Possible Values Not Saving
 
 **Check**:
+
 1. Did you click "Add" button after typing each value?
 2. Are values showing as chips/tags before saving field?
 3. Is `htmlType` set to `select`, `checkbox`, or `radio`?
@@ -967,6 +1047,7 @@ The system automatically validates that:
 ### Issue: Field Not Showing in List
 
 **Check**:
+
 1. Did you click "Add Field" or "Update Field"?
 2. Is there a validation error (check toast messages)?
 3. Refresh the page to reload from `features-definition.json`
@@ -983,9 +1064,9 @@ The system automatically validates that:
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2025-11-24 | Initial documentation |
+| Version | Date       | Changes               |
+| ------- | ---------- | --------------------- |
+| 1.0     | 2025-11-24 | Initial documentation |
 
 ---
 

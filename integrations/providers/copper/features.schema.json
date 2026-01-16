@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "featureMappings": [
+    {
+      "id": "mapping_1764917146681_wl2hklvpg",
+      "featureTemplateId": "sync_change_in_contact",
+      "featureTemplateName": "Sync Change in Contact",
+      "fieldMappings": {
+        "api_end_point": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "sheet_id": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "testing_conditional": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "email_id": {
+          "enabled": true,
+          "customHandlers": null,
+          "adminValue": "{{email}}"
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-05T06:45:46.681Z",
+      "updatedAt": "2025-12-05T06:45:46.682Z"
+    }
+  ],
+  "lastUpdated": "2025-12-05T06:45:46.682Z"
+}

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head', { pageTitle: pageTitle, extraCSS: extraCSS })
+    %>
+    <link rel="stylesheet" href="/css/api-configuration.css" />
+  </head>
+  <body>
+    <%- include('partials/sidebar', { activePage: activePage }) %>
+
+    <main class="main-content">
+      <%- include('partials/topbar', { pageTitle: pageTitle, showMobileMenu:
+      showMobileMenu, showSearch: showSearch, showUserProfile: showUserProfile,
+      topbarActions: topbarActions }) %>
+
+      <!-- Canonical Forms Container -->
+      <div class="api-config-container">
+        <!-- Header -->
+        <div class="api-config-header">
+          <div class="header-info">
+            <h1 class="page-title">Canonical Forms</h1>
+            <p class="page-subtitle">
+              Manage scopes, operations, and canonical variables for response
+              templates
+            </p>
+          </div>
+        </div>
+
+        <!-- Main Layout - 3 Column Grid -->
+        <div class="api-config-layout">
+          <!-- Left Panel: Scopes List -->
+          <div class="api-list-panel">
+            <div class="panel-header">
+              <h3>Scopes</h3>
+              <span class="api-count" id="scopesCount">0</span>
+            </div>
+            <div class="panel-actions">
+              <button class="btn btn-sm btn-primary" id="addScopeBtn">
+                + Add Scope
+              </button>
+            </div>
+            <div class="api-list" id="scopesList">
+              <!-- Scopes will be rendered here -->
+            </div>
+          </div>
+
+          <!-- Middle Panel: Operations / Variables -->
+          <div class="api-form-panel" id="middlePanel">
+            <!-- Tab Navigation (like Basic/Headers/Params) -->
+            <div class="api-tabs">
+              <button
+                type="button"
+                class="tab-btn active"
+                data-tab="operations"
+              >
+                Operations
+              </button>
+              <button type="button" class="tab-btn" data-tab="variables">
+                Variables
+              </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+              <!-- Operations Tab -->
+              <div class="tab-pane active" data-pane="operations">
+                <div class="form-section">
+                  <div class="subsection-header">
+                    <h3 class="section-title">Operations</h3>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      id="addOperationBtn"
+                      style="display: none"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        width="16"
+                        height="16"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      Add Operation
+                    </button>
+                  </div>
+                  <div id="operationsList" class="items-grid">
+                    <div class="empty-placeholder">
+                      <p>Select a scope to view operations</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Variables Tab -->
+              <div class="tab-pane" data-pane="variables">
+                <div class="form-section">
+                  <div class="subsection-header">
+                    <h3 class="section-title">Variables</h3>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      id="addVariableBtn"
+                      style="display: none"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        width="16"
+                        height="16"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      Add Variable
+                    </button>
+                  </div>
+                  <div id="variablesList" class="items-grid">
+                    <div class="empty-placeholder">
+                      <p>Select a scope to view variables</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel: Editor -->
+          <div class="variable-panel" id="editorPanel">
+            <div class="panel-header">
+              <h3 id="editorTitle">Details</h3>
+            </div>
+
+            <div class="variable-sections">
+              <!-- Empty State -->
+              <div
+                id="noItemSelected"
+                class="empty-placeholder"
+                style="padding: 40px 20px"
+              >
+                <p>Select an item to view/edit details</p>
+              </div>
+
+              <!-- Scope Editor -->
+              <div id="scopeEditor" class="editor-form" style="display: none">
+                <div class="variable-section">
+                  <div class="form-group">
+                    <label for="scopeId">ID</label>
+                    <input
+                      type="text"
+                      id="scopeId"
+                      class="form-control"
+                      placeholder="e.g., contacts"
+                    />
+                    <small class="help-text"
+                      >Unique identifier (lowercase, no spaces)</small
+                    >
+                  </div>
+                  <div class="form-group">
+                    <label for="scopeLabel">Label</label>
+                    <input
+                      type="text"
+                      id="scopeLabel"
+                      class="form-control"
+                      placeholder="e.g., Contacts"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="scopeDescription">Description</label>
+                    <textarea
+                      id="scopeDescription"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Describe this scope..."
+                    ></textarea>
+                  </div>
+                  <div class="form-actions-inline">
+                    <button class="btn btn-secondary" id="cancelScopeBtn">
+                      Cancel
+                    </button>
+                    <button class="btn btn-primary" id="saveScopeBtn">
+                      Save Scope
+                    </button>
+                  </div>
+                  <div
+                    id="deleteScopeZone"
+                    class="danger-zone"
+                    style="display: none"
+                  >
+                    <button class="btn btn-danger" id="deleteScopeBtn">
+                      Delete Scope
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Operation Editor -->
+              <div
+                id="operationEditor"
+                class="editor-form"
+                style="display: none"
+              >
+                <div class="variable-section">
+                  <div class="form-group">
+                    <label for="operationId">ID</label>
+                    <input
+                      type="text"
+                      id="operationId"
+                      class="form-control"
+                      placeholder="e.g., create"
+                    />
+                    <small class="help-text"
+                      >Unique identifier (lowercase, no spaces)</small
+                    >
+                  </div>
+                  <div class="form-group">
+                    <label for="operationLabel">Label</label>
+                    <input
+                      type="text"
+                      id="operationLabel"
+                      class="form-control"
+                      placeholder="e.g., Create Contact"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="operationDescription">Description</label>
+                    <textarea
+                      id="operationDescription"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Describe this operation..."
+                    ></textarea>
+                  </div>
+                  <div class="form-actions-inline">
+                    <button class="btn btn-secondary" id="cancelOperationBtn">
+                      Cancel
+                    </button>
+                    <button class="btn btn-primary" id="saveOperationBtn">
+                      Save Operation
+                    </button>
+                  </div>
+                  <div
+                    id="deleteOperationZone"
+                    class="danger-zone"
+                    style="display: none"
+                  >
+                    <button class="btn btn-danger" id="deleteOperationBtn">
+                      Delete Operation
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Variable Editor -->
+              <div
+                id="variableEditor"
+                class="editor-form"
+                style="display: none"
+              >
+                <div class="variable-section">
+                  <div class="form-group">
+                    <label for="variableId">ID</label>
+                    <input
+                      type="text"
+                      id="variableId"
+                      class="form-control"
+                      placeholder="e.g., first_name"
+                    />
+                    <small class="help-text"
+                      >Used in templates:
+                      {{canonical.scope.<strong>id</strong>}}</small
+                    >
+                  </div>
+                  <div class="form-group">
+                    <label for="variableLabel">Label</label>
+                    <input
+                      type="text"
+                      id="variableLabel"
+                      class="form-control"
+                      placeholder="e.g., First Name"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="variableDescription">Description</label>
+                    <textarea
+                      id="variableDescription"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Describe this variable..."
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="variableFieldType">Field Type</label>
+                    <select id="variableFieldType" class="form-control">
+                      <option value="string">String</option>
+                      <option value="number">Number</option>
+                      <option value="boolean">Boolean</option>
+                      <option value="date">Date</option>
+                      <option value="email">Email</option>
+                      <option value="url">URL</option>
+                      <option value="object">Object</option>
+                      <option value="array">Array</option>
+                    </select>
+                  </div>
+                  <div class="form-actions-inline">
+                    <button class="btn btn-secondary" id="cancelVariableBtn">
+                      Cancel
+                    </button>
+                    <button class="btn btn-primary" id="saveVariableBtn">
+                      Save Variable
+                    </button>
+                  </div>
+                  <div
+                    id="deleteVariableZone"
+                    class="danger-zone"
+                    style="display: none"
+                  >
+                    <button class="btn btn-danger" id="deleteVariableBtn">
+                      Delete Variable
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="/js/canonical-forms.js"></script>
+  </body>
+</html>
