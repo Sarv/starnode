@@ -3556,13 +3556,13 @@ const TEMPLATES_FILE = path.join(__dirname, 'canonical-mapping-templates.json');
 app.get('/api/mapping-templates', (req, res) => {
   try {
     if (!fs.existsSync(TEMPLATES_FILE)) {
-      return res.json({ templates: [] });
+      return res.json({ success: true, templates: [] });
     }
     const templates = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
-    res.json({ templates });
+    res.json({ success: true, templates });
   } catch (error) {
     console.error('Error loading templates:', error);
-    res.status(500).json({ error: 'Failed to load templates' });
+    res.status(500).json({ success: false, error: 'Failed to load templates' });
   }
 });
 
@@ -3627,6 +3627,44 @@ app.delete('/api/mapping-templates/:id', (req, res) => {
   } catch (error) {
     console.error('Error deleting template:', error);
     res.status(500).json({ error: 'Failed to delete template' });
+  }
+});
+
+// Update template
+app.put('/api/mapping-templates/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, sideA, sideB } = req.body;
+
+    if (!name || !sideA || !sideB) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!fs.existsSync(TEMPLATES_FILE)) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    let templates = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
+    const templateIndex = templates.findIndex(t => t.id === id);
+
+    if (templateIndex === -1) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    // Update template
+    templates[templateIndex] = {
+      ...templates[templateIndex],
+      name,
+      sideA,
+      sideB,
+      updatedAt: new Date().toISOString(),
+    };
+
+    fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(templates, null, 2));
+    res.json({ success: true, template: templates[templateIndex] });
+  } catch (error) {
+    console.error('Error updating template:', error);
+    res.status(500).json({ error: 'Failed to update template' });
   }
 });
 

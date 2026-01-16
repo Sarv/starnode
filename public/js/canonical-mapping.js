@@ -631,20 +631,44 @@ function updateMappingSummary() {
   const summaryDiv = document.getElementById('mappingSummary');
   const recordA = sideState.A.selectedRecord;
   const recordB = sideState.B.selectedRecord;
-  const keyA = sideState.A.primaryKey;
+  const keyA = sideState.A.primaryKey; // Canonical variable string
   const keyB = sideState.B.primaryKey;
 
   if (recordA && recordB && keyA && keyB) {
+    // Find actual field names from selectedVariables for each side
+    const fieldA = findActualFieldName('A', keyA);
+    const fieldB = findActualFieldName('B', keyB);
+
+    // Extract display name from canonical for label
+    const labelA = extractFieldFromCanonical(keyA) || keyA;
+    const labelB = extractFieldFromCanonical(keyB) || keyB;
+
     document.getElementById('summaryValueA').textContent = `${keyA}: ${
-      recordA[keyA] || 'N/A'
+      fieldA && recordA[fieldA] !== undefined ? recordA[fieldA] : 'N/A'
     }`;
     document.getElementById('summaryValueB').textContent = `${keyB}: ${
-      recordB[keyB] || 'N/A'
+      fieldB && recordB[fieldB] !== undefined ? recordB[fieldB] : 'N/A'
     }`;
     summaryDiv.style.display = 'block';
   } else {
     summaryDiv.style.display = 'none';
   }
+}
+
+// Find actual field name from canonical variable by looking up in selectedVariables
+function findActualFieldName(side, canonicalVariable) {
+  const variables = sideState[side].selectedVariables || [];
+
+  // Find the variable that matches the canonical
+  const variable = variables.find(v => v.variable === canonicalVariable);
+
+  if (variable) {
+    // Return the actual field/key name from the variable
+    return variable.key || variable.field;
+  }
+
+  // Fallback: extract from canonical variable name
+  return extractFieldFromCanonical(canonicalVariable);
 }
 
 // Close modal
@@ -754,7 +778,7 @@ function updateSaveTemplateButtonState() {
   }
 }
 
-// Save template
+// Save template (create or update)
 async function saveTemplate() {
   const name = document.getElementById('mappingName').value;
   const scopeA = document.getElementById('scopeA').value;
@@ -778,31 +802,44 @@ async function saveTemplate() {
     return;
   }
 
+  const templateData = {
+    name,
+    sideA: {
+      scope: scopeA,
+      operation: operationA,
+      primaryKeyCanonical: primaryKeyA,
+    },
+    sideB: {
+      scope: scopeB,
+      operation: operationB,
+      primaryKeyCanonical: primaryKeyB,
+    },
+  };
+
   try {
-    const response = await fetch('/api/mapping-templates', {
-      method: 'POST',
+    const isUpdate = !!currentEditingId;
+    const url = isUpdate
+      ? `/api/mapping-templates/${currentEditingId}`
+      : '/api/mapping-templates';
+    const method = isUpdate ? 'PUT' : 'POST';
+
+    const response = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        sideA: {
-          scope: scopeA,
-          operation: operationA,
-          primaryKeyCanonical: primaryKeyA,
-        },
-        sideB: {
-          scope: scopeB,
-          operation: operationB,
-          primaryKeyCanonical: primaryKeyB,
-        },
-      }),
+      body: JSON.stringify(templateData),
     });
 
     const data = await response.json();
 
     if (data.success) {
-      showToast('Template saved successfully', 'success');
+      showToast(
+        isUpdate
+          ? 'Template updated successfully'
+          : 'Template saved successfully',
+        'success',
+      );
       closeModal();
-      // Reload templates list (you'll need to add this function)
+      currentEditingId = null;
       await loadTemplates();
     } else {
       showToast(data.error || 'Failed to save template', 'error');
@@ -843,44 +880,67 @@ function renderTemplatesTable(templates) {
   emptyState.style.display = 'none';
 
   tbody.innerHTML = templates
-    .map(
-      template => `
-        <tr>
-          <td><strong>${escapeHtml(template.name)}</strong></td>
-          <td>
-            <span class="scope-badge">${escapeHtml(
-              template.sideA.scope,
-            )}</span> / 
-            <span class="operation-badge">${escapeHtml(
-              template.sideA.operation,
-            )}</span>
-          </td>
-          <td>
-            <span class="scope-badge">${escapeHtml(
-              template.sideB.scope,
-            )}</span> / 
-            <span class="operation-badge">${escapeHtml(
-              template.sideB.operation,
-            )}</span>
-          </td>
-          <td>
-            <code>${escapeHtml(template.sideA.primaryKeyCanonical)}</code> ↔ 
-            <code>${escapeHtml(template.sideB.primaryKeyCanonical)}</code>
-          </td>
-          <td>${formatDate(template.createdAt)}</td>
-          <td>
-            <button class="btn-icon" onclick="deleteTemplate('${escapeHtml(
-              template.id,
-            )}')" title="Delete">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
-                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-              </svg>
-            </button>
-          </td>
-        </tr>
-      `,
-    )
+    .map(template => {
+      // Extract primary key field names from canonical variable
+      const pkA = extractFieldFromCanonical(template.sideA.primaryKeyCanonical);
+      const pkB = extractFieldFromCanonical(template.sideB.primaryKeyCanonical);
+
+      return `
+          <tr>
+            <td><strong>${escapeHtml(template.name)}</strong></td>
+            <td>
+              <span class="scope-badge">${escapeHtml(
+                template.sideA.scope,
+              )}</span> / 
+              <span class="operation-badge">${escapeHtml(
+                template.sideA.operation,
+              )}</span>
+            </td>
+            <td>
+              <span class="scope-badge">${escapeHtml(
+                template.sideB.scope,
+              )}</span> / 
+              <span class="operation-badge">${escapeHtml(
+                template.sideB.operation,
+              )}</span>
+            </td>
+            <td>
+              <code title="${escapeHtml(
+                template.sideA.primaryKeyCanonical,
+              )}">${escapeHtml(pkA)}</code> ↔ 
+              <code title="${escapeHtml(
+                template.sideB.primaryKeyCanonical,
+              )}">${escapeHtml(pkB)}</code>
+            </td>
+            <td>${formatDate(template.createdAt)}</td>
+            <td>
+              <button class="btn-icon btn-edit" onclick="editTemplate('${escapeHtml(
+                template.id,
+              )}')" title="Edit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="btn-icon btn-delete" onclick="deleteTemplate('${escapeHtml(
+                template.id,
+              )}')" title="Delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                  <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        `;
+    })
     .join('');
+}
+
+// Extract field name from canonical variable
+function extractFieldFromCanonical(canonical) {
+  if (!canonical) return 'N/A';
+  const match = canonical.match(/\{\{canonical\.[^.]+\.([^}]+)\}\}/);
+  return match ? match[1] : canonical;
 }
 
 // Delete template
@@ -905,5 +965,81 @@ async function deleteTemplate(templateId) {
   } catch (error) {
     console.error('Error deleting template:', error);
     showToast('Failed to delete template', 'error');
+  }
+}
+
+// Edit template
+async function editTemplate(templateId) {
+  try {
+    // Fetch all templates to find the one we want to edit
+    const response = await fetch('/api/mapping-templates');
+    const data = await response.json();
+
+    if (!data.success) {
+      showToast('Failed to load template', 'error');
+      return;
+    }
+
+    const template = data.templates.find(t => t.id === templateId);
+    if (!template) {
+      showToast('Template not found', 'error');
+      return;
+    }
+
+    // Set editing mode
+    currentEditingId = templateId;
+
+    // Open the modal
+    openAddModal();
+
+    // Wait for modal to be ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Populate form fields
+    document.getElementById('mappingName').value = template.name;
+
+    // Populate Side A
+    const scopeA = document.getElementById('scopeA');
+    scopeA.value = template.sideA.scope;
+    await onScopeChange('A');
+
+    const operationA = document.getElementById('operationA');
+    operationA.value = template.sideA.operation;
+    renderPrimaryKeyDropdown('A');
+
+    const primaryKeyA = document.getElementById('primaryKeyA');
+    primaryKeyA.value = template.sideA.primaryKeyCanonical;
+
+    // Populate Side B
+    const scopeB = document.getElementById('scopeB');
+    scopeB.value = template.sideB.scope;
+    await onScopeChange('B');
+
+    const operationB = document.getElementById('operationB');
+    operationB.value = template.sideB.operation;
+    renderPrimaryKeyDropdown('B');
+
+    const primaryKeyB = document.getElementById('primaryKeyB');
+    primaryKeyB.value = template.sideB.primaryKeyCanonical;
+
+    // Update save button state
+    updateSaveTemplateButtonState();
+
+    // Update modal title to indicate editing
+    const modalTitle = document.querySelector('.modal-content h3');
+    if (modalTitle) {
+      modalTitle.textContent = 'Edit Mapping Template';
+    }
+
+    // Update save button text
+    const saveBtn = document.getElementById('saveTemplateBtn');
+    if (saveBtn) {
+      saveBtn.textContent = 'Update Template';
+    }
+
+    showToast('Template loaded for editing', 'info');
+  } catch (error) {
+    console.error('Error loading template for edit:', error);
+    showToast('Failed to load template', 'error');
   }
 }
