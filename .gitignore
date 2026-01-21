@@ -8,6 +8,7 @@ build/
 html-backup
 backups
 .claude
+*CLAUDE.md
 auth-template-schema.json
 package-lock.json
 convert-html-to-ejs.sh

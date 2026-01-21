@@ -256,6 +256,30 @@
   border-left: 3px solid #4299e1;
 }
 
+/* Select Column for multi-select */
+.select-col {
+  width: 50px;
+  text-align: center;
+}
+
+.select-col input[type="checkbox"],
+.select-col input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #4299e1;
+}
+
+/* Selection Info */
+.selection-info {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #f0f4f8;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  color: #4a5568;
+}
+
 /* Mappings List */
 .mappings-list-card {
   background: white;

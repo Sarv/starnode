@@ -428,44 +428,192 @@
       "featureId": "get_employee_data",
       "fieldId": "api_config",
       "name": "api_config API",
-      "method": "GET",
-      "url": "https://api.example.com/v2/contacts",
-      "headers": [],
+      "method": "POST",
+      "url": "https://{{api_sub_domain}}.deepcall.com/api/v2/Employee/List",
+      "headers": [
+        {
+          "key": "content-type",
+          "value": "application/json"
+        }
+      ],
       "queryParams": [],
-      "bodyType": "none",
-      "body": {},
+      "bodyType": "json",
+      "body": {
+        "json": {
+          "userId": "{{userid}}",
+          "token": "{{token}}",
+          "page": 1,
+          "limit": 10
+        }
+      },
       "response": {
         "successPath": "",
         "errorPath": "",
         "dataFormat": "json",
         "template": [
           {
-            "path": "[0].name",
+            "path": "response[0].name",
             "type": "string"
           },
           {
-            "path": "[0].id",
+            "path": "response[0].favorite",
+            "type": "string"
+          },
+          {
+            "path": "response[0].email",
+            "type": "string"
+          },
+          {
+            "path": "response[0].phone",
+            "type": "string"
+          },
+          {
+            "path": "response[0].address",
+            "type": "string"
+          },
+          {
+            "path": "response[0].dest_type",
+            "type": "string"
+          },
+          {
+            "path": "response[0].dest_value",
+            "type": "string"
+          },
+          {
+            "path": "response[0].call_pass",
+            "type": "string"
+          },
+          {
+            "path": "response[0].role",
+            "type": "int"
+          },
+          {
+            "path": "response[0].password",
+            "type": "string"
+          },
+          {
+            "path": "response[0].parent",
+            "type": "string"
+          },
+          {
+            "path": "response[0].create_date",
+            "type": "int"
+          },
+          {
+            "path": "response[0].create_by",
+            "type": "string"
+          },
+          {
+            "path": "response[0].create_by_type",
+            "type": "string"
+          },
+          {
+            "path": "response[0].user_id",
+            "type": "string"
+          },
+          {
+            "path": "response[0].unique_id",
+            "type": "int"
+          },
+          {
+            "path": "response[0].status",
+            "type": "int"
+          },
+          {
+            "path": "response[0].isDeleted",
+            "type": "int"
+          },
+          {
+            "path": "response[0].preDeleted",
+            "type": "int"
+          },
+          {
+            "path": "response[0].type",
+            "type": "string"
+          },
+          {
+            "path": "response[0].ipPhoneUser",
+            "type": "string"
+          },
+          {
+            "path": "response[0].group[0]",
+            "type": "int"
+          },
+          {
+            "path": "response[0].working[0].wDays[0]",
+            "type": "string"
+          },
+          {
+            "path": "response[0].working[0].from",
+            "type": "int"
+          },
+          {
+            "path": "response[0].working[0].to",
+            "type": "int"
+          },
+          {
+            "path": "response[0].working[0].agentId",
+            "type": "int"
+          },
+          {
+            "path": "response[0].groupNames[0].2",
+            "type": "string"
+          },
+          {
+            "path": "response[0].roleName",
+            "type": "string"
+          },
+          {
+            "path": "response[0].parentName",
+            "type": "string"
+          },
+          {
+            "path": "agtLimit",
+            "type": "int"
+          },
+          {
+            "path": "currentPage",
+            "type": "int"
+          },
+          {
+            "path": "totalPages",
+            "type": "int"
+          },
+          {
+            "path": "totalRecords",
+            "type": "int"
+          },
+          {
+            "path": "status",
+            "type": "string"
+          },
+          {
+            "path": "code",
             "type": "int"
           }
         ],
         "canonicalTemplate": {
           "scope": "employee",
-          "rawTemplate": "[\n  {\n    \"name\": \"{{canonical.employee.name}}\",\n    \"id\": \"{{canonical.employee.unique_id}}\"\n  }\n]",
+          "rawTemplate": "{\n  \"response\": [\n    {\n      \"unique_id\": \"{{canonical.employee.unique_id}}\",\n      \"roleName\": \"{{canonical.employee.dept}}\",\n      \"name\": \"{{canonical.employee.name}}\"\n    }\n  ]\n}",
           "processedTemplate": [
             {
-              "path": "[0].name",
-              "var": "{{canonical.employee.name}}"
+              "path": "response[0].unique_id",
+              "var": "{{canonical.employee.unique_id}}"
             },
             {
-              "path": "[0].id",
-              "var": "{{canonical.employee.unique_id}}"
+              "path": "response[0].roleName",
+              "var": "{{canonical.employee.dept}}"
+            },
+            {
+              "path": "response[0].name",
+              "var": "{{canonical.employee.name}}"
             }
           ],
           "responseFormat": "json"
         }
       },
       "createdAt": "2026-01-08T10:32:41.354Z",
-      "updatedAt": "2026-01-12T10:03:20.983Z"
+      "updatedAt": "2026-01-19T20:59:28.634Z"
     }
   ]
 }

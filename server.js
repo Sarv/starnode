@@ -3566,14 +3566,22 @@ app.get('/api/mapping-templates', (req, res) => {
   }
 });
 
+// Valid relationship types
+const VALID_RELATIONSHIP_TYPES = ['one-to-one', 'one-to-many', 'many-to-one', 'many-to-many'];
+
 // Create template
 app.post('/api/mapping-templates', (req, res) => {
   try {
-    const { name, sideA, sideB } = req.body;
+    const { name, sideA, sideB, relationshipType } = req.body;
 
     if (!name || !sideA || !sideB) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+
+    // Validate and default relationship type
+    const relType = VALID_RELATIONSHIP_TYPES.includes(relationshipType)
+      ? relationshipType
+      : 'one-to-one';
 
     const templates = fs.existsSync(TEMPLATES_FILE)
       ? JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'))
@@ -3582,6 +3590,7 @@ app.post('/api/mapping-templates', (req, res) => {
     const newTemplate = {
       id: `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name,
+      relationshipType: relType,
       sideA: {
         scope: sideA.scope,
         operation: sideA.operation,
@@ -3634,7 +3643,7 @@ app.delete('/api/mapping-templates/:id', (req, res) => {
 app.put('/api/mapping-templates/:id', (req, res) => {
   try {
     const { id } = req.params;
-    const { name, sideA, sideB } = req.body;
+    const { name, sideA, sideB, relationshipType } = req.body;
 
     if (!name || !sideA || !sideB) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -3643,6 +3652,11 @@ app.put('/api/mapping-templates/:id', (req, res) => {
     if (!fs.existsSync(TEMPLATES_FILE)) {
       return res.status(404).json({ error: 'Template not found' });
     }
+
+    // Validate and default relationship type
+    const relType = VALID_RELATIONSHIP_TYPES.includes(relationshipType)
+      ? relationshipType
+      : 'one-to-one';
 
     let templates = JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
     const templateIndex = templates.findIndex(t => t.id === id);
@@ -3655,6 +3669,7 @@ app.put('/api/mapping-templates/:id', (req, res) => {
     templates[templateIndex] = {
       ...templates[templateIndex],
       name,
+      relationshipType: relType,
       sideA,
       sideB,
       updatedAt: new Date().toISOString(),
@@ -3718,10 +3733,18 @@ app.get('/api/integrations/:id/apis-by-scope', (req, res) => {
   }
 });
 
-// Save record mappings
+// Save record mappings (handles both create and update via upsert)
 app.post('/api/record-mappings', async (req, res) => {
   try {
-    const { templateId, integrations, mappings } = req.body;
+    const {
+      id,  // If provided, update existing document
+      templateId,
+      relationshipType,
+      sideAIntegration,
+      sideBIntegration,
+      integrations,
+      mappings
+    } = req.body;
 
     if (!templateId || !integrations || !mappings) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -3732,10 +3755,18 @@ app.post('/api/record-mappings', async (req, res) => {
 
     const mappingDocument = {
       templateId,
+      relationshipType: relationshipType || 'one-to-one',
+      sideAIntegration,  // Track which integration is Side A (one side in 1:N)
+      sideBIntegration,  // Track which integration is Side B (many side in 1:N)
       integrationIds,
       integrations,
       mappings,
     };
+
+    // If ID is provided, this is an update
+    if (id) {
+      mappingDocument.id = id;
+    }
 
     const saved = await elasticsearch.saveRecordMapping(mappingDocument);
     res.json({ success: true, mapping: saved });
@@ -3767,6 +3798,42 @@ app.get('/api/record-mappings', async (req, res) => {
   } catch (error) {
     console.error('Error getting record mappings:', error);
     res.status(500).json({ error: 'Failed to get record mappings' });
+  }
+});
+
+// Get mapped record IDs (bidirectional lookup)
+app.get('/api/record-mappings/lookup', async (req, res) => {
+  try {
+    const { templateId, sourceIntegration, sourceRecordId, targetIntegration, includeData } = req.query;
+
+    if (!templateId || !sourceIntegration || !sourceRecordId || !targetIntegration) {
+      return res.status(400).json({
+        error: 'Missing required parameters: templateId, sourceIntegration, sourceRecordId, targetIntegration',
+      });
+    }
+
+    if (includeData === 'true') {
+      // Return full record data
+      const records = await elasticsearch.getMappedRecordsWithData(
+        templateId,
+        sourceIntegration,
+        sourceRecordId,
+        targetIntegration
+      );
+      res.json({ success: true, records });
+    } else {
+      // Return just IDs
+      const ids = await elasticsearch.getMappedRecordIds(
+        templateId,
+        sourceIntegration,
+        sourceRecordId,
+        targetIntegration
+      );
+      res.json({ success: true, ids });
+    }
+  } catch (error) {
+    console.error('Error looking up mapped records:', error);
+    res.status(500).json({ error: 'Failed to lookup mapped records' });
   }
 });
 

@@ -731,6 +731,87 @@ async function getRecordMappings(query = {}) {
   }
 }
 
+/**
+ * Get mapped record IDs bidirectionally
+ * Given a source record, find all target records it's mapped to
+ * @param {string} templateId - The mapping template ID
+ * @param {string} sourceIntegration - The source integration ID
+ * @param {any} sourceRecordId - The source record's primary key value
+ * @param {string} targetIntegration - The target integration ID
+ * @returns {Promise<Array>} Array of target record IDs
+ */
+async function getMappedRecordIds(templateId, sourceIntegration, sourceRecordId, targetIntegration) {
+  try {
+    const results = await getRecordMappings({
+      templateId,
+      integrationId: sourceIntegration,
+      recordId: sourceRecordId,
+    });
+
+    if (results.length === 0) return [];
+
+    // Extract target IDs from mappings where source matches
+    const targetIds = [];
+    for (const doc of results) {
+      for (const mapping of doc.mappings || []) {
+        if (mapping[sourceIntegration] === sourceRecordId && mapping[targetIntegration] !== undefined) {
+          targetIds.push(mapping[targetIntegration]);
+        }
+      }
+    }
+
+    // Return unique IDs
+    return [...new Set(targetIds)];
+  } catch (error) {
+    console.error('Error getting mapped record IDs:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get mapped record with full data bidirectionally
+ * Given a source record, find all target records with their stored data
+ * @param {string} templateId - The mapping template ID
+ * @param {string} sourceIntegration - The source integration ID
+ * @param {any} sourceRecordId - The source record's primary key value
+ * @param {string} targetIntegration - The target integration ID
+ * @returns {Promise<Array>} Array of target records with their data
+ */
+async function getMappedRecordsWithData(templateId, sourceIntegration, sourceRecordId, targetIntegration) {
+  try {
+    const results = await getRecordMappings({
+      templateId,
+      integrationId: sourceIntegration,
+      recordId: sourceRecordId,
+    });
+
+    if (results.length === 0) return [];
+
+    const targetRecords = [];
+    for (const doc of results) {
+      const targetRecordStore = doc.integrations?.[targetIntegration]?.records || {};
+
+      for (const mapping of doc.mappings || []) {
+        if (mapping[sourceIntegration] === sourceRecordId && mapping[targetIntegration] !== undefined) {
+          const targetId = mapping[targetIntegration];
+          const recordData = targetRecordStore[targetId] || null;
+
+          targetRecords.push({
+            id: targetId,
+            data: recordData,
+            mappingCreatedAt: mapping.createdAt,
+          });
+        }
+      }
+    }
+
+    return targetRecords;
+  } catch (error) {
+    console.error('Error getting mapped records with data:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   client,
   INDEXES,
@@ -758,4 +839,6 @@ module.exports = {
   // Record mapping functions
   saveRecordMapping,
   getRecordMappings,
+  getMappedRecordIds,
+  getMappedRecordsWithData,
 };

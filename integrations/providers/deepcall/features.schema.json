@@ -142,7 +142,7 @@
     {
       "id": "mapping_1767868315629_v2cf7761p",
       "featureTemplateId": "get_employee_data",
-      "featureTemplateName": "Get Employee_data",
+      "featureTemplateName": "Get Employees_data",
       "fieldMappings": {},
       "apiConfig": {
         "apiConfigId": null,
@@ -164,32 +164,17 @@
           "possibleValues": [],
           "customHandlers": null,
           "order": 1
-        },
-        {
-          "fieldKey": "emp_id",
-          "label": "employee id",
-          "description": "",
-          "type": "dynamic",
-          "fieldType": "number",
-          "htmlType": "number",
-          "fillBy": "User",
-          "adminValue": null,
-          "required": true,
-          "default": null,
-          "possibleValues": [],
-          "customHandlers": null,
-          "order": 2
         }
       ],
       "customHandlers": {},
       "customHandlers_for_feature": null,
       "scope": "employee",
-      "operation": "read",
+      "operation": "list",
       "category": "employee",
       "status": "active",
       "createdAt": "2026-01-08T10:31:55.629Z",
-      "updatedAt": "2026-01-08T10:31:55.629Z"
+      "updatedAt": "2026-01-19T20:36:19.408Z"
     }
   ],
-  "lastUpdated": "2026-01-08T11:08:19.967Z"
+  "lastUpdated": "2026-01-19T20:36:19.408Z"
 }

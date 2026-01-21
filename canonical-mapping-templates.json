@@ -2,6 +2,7 @@
   {
     "id": "template_1768457809260_b68zlahun",
     "name": "Agent Mapping template",
+    "relationshipType": "one-to-one",
     "sideA": {
       "scope": "employee",
       "operation": "list",
@@ -14,5 +15,73 @@
     },
     "createdAt": "2026-01-15T06:16:49.260Z",
     "updatedAt": "2026-01-15T06:16:49.260Z"
+  },
+  {
+    "id": "template_1768852096112_h9rdf106g",
+    "name": "agent contact 1_to_many",
+    "relationshipType": "one-to-many",
+    "sideA": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "sideB": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "createdAt": "2026-01-19T19:48:16.112Z",
+    "updatedAt": "2026-01-19T19:48:16.112Z"
+  },
+  {
+    "id": "template_1768854302336_74rvwco3w",
+    "name": "agent many-many mapping",
+    "relationshipType": "many-to-many",
+    "sideA": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "sideB": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "createdAt": "2026-01-19T20:25:02.336Z",
+    "updatedAt": "2026-01-19T20:25:02.336Z"
+  },
+  {
+    "id": "template_1768857541111_2c8s4vqj6",
+    "name": "Agent Mapping 1_to_1",
+    "relationshipType": "one-to-one",
+    "sideA": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "sideB": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "createdAt": "2026-01-19T21:19:01.111Z",
+    "updatedAt": "2026-01-19T21:19:01.111Z"
+  },
+  {
+    "id": "template_1768899197536_eqhw1k1bf",
+    "name": "agent many_to_1 mapping",
+    "relationshipType": "many-to-one",
+    "sideA": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "sideB": {
+      "scope": "employee",
+      "operation": "list",
+      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
+    },
+    "createdAt": "2026-01-20T08:53:17.537Z",
+    "updatedAt": "2026-01-20T08:53:17.537Z"
   }
 ]

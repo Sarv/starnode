@@ -45,6 +45,7 @@
             <thead>
               <tr>
                 <th>Template Name</th>
+                <th>Relationship</th>
                 <th>Side A (Scope/Operation)</th>
                 <th>Side B (Scope/Operation)</th>
                 <th>Primary Keys</th>
@@ -111,6 +112,18 @@
                 placeholder="e.g., Deepcall Agent ↔ Freshdesk Contact"
                 onblur="updateSaveTemplateButtonState()"
               />
+            </div>
+
+            <!-- Relationship Type -->
+            <div class="form-group">
+              <label for="relationshipType">Relationship Type</label>
+              <select id="relationshipType" class="form-control">
+                <option value="one-to-one">One to One (1:1)</option>
+                <option value="one-to-many">One to Many (1:N) - Side A has many Side B</option>
+                <option value="many-to-one">Many to One (N:1) - Many Side A to one Side B</option>
+                <option value="many-to-many">Many to Many (N:N)</option>
+              </select>
+              <small class="help-text">Defines how records relate between integrations</small>
             </div>
 
             <!-- Integration Panels Grid -->

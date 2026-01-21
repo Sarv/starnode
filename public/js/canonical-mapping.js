@@ -195,6 +195,11 @@ function resetSideState(side) {
   document.getElementById(`primaryKeySection${side}`).style.display = 'none';
   document.getElementById(`loadedDataSection${side}`).style.display = 'none';
   document.getElementById('mappingSummary').style.display = 'none';
+
+  // Reset relationship type dropdown
+  if (side === 'A') {
+    document.getElementById('relationshipType').value = 'one-to-one';
+  }
 }
 
 // Populate integration dropdowns
@@ -781,6 +786,7 @@ function updateSaveTemplateButtonState() {
 // Save template (create or update)
 async function saveTemplate() {
   const name = document.getElementById('mappingName').value;
+  const relationshipType = document.getElementById('relationshipType').value || 'one-to-one';
   const scopeA = document.getElementById('scopeA').value;
   const operationA = document.getElementById('operationA').value;
   const primaryKeyA = document.getElementById('primaryKeyA').value;
@@ -804,6 +810,7 @@ async function saveTemplate() {
 
   const templateData = {
     name,
+    relationshipType,
     sideA: {
       scope: scopeA,
       operation: operationA,
@@ -864,6 +871,17 @@ async function loadTemplates() {
   }
 }
 
+// Format relationship type for display
+function formatRelationshipType(relType) {
+  const labels = {
+    'one-to-one': '1:1',
+    'one-to-many': '1:N',
+    'many-to-one': 'N:1',
+    'many-to-many': 'N:N',
+  };
+  return labels[relType] || '1:1';
+}
+
 // Render templates table
 function renderTemplatesTable(templates) {
   const tbody = document.getElementById('mappingsTableBody');
@@ -884,14 +902,16 @@ function renderTemplatesTable(templates) {
       // Extract primary key field names from canonical variable
       const pkA = extractFieldFromCanonical(template.sideA.primaryKeyCanonical);
       const pkB = extractFieldFromCanonical(template.sideB.primaryKeyCanonical);
+      const relType = template.relationshipType || 'one-to-one';
 
       return `
           <tr>
             <td><strong>${escapeHtml(template.name)}</strong></td>
+            <td><span class="relationship-badge relationship-${relType}">${formatRelationshipType(relType)}</span></td>
             <td>
               <span class="scope-badge">${escapeHtml(
                 template.sideA.scope,
-              )}</span> / 
+              )}</span> /
               <span class="operation-badge">${escapeHtml(
                 template.sideA.operation,
               )}</span>
@@ -899,7 +919,7 @@ function renderTemplatesTable(templates) {
             <td>
               <span class="scope-badge">${escapeHtml(
                 template.sideB.scope,
-              )}</span> / 
+              )}</span> /
               <span class="operation-badge">${escapeHtml(
                 template.sideB.operation,
               )}</span>
@@ -907,7 +927,7 @@ function renderTemplatesTable(templates) {
             <td>
               <code title="${escapeHtml(
                 template.sideA.primaryKeyCanonical,
-              )}">${escapeHtml(pkA)}</code> ↔ 
+              )}">${escapeHtml(pkA)}</code> ↔
               <code title="${escapeHtml(
                 template.sideB.primaryKeyCanonical,
               )}">${escapeHtml(pkB)}</code>
@@ -997,6 +1017,7 @@ async function editTemplate(templateId) {
 
     // Populate form fields
     document.getElementById('mappingName').value = template.name;
+    document.getElementById('relationshipType').value = template.relationshipType || 'one-to-one';
 
     // Populate Side A
     const scopeA = document.getElementById('scopeA');

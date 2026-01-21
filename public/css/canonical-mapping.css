@@ -116,6 +116,47 @@
   color: #6b7280;
 }
 
+/* Relationship Type Badge */
+.relationship-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.relationship-badge.relationship-one-to-one {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.relationship-badge.relationship-one-to-many {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.relationship-badge.relationship-many-to-one {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.relationship-badge.relationship-many-to-many {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+/* Help text for form fields */
+.help-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
 .mapping-actions {
   display: flex;
   gap: 8px;

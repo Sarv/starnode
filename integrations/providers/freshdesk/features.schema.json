@@ -365,7 +365,79 @@
       "status": "active",
       "createdAt": "2026-01-10T12:55:01.063Z",
       "updatedAt": "2026-01-10T12:55:01.063Z"
+    },
+    {
+      "id": "mapping_1768885513145_dabg35pl0",
+      "featureTemplateId": "fetch_tickets",
+      "featureTemplateName": "fetch Tickets",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api_config",
+          "label": "API",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "scope": "tickets",
+      "operation": "list",
+      "category": "tickets",
+      "status": "active",
+      "createdAt": "2026-01-20T05:05:13.145Z",
+      "updatedAt": "2026-01-20T05:05:13.145Z"
+    },
+    {
+      "id": "mapping_1768893745372_0s6h2ckxd",
+      "featureTemplateId": "fetch_companies",
+      "featureTemplateName": "fetch companies",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api_config",
+          "label": "API",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "scope": "organization",
+      "operation": "list_organizations",
+      "category": "organization",
+      "status": "active",
+      "createdAt": "2026-01-20T07:22:25.372Z",
+      "updatedAt": "2026-01-20T07:22:25.372Z"
     }
   ],
-  "lastUpdated": "2026-01-10T12:55:01.063Z"
+  "lastUpdated": "2026-01-20T07:22:25.372Z"
 }
