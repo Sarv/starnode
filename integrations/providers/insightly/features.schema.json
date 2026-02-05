@@ -1,0 +1,123 @@
+{
+  "version": "1.0.0",
+  "featureMappings": [
+    {
+      "id": "mapping_1766741656195_e89moswcm",
+      "featureTemplateId": "get_contact",
+      "featureTemplateName": "Get contact",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "contact_id",
+          "label": "Contact ID",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "number",
+          "htmlType": "number",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-26T09:34:16.195Z",
+      "updatedAt": "2025-12-26T09:34:16.195Z"
+    },
+    {
+      "id": "mapping_1766742025755_cwy44gyhm",
+      "featureTemplateId": "get_contacts",
+      "featureTemplateName": "Get contact",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "test_id",
+          "label": "Test ID",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "string",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-26T09:40:25.755Z",
+      "updatedAt": "2025-12-26T09:40:25.755Z"
+    },
+    {
+      "id": "mapping_1766742717038_np3r7m8ei",
+      "featureTemplateId": "test_feature",
+      "featureTemplateName": "Test Feature",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "contact_id",
+          "label": "contact ID",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "string",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-26T09:51:57.038Z",
+      "updatedAt": "2025-12-26T09:51:57.044Z"
+    },
+    {
+      "id": "mapping_1766742856483_zf2eldhzf",
+      "featureTemplateId": "list_contact",
+      "featureTemplateName": "list Contact",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "category": "contacts",
+      "status": "active",
+      "createdAt": "2025-12-26T09:54:16.483Z",
+      "updatedAt": "2025-12-26T09:54:16.483Z"
+    }
+  ],
+  "lastUpdated": "2025-12-26T09:54:16.483Z"
+}

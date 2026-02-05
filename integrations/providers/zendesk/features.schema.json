@@ -96,7 +96,58 @@
       "status": "active",
       "createdAt": "2025-12-13T18:42:33.654Z",
       "updatedAt": "2025-12-13T18:42:33.654Z"
+    },
+    {
+      "id": "mapping_1767879762737_nhus5f510",
+      "featureTemplateId": "get_contact",
+      "featureTemplateName": "Get Contact",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "employee_id",
+          "label": "Employee id",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "number",
+          "htmlType": "number",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        },
+        {
+          "fieldKey": "api_config",
+          "label": "api",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 2
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "scope": "employee",
+      "operation": "read",
+      "category": "employee",
+      "status": "active",
+      "createdAt": "2026-01-08T13:42:42.737Z",
+      "updatedAt": "2026-01-08T13:42:42.737Z"
     }
   ],
-  "lastUpdated": "2025-12-13T18:42:33.654Z"
+  "lastUpdated": "2026-01-08T13:42:42.737Z"
 }

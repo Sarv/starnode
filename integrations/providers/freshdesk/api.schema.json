@@ -36,6 +36,373 @@
         "dataFormat": "json"
       },
       "updatedAt": "2025-12-13T19:44:41.647Z"
+    },
+    {
+      "id": "api_1768049734593_jj37rq04a",
+      "featureId": "get_agents",
+      "fieldId": "api",
+      "name": "api API",
+      "method": "GET",
+      "url": "https://{{company_subdomain}}.freshdesk.com/api/v2/contacts",
+      "headers": [],
+      "queryParams": [],
+      "bodyType": "none",
+      "body": {},
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json",
+        "template": [
+          {
+            "path": "[0].active",
+            "type": "boolean"
+          },
+          {
+            "path": "[0].address",
+            "type": "string"
+          },
+          {
+            "path": "[0].description",
+            "type": "string"
+          },
+          {
+            "path": "[0].email",
+            "type": "string"
+          },
+          {
+            "path": "[0].id",
+            "type": "int"
+          },
+          {
+            "path": "[0].job_title",
+            "type": "string"
+          },
+          {
+            "path": "[0].language",
+            "type": "string"
+          },
+          {
+            "path": "[0].mobile",
+            "type": "string"
+          },
+          {
+            "path": "[0].name",
+            "type": "string"
+          },
+          {
+            "path": "[0].phone",
+            "type": "int"
+          },
+          {
+            "path": "[0].time_zone",
+            "type": "string"
+          },
+          {
+            "path": "[0].twitter_id",
+            "type": "string"
+          },
+          {
+            "path": "[0].facebook_id",
+            "type": "string"
+          },
+          {
+            "path": "[0].created_at",
+            "type": "string"
+          },
+          {
+            "path": "[0].updated_at",
+            "type": "string"
+          },
+          {
+            "path": "[0].csat_rating",
+            "type": "string"
+          },
+          {
+            "path": "[0].preferred_source",
+            "type": "string"
+          },
+          {
+            "path": "[0].contact_type",
+            "type": "string"
+          },
+          {
+            "path": "[0].first_seen",
+            "type": "string"
+          },
+          {
+            "path": "[0].last_seen",
+            "type": "string"
+          },
+          {
+            "path": "[0].company_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].unique_external_id",
+            "type": "string"
+          },
+          {
+            "path": "[0].first_name",
+            "type": "string"
+          },
+          {
+            "path": "[0].last_name",
+            "type": "string"
+          },
+          {
+            "path": "[0].visitor_id",
+            "type": "string"
+          },
+          {
+            "path": "[0].org_contact_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].org_contact_id_str",
+            "type": "int"
+          },
+          {
+            "path": "[0].guest_name",
+            "type": "string"
+          },
+          {
+            "path": "[0].guest_profile_pic",
+            "type": "string"
+          }
+        ],
+        "canonicalTemplate": {
+          "scope": "employee",
+          "rawTemplate": "[\n  {\n    \"active\": \"{{canonical.employee.status}}\",\n    \"description\": \"{{canonical.employee.dept}}\",\n    \"email\": \"{{canonical.employee.email}}\",\n    \"id\": \"{{canonical.employee.unique_id}}\",\n    \"job_title\": \"{{canonical.employee.position}}\",\n    \"first_name\": \"{{canonical.employee.name}}\",\n  }\n]",
+          "processedTemplate": "[\n  {\n    \"active\": \"{{canonical.employee.status}}\",\n    \"description\": \"{{canonical.employee.dept}}\",\n    \"email\": \"{{canonical.employee.email}}\",\n    \"id\": \"{{canonical.employee.unique_id}}\",\n    \"job_title\": \"{{canonical.employee.position}}\",\n    \"first_name\": \"{{canonical.employee.name}}\",\n  }\n]",
+          "responseFormat": "json"
+        }
+      },
+      "createdAt": "2026-01-10T12:55:34.593Z",
+      "updatedAt": "2026-01-27T12:35:21.656Z"
+    },
+    {
+      "id": "api_1768885541325_l2jvsc626",
+      "featureId": "fetch_tickets",
+      "fieldId": "api_config",
+      "name": "api_config API",
+      "method": "GET",
+      "url": "https://{{company_subdomain}}.freshdesk.com/api/v2/tickets",
+      "headers": [],
+      "queryParams": [],
+      "bodyType": "none",
+      "body": {},
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json",
+        "template": [
+          {
+            "path": "[0].cc_emails[0]",
+            "type": "string"
+          },
+          {
+            "path": "[0].fwd_emails[0]",
+            "type": "string"
+          },
+          {
+            "path": "[0].reply_cc_emails[0]",
+            "type": "string"
+          },
+          {
+            "path": "[0].ticket_cc_emails[0]",
+            "type": "string"
+          },
+          {
+            "path": "[0].ticket_bcc_emails[0]",
+            "type": "string"
+          },
+          {
+            "path": "[0].fr_escalated",
+            "type": "boolean"
+          },
+          {
+            "path": "[0].spam",
+            "type": "boolean"
+          },
+          {
+            "path": "[0].email_config_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].priority",
+            "type": "int"
+          },
+          {
+            "path": "[0].requester_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].responder_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].source",
+            "type": "int"
+          },
+          {
+            "path": "[0].company_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].status",
+            "type": "int"
+          },
+          {
+            "path": "[0].subject",
+            "type": "string"
+          },
+          {
+            "path": "[0].product_id",
+            "type": "int"
+          },
+          {
+            "path": "[0].id",
+            "type": "int"
+          },
+          {
+            "path": "[0].type",
+            "type": "string"
+          },
+          {
+            "path": "[0].due_by",
+            "type": "string"
+          },
+          {
+            "path": "[0].fr_due_by",
+            "type": "string"
+          },
+          {
+            "path": "[0].is_escalated",
+            "type": "boolean"
+          },
+          {
+            "path": "[0].created_at",
+            "type": "string"
+          },
+          {
+            "path": "[0].updated_at",
+            "type": "string"
+          },
+          {
+            "path": "[0].sentiment_score",
+            "type": "int"
+          },
+          {
+            "path": "[0].initial_sentiment_score",
+            "type": "int"
+          },
+          {
+            "path": "[0].nr_escalated",
+            "type": "boolean"
+          }
+        ],
+        "canonicalTemplate": {
+          "scope": "tickets",
+          "rawTemplate": "[\n  {\n    \"priority\": \"{{canonical.tickets.priority}}\",\n    \"requester_id\": \"{{canonical.tickets.requester}}\",\n    \"status\": \"{{canonical.tickets.status}}\",\n    \"subject\": \"{{canonical.tickets.subject}}\",\n    \"id\": \"{{canonical.tickets.unique_id}}\"\n  }\n]",
+          "processedTemplate": [
+            {
+              "path": "[0].priority",
+              "var": "{{canonical.tickets.priority}}"
+            },
+            {
+              "path": "[0].requester_id",
+              "var": "{{canonical.tickets.requester}}"
+            },
+            {
+              "path": "[0].status",
+              "var": "{{canonical.tickets.status}}"
+            },
+            {
+              "path": "[0].subject",
+              "var": "{{canonical.tickets.subject}}"
+            },
+            {
+              "path": "[0].id",
+              "var": "{{canonical.tickets.unique_id}}"
+            }
+          ],
+          "responseFormat": "json"
+        }
+      },
+      "createdAt": "2026-01-20T05:05:41.325Z",
+      "updatedAt": "2026-01-27T12:35:17.681Z"
+    },
+    {
+      "id": "api_1768893764852_ufpnnxpyx",
+      "featureId": "fetch_companies",
+      "fieldId": "api_config",
+      "name": "api_config API",
+      "method": "GET",
+      "url": "https://{{company_subdomain}}.freshdesk.com/api/v2/companies",
+      "headers": [],
+      "queryParams": [],
+      "bodyType": "none",
+      "body": {},
+      "response": {
+        "successPath": "",
+        "errorPath": "",
+        "dataFormat": "json",
+        "template": [
+          {
+            "path": "[0].id",
+            "type": "int"
+          },
+          {
+            "path": "[0].name",
+            "type": "string"
+          },
+          {
+            "path": "[0].description",
+            "type": "string"
+          },
+          {
+            "path": "[0].note",
+            "type": "string"
+          },
+          {
+            "path": "[0].domains[0]",
+            "type": "string"
+          },
+          {
+            "path": "[0].created_at",
+            "type": "string"
+          },
+          {
+            "path": "[0].updated_at",
+            "type": "string"
+          },
+          {
+            "path": "[0].org_company_id",
+            "type": "string"
+          }
+        ],
+        "canonicalTemplate": {
+          "scope": "organization",
+          "rawTemplate": "[\n  {\n    \"id\": \"{{canonical.organization.unique_id}}\",\n    \"name\": \"{{canonical.organization.name}}\",\n    \"description\": \"{{canonical.organization.description}}\"\n  }\n]",
+          "processedTemplate": [
+            {
+              "path": "[0].id",
+              "var": "{{canonical.organization.unique_id}}"
+            },
+            {
+              "path": "[0].name",
+              "var": "{{canonical.organization.name}}"
+            },
+            {
+              "path": "[0].description",
+              "var": "{{canonical.organization.description}}"
+            }
+          ],
+          "responseFormat": "json"
+        }
+      },
+      "createdAt": "2026-01-20T07:22:44.852Z",
+      "updatedAt": "2026-01-27T12:34:58.908Z"
     }
   ]
 }

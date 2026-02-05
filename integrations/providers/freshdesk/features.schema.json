@@ -281,7 +281,163 @@
       "status": "active",
       "createdAt": "2025-12-13T13:32:31.670Z",
       "updatedAt": "2025-12-13T13:32:31.670Z"
+    },
+    {
+      "id": "mapping_1766091636840_w0sjpvykq",
+      "featureTemplateId": "test_feature",
+      "featureTemplateName": "Test Feature",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "test_field",
+          "label": "Test Field",
+          "description": "",
+          "type": "static",
+          "fieldType": "string",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        },
+        {
+          "fieldKey": "sheet_id",
+          "label": "sheet id",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "string",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 2
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "status": "active",
+      "createdAt": "2025-12-18T21:00:36.840Z",
+      "updatedAt": "2025-12-18T21:00:36.840Z"
+    },
+    {
+      "id": "mapping_1768049701063_0v9rsvj12",
+      "featureTemplateId": "get_agents",
+      "featureTemplateName": "get agents",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api",
+          "label": "api",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "scope": "employee",
+      "operation": "list",
+      "category": "employee",
+      "status": "active",
+      "createdAt": "2026-01-10T12:55:01.063Z",
+      "updatedAt": "2026-01-10T12:55:01.063Z"
+    },
+    {
+      "id": "mapping_1768885513145_dabg35pl0",
+      "featureTemplateId": "fetch_tickets",
+      "featureTemplateName": "fetch Tickets",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api_config",
+          "label": "API",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": false,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "scope": "tickets",
+      "operation": "list",
+      "category": "tickets",
+      "status": "active",
+      "createdAt": "2026-01-20T05:05:13.145Z",
+      "updatedAt": "2026-01-20T05:05:13.145Z"
+    },
+    {
+      "id": "mapping_1768893745372_0s6h2ckxd",
+      "featureTemplateId": "fetch_companies",
+      "featureTemplateName": "fetch companies",
+      "fieldMappings": {},
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "api_config",
+          "label": "API",
+          "description": "",
+          "type": "api",
+          "fieldType": "url",
+          "htmlType": "url",
+          "fillBy": "Admin",
+          "adminValue": "",
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "customHandlers_for_feature": null,
+      "scope": "organization",
+      "operation": "list_organizations",
+      "category": "organization",
+      "status": "active",
+      "createdAt": "2026-01-20T07:22:25.372Z",
+      "updatedAt": "2026-01-20T07:22:25.372Z"
     }
   ],
-  "lastUpdated": "2025-12-13T13:32:31.670Z"
+  "lastUpdated": "2026-01-20T07:22:25.372Z"
 }

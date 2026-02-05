@@ -12,7 +12,13 @@
           "required": true,
           "default": "X-API-Key",
           "helpText": "Name of the header where API key will be sent. Supports templates like '{{customHeaderName}}' or static values",
-          "examples": ["X-API-Key", "Authorization", "X-Auth-Token", "api-key", "{{headerName}}"]
+          "examples": [
+            "X-API-Key",
+            "Authorization",
+            "X-Auth-Token",
+            "api-key",
+            "{{headerName}}"
+          ]
         },
         "prefix": {
           "type": "string",
@@ -49,7 +55,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -114,7 +124,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -187,7 +201,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -216,6 +234,7 @@
       "label": "Basic Authentication",
       "description": "Username and password encoded in Authorization header with flexible template support",
       "category": "simple",
+      "supportsAdditionalFields": true,
       "configOptions": {
         "username": {
           "type": "string",
@@ -223,7 +242,12 @@
           "required": false,
           "default": "{{username}}",
           "helpText": "Username for Basic Auth. Supports templates: credential variables ('{{username}}'), static values, or complex patterns ('{{email}}/{{token}}')",
-          "examples": ["{{username}}", "admin", "{{email}}", "{{clientId}}/{{secret}}"],
+          "examples": [
+            "{{username}}",
+            "admin",
+            "{{email}}",
+            "{{clientId}}/{{secret}}"
+          ],
           "placeholder": "{{username}}"
         },
         "password": {
@@ -259,7 +283,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -296,7 +324,12 @@
           "required": true,
           "default": "api",
           "helpText": "Username for Basic Auth. Supports templates: static values ('api'), credential variables ('{{apiKey}}'), or complex patterns ('{{email}}/{{token}}')",
-          "examples": ["api", "{{apiKey}}", "{{email}}/{{token}}", "{{clientId}}"],
+          "examples": [
+            "api",
+            "{{apiKey}}",
+            "{{email}}/{{token}}",
+            "{{clientId}}"
+          ],
           "placeholder": "api"
         },
         "password": {
@@ -326,7 +359,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -395,7 +432,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -481,7 +522,9 @@
           "label": "Additional Auth Parameters",
           "required": false,
           "helpText": "Extra parameters for authorization URL (e.g., prompt=consent)",
-          "examples": ["{\"prompt\": \"consent\", \"access_type\": \"offline\"}"]
+          "examples": [
+            "{\"prompt\": \"consent\", \"access_type\": \"offline\"}"
+          ]
         },
         "tokenRefreshEnabled": {
           "type": "boolean",
@@ -517,7 +560,14 @@
           "helpText": "OAuth Client Secret from provider"
         }
       },
-      "storedTokens": ["accessToken", "refreshToken", "tokenType", "expiresIn", "expiresAt", "scope"],
+      "storedTokens": [
+        "accessToken",
+        "refreshToken",
+        "tokenType",
+        "expiresIn",
+        "expiresAt",
+        "scope"
+      ],
       "testConfig": {
         "testUrl": {
           "type": "string",
@@ -525,7 +575,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -605,7 +659,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -673,7 +731,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -760,7 +822,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -796,7 +862,15 @@
           "label": "Algorithm",
           "required": true,
           "default": "HS256",
-          "options": ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "ES256"],
+          "options": [
+            "HS256",
+            "HS384",
+            "HS512",
+            "RS256",
+            "RS384",
+            "RS512",
+            "ES256"
+          ],
           "helpText": "JWT signing algorithm"
         },
         "expiresIn": {
@@ -861,7 +935,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -938,7 +1016,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -1021,7 +1103,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",
@@ -1055,7 +1141,14 @@
           "type": "string",
           "label": "Database Type",
           "required": true,
-          "options": ["postgresql", "mysql", "mongodb", "mssql", "oracle", "redis"],
+          "options": [
+            "postgresql",
+            "mysql",
+            "mongodb",
+            "mssql",
+            "oracle",
+            "redis"
+          ],
           "helpText": "Type of database"
         },
         "defaultPort": {
@@ -1124,7 +1217,11 @@
           "required": false,
           "helpText": "Full URL to test the connection (e.g., https://api.example.com/v1/me)",
           "placeholder": "https://api.example.com/v1/me",
-          "examples": ["https://api.example.com/v1/me", "https://api.example.com/user", "https://api.example.com/health"]
+          "examples": [
+            "https://api.example.com/v1/me",
+            "https://api.example.com/user",
+            "https://api.example.com/health"
+          ]
         },
         "method": {
           "type": "string",

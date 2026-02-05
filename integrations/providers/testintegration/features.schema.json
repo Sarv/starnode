@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "featureMappings": [
+    {
+      "id": "mapping_1764578702516_plt7g7p0l",
+      "featureTemplateId": "create_contact",
+      "featureTemplateName": "Create Contact",
+      "fieldMappings": {
+        "api": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "contact_data": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "auto_assign": {
+          "enabled": true,
+          "customHandlers": null
+        },
+        "default_owner": {
+          "enabled": true,
+          "customHandlers": null
+        }
+      },
+      "apiConfig": {
+        "apiConfigId": null,
+        "method": "GET",
+        "endpoint": ""
+      },
+      "extraFields": [
+        {
+          "fieldKey": "new_field_test_integration",
+          "label": "new field",
+          "description": "",
+          "type": "dynamic",
+          "fieldType": "string",
+          "htmlType": "text",
+          "fillBy": "User",
+          "adminValue": null,
+          "required": true,
+          "default": null,
+          "possibleValues": [],
+          "customHandlers": null,
+          "order": 1
+        }
+      ],
+      "customHandlers": {},
+      "status": "active",
+      "createdAt": "2025-12-01T08:45:02.516Z",
+      "updatedAt": "2025-12-01T08:45:02.516Z"
+    }
+  ],
+  "lastUpdated": "2025-12-01T08:45:02.516Z"
+}

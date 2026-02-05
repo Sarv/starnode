@@ -8,9 +8,11 @@ build/
 html-backup
 backups
 .claude
+*CLAUDE.md
 auth-template-schema.json
 package-lock.json
 convert-html-to-ejs.sh
 docs/planning-by-abhimanyu.txt
 docs/README.md
 docs/study
+docker-compose.yml

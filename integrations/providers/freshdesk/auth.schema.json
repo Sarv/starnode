@@ -2,37 +2,27 @@
   "version": "1.0.0",
   "authMethods": [
     {
-      "id": "basic_auth_api_key_method_1764534764891",
-      "authType": "basic_auth_api_key",
-      "label": "API Key Authentication",
+      "id": "basic_auth_method_1768047882964",
+      "authType": "basic_auth",
+      "label": "Basic Authentication",
       "isDefault": true,
       "priority": 1,
       "config": {
-        "username": "{{apiKey}}",
-        "password": "X",
+        "username": "{{username}}",
+        "password": "{{password}}",
         "isDefault": true
       },
       "testConfig": {
-        "testUrl": "https://{{sub_domain}}.freshdesk.com/api/v2/agents/me/",
+        "testUrl": " https://{{company_subdomain}}.freshdesk.com/api/v2/tickets?per_page=1",
         "timeout": 10000
       },
       "additionalFields": [
         {
-          "name": "sub_domain",
-          "label": "Sub-Domain",
+          "name": "company_subdomain",
+          "label": "Subdomain",
           "type": "string",
           "required": true,
-          "placeholder": "Enter subdomain of your Freshdesk URl",
-          "useAs": "credential",
-          "fillBy": "user",
-          "encrypted": false
-        },
-        {
-          "name": "my_field",
-          "label": "my Field",
-          "type": "string",
-          "required": true,
-          "placeholder": "",
+          "placeholder": "Enter you subdomain",
           "useAs": "credential",
           "fillBy": "user",
           "encrypted": false,
