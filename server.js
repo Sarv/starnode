@@ -3567,7 +3567,12 @@ app.get('/api/mapping-templates', (req, res) => {
 });
 
 // Valid relationship types
-const VALID_RELATIONSHIP_TYPES = ['one-to-one', 'one-to-many', 'many-to-one', 'many-to-many'];
+const VALID_RELATIONSHIP_TYPES = [
+  'one-to-one',
+  'one-to-many',
+  'many-to-one',
+  'many-to-many',
+];
 
 // Create template
 app.post('/api/mapping-templates', (req, res) => {
@@ -3733,107 +3738,313 @@ app.get('/api/integrations/:id/apis-by-scope', (req, res) => {
   }
 });
 
-// Save record mappings (handles both create and update via upsert)
-app.post('/api/record-mappings', async (req, res) => {
+// ===== Record Mapping Endpoints (Individual Document Model) =====
+
+/**
+ * Validate and save multiple record mappings (new individual document model)
+ * Each mapping is stored as a separate document with side-agnostic indexed fields
+ */
+app.post('/api/record-mappings/v2', async (req, res) => {
   try {
     const {
-      id,  // If provided, update existing document
       templateId,
       relationshipType,
       sideAIntegration,
       sideBIntegration,
-      integrations,
-      mappings
+      sideAConnectionId,
+      sideBConnectionId,
+      pairs, // Array of { sideARecordId, sideBRecordId, sideARecordData, sideBRecordData }
+      sideAMetadata, // { primaryKeyField, primaryKeyCanonical, canonicalMappings }
+      sideBMetadata, // { primaryKeyField, primaryKeyCanonical, canonicalMappings }
+      featureAId,
+      featureBId,
     } = req.body;
 
-    if (!templateId || !integrations || !mappings) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    // Extract integration IDs for order-independent lookup
-    const integrationIds = Object.keys(integrations).sort();
-
-    const mappingDocument = {
-      templateId,
-      relationshipType: relationshipType || 'one-to-one',
-      sideAIntegration,  // Track which integration is Side A (one side in 1:N)
-      sideBIntegration,  // Track which integration is Side B (many side in 1:N)
-      integrationIds,
-      integrations,
-      mappings,
-    };
-
-    // If ID is provided, this is an update
-    if (id) {
-      mappingDocument.id = id;
-    }
-
-    const saved = await elasticsearch.saveRecordMapping(mappingDocument);
-    res.json({ success: true, mapping: saved });
-  } catch (error) {
-    console.error('Error saving record mapping:', error);
-    res.status(500).json({ error: 'Failed to save record mapping' });
-  }
-});
-
-// Get record mappings
-app.get('/api/record-mappings', async (req, res) => {
-  try {
-    const { templateId, integrationIds, recordId, integrationId } = req.query;
-
-    const query = {};
-    if (templateId) query.templateId = templateId;
-    if (integrationIds) {
-      query.integrationIds = Array.isArray(integrationIds)
-        ? integrationIds
-        : [integrationIds];
-    }
-    if (recordId && integrationId) {
-      query.recordId = recordId;
-      query.integrationId = integrationId;
-    }
-
-    const mappings = await elasticsearch.getRecordMappings(query);
-    res.json({ success: true, mappings });
-  } catch (error) {
-    console.error('Error getting record mappings:', error);
-    res.status(500).json({ error: 'Failed to get record mappings' });
-  }
-});
-
-// Get mapped record IDs (bidirectional lookup)
-app.get('/api/record-mappings/lookup', async (req, res) => {
-  try {
-    const { templateId, sourceIntegration, sourceRecordId, targetIntegration, includeData } = req.query;
-
-    if (!templateId || !sourceIntegration || !sourceRecordId || !targetIntegration) {
+    if (
+      !templateId ||
+      !sideAIntegration ||
+      !sideBIntegration ||
+      !pairs ||
+      pairs.length === 0
+    ) {
       return res.status(400).json({
-        error: 'Missing required parameters: templateId, sourceIntegration, sourceRecordId, targetIntegration',
+        success: false,
+        error:
+          'Missing required fields: templateId, sideAIntegration, sideBIntegration, pairs',
       });
     }
 
-    if (includeData === 'true') {
-      // Return full record data
-      const records = await elasticsearch.getMappedRecordsWithData(
-        templateId,
-        sourceIntegration,
-        sourceRecordId,
-        targetIntegration
+    // Build connection keys for validation query
+    const connectionKeyA = `${sideAIntegration}:${sideAConnectionId}`;
+    const connectionKeyB = `${sideBIntegration}:${sideBConnectionId}`;
+    const relType = relationshipType || 'one-to-one';
+
+    // Build recordKeys to check based on relationship type
+    let recordKeysToCheck = [];
+    if (relType === 'one-to-one') {
+      // Check both sides
+      recordKeysToCheck = [
+        ...pairs.map(
+          p => `${sideAIntegration}:${sideAConnectionId}:${p.sideARecordId}`,
+        ),
+        ...pairs.map(
+          p => `${sideBIntegration}:${sideBConnectionId}:${p.sideBRecordId}`,
+        ),
+      ];
+    } else if (relType === 'one-to-many') {
+      // Only check Side B (many side is constrained)
+      recordKeysToCheck = pairs.map(
+        p => `${sideBIntegration}:${sideBConnectionId}:${p.sideBRecordId}`,
       );
-      res.json({ success: true, records });
+    } else if (relType === 'many-to-one') {
+      // Only check Side A (many side is constrained)
+      recordKeysToCheck = pairs.map(
+        p => `${sideAIntegration}:${sideAConnectionId}:${p.sideARecordId}`,
+      );
+    }
+    // For many-to-many, no validation needed - recordKeysToCheck stays empty
+
+    // Query for existing mappings that might conflict
+    let existingMappings = [];
+    if (recordKeysToCheck.length > 0) {
+      existingMappings = await elasticsearch.getValidationMappings(
+        templateId,
+        connectionKeyA,
+        connectionKeyB,
+        recordKeysToCheck,
+      );
+    }
+
+    // Build constraint maps for validation
+    const sideAPrefix = `${sideAIntegration}:${sideAConnectionId}`;
+    const sideBPrefix = `${sideBIntegration}:${sideBConnectionId}`;
+
+    const constraintMap = {
+      sideA: {}, // sideARecordKey -> sideBRecordKey
+      sideB: {}, // sideBRecordKey -> sideARecordKey
+    };
+
+    existingMappings.forEach(mapping => {
+      const recordKeys = mapping.recordKeys || [];
+      const sideAKey = recordKeys.find(k => k.startsWith(sideAPrefix));
+      const sideBKey = recordKeys.find(k => k.startsWith(sideBPrefix));
+
+      if (sideAKey && sideBKey) {
+        constraintMap.sideA[sideAKey] = sideBKey;
+        constraintMap.sideB[sideBKey] = sideAKey;
+      }
+    });
+
+    // Validate pairs and separate valid from violations
+    const validPairs = [];
+    const violations = [];
+    const duplicates = [];
+
+    for (const pair of pairs) {
+      const sideAKey = `${sideAPrefix}:${pair.sideARecordId}`;
+      const sideBKey = `${sideBPrefix}:${pair.sideBRecordId}`;
+
+      // Check for exact duplicate (same pair already exists)
+      if (constraintMap.sideA[sideAKey] === sideBKey) {
+        duplicates.push({ pair, reason: 'Mapping already exists' });
+        continue;
+      }
+
+      let isValid = true;
+
+      // Check Side B constraint (for 1:1 and 1:N)
+      if (relType === 'one-to-one' || relType === 'one-to-many') {
+        if (
+          constraintMap.sideB[sideBKey] &&
+          constraintMap.sideB[sideBKey] !== sideAKey
+        ) {
+          violations.push({
+            pair,
+            reason: `Side B record ${pair.sideBRecordId} already mapped to different Side A record`,
+            existingMapping: constraintMap.sideB[sideBKey],
+          });
+          isValid = false;
+        }
+      }
+
+      // Check Side A constraint (for 1:1 and N:1)
+      if (isValid && (relType === 'one-to-one' || relType === 'many-to-one')) {
+        if (
+          constraintMap.sideA[sideAKey] &&
+          constraintMap.sideA[sideAKey] !== sideBKey
+        ) {
+          violations.push({
+            pair,
+            reason: `Side A record ${pair.sideARecordId} already mapped to different Side B record`,
+            existingMapping: constraintMap.sideA[sideAKey],
+          });
+          isValid = false;
+        }
+      }
+
+      if (isValid) {
+        validPairs.push(pair);
+        // Update constraint map for subsequent validation within this batch
+        constraintMap.sideA[sideAKey] = sideBKey;
+        constraintMap.sideB[sideBKey] = sideAKey;
+      }
+    }
+
+    // Build and save valid mapping documents
+    const savedMappings = [];
+    if (validPairs.length > 0) {
+      const mappingDocuments = validPairs.map(pair => ({
+        templateId,
+        relationshipType: relType,
+        sideAIntegration,
+        sideBIntegration,
+        integrations: {
+          [sideAIntegration]: {
+            connectionId: sideAConnectionId,
+            recordId: pair.sideARecordId,
+            recordData: pair.sideARecordData || {},
+            featureId: featureAId,
+            primaryKeyField: sideAMetadata?.primaryKeyField,
+            primaryKeyCanonical: sideAMetadata?.primaryKeyCanonical,
+            canonicalMappings: sideAMetadata?.canonicalMappings || {},
+          },
+          [sideBIntegration]: {
+            connectionId: sideBConnectionId,
+            recordId: pair.sideBRecordId,
+            recordData: pair.sideBRecordData || {},
+            featureId: featureBId,
+            primaryKeyField: sideBMetadata?.primaryKeyField,
+            primaryKeyCanonical: sideBMetadata?.primaryKeyCanonical,
+            canonicalMappings: sideBMetadata?.canonicalMappings || {},
+          },
+        },
+      }));
+
+      const result =
+        await elasticsearch.bulkSaveIndividualMappings(mappingDocuments);
+      savedMappings.push(...result.saved);
+    }
+
+    res.json({
+      success: true,
+      saved: savedMappings,
+      violations,
+      duplicates,
+      summary: {
+        requested: pairs.length,
+        saved: savedMappings.length,
+        violations: violations.length,
+        duplicates: duplicates.length,
+      },
+    });
+  } catch (error) {
+    console.error('Error saving record mappings v2:', error);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to save record mappings' });
+  }
+});
+
+/**
+ * Get mappings by template and connection pair (new model)
+ */
+app.get('/api/record-mappings/v2', async (req, res) => {
+  try {
+    const { templateId, connectionKeyA, connectionKeyB, recordKey } = req.query;
+
+    if (!templateId) {
+      return res.status(400).json({
+        success: false,
+        error: 'templateId is required',
+      });
+    }
+
+    let mappings;
+    if (connectionKeyA && connectionKeyB) {
+      mappings = await elasticsearch.getMappingsByConnection(
+        templateId,
+        connectionKeyA,
+        connectionKeyB,
+      );
+    } else if (recordKey) {
+      mappings = await elasticsearch.getRecordMappings({
+        templateId,
+        recordKey,
+      });
     } else {
-      // Return just IDs
-      const ids = await elasticsearch.getMappedRecordIds(
-        templateId,
-        sourceIntegration,
-        sourceRecordId,
-        targetIntegration
-      );
-      res.json({ success: true, ids });
+      mappings = await elasticsearch.getRecordMappings({ templateId });
+    }
+
+    res.json({ success: true, mappings });
+  } catch (error) {
+    console.error('Error getting record mappings v2:', error);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to get record mappings' });
+  }
+});
+
+/**
+ * Delete a single mapping by ID (new model)
+ */
+app.delete('/api/record-mappings/v2/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await elasticsearch.deleteIndividualMapping(id);
+
+    if (result.success) {
+      res.json({ success: true, message: 'Mapping deleted' });
+    } else {
+      res.status(404).json({ success: false, error: result.error });
     }
   } catch (error) {
-    console.error('Error looking up mapped records:', error);
-    res.status(500).json({ error: 'Failed to lookup mapped records' });
+    console.error('Error deleting record mapping:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete mapping' });
+  }
+});
+
+/**
+ * Check for existing mappings when loading the page (new model)
+ * Returns side configuration if mappings exist for the template + integration combo
+ */
+app.get('/api/record-mappings/v2/check-config', async (req, res) => {
+  try {
+    const { templateId, integrationA, integrationB } = req.query;
+
+    if (!templateId || !integrationA || !integrationB) {
+      return res.status(400).json({
+        success: false,
+        error: 'templateId, integrationA, and integrationB are required',
+      });
+    }
+
+    // Find any existing mappings with these integrations for this template
+    const mappings = await elasticsearch.getRecordMappings({
+      templateId,
+      integrationIds: [integrationA, integrationB],
+    });
+
+    if (mappings.length === 0) {
+      return res.json({
+        success: true,
+        hasExistingMappings: false,
+      });
+    }
+
+    // Return the stored side configuration
+    const firstMapping = mappings[0];
+    res.json({
+      success: true,
+      hasExistingMappings: true,
+      sideAIntegration: firstMapping.sideAIntegration,
+      sideBIntegration: firstMapping.sideBIntegration,
+      count: mappings.length,
+    });
+  } catch (error) {
+    console.error('Error checking mapping config:', error);
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to check mapping config' });
   }
 });
 

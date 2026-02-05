@@ -43,7 +43,7 @@
       "fieldId": "api",
       "name": "api API",
       "method": "GET",
-      "url": "https://sarv.freshdesk.com/api/v2/contacts",
+      "url": "https://{{company_subdomain}}.freshdesk.com/api/v2/contacts",
       "headers": [],
       "queryParams": [],
       "bodyType": "none",
@@ -178,7 +178,7 @@
         }
       },
       "createdAt": "2026-01-10T12:55:34.593Z",
-      "updatedAt": "2026-01-12T10:44:32.721Z"
+      "updatedAt": "2026-01-27T12:35:21.656Z"
     },
     {
       "id": "api_1768885541325_l2jvsc626",
@@ -186,7 +186,7 @@
       "fieldId": "api_config",
       "name": "api_config API",
       "method": "GET",
-      "url": "https://sarv.freshdesk.com/api/v2/tickets",
+      "url": "https://{{company_subdomain}}.freshdesk.com/api/v2/tickets",
       "headers": [],
       "queryParams": [],
       "bodyType": "none",
@@ -303,7 +303,7 @@
         ],
         "canonicalTemplate": {
           "scope": "tickets",
-          "rawTemplate": "[\n  {\n    \"priority\": \"{{canonical.tickets.priority}}\",\n    \"requester_id\": \"{{canonical.tickets.requester}}\",\n    \"status\": \"{{canonical.tickets.status}}\",\n    \"subject\": \"{{canonical.tickets.subject}}\",\n    \"id\": \"{{canonical.tickets.unique_id}}\"\n  }\n  ]",
+          "rawTemplate": "[\n  {\n    \"priority\": \"{{canonical.tickets.priority}}\",\n    \"requester_id\": \"{{canonical.tickets.requester}}\",\n    \"status\": \"{{canonical.tickets.status}}\",\n    \"subject\": \"{{canonical.tickets.subject}}\",\n    \"id\": \"{{canonical.tickets.unique_id}}\"\n  }\n]",
           "processedTemplate": [
             {
               "path": "[0].priority",
@@ -330,7 +330,7 @@
         }
       },
       "createdAt": "2026-01-20T05:05:41.325Z",
-      "updatedAt": "2026-01-20T06:52:16.279Z"
+      "updatedAt": "2026-01-27T12:35:17.681Z"
     },
     {
       "id": "api_1768893764852_ufpnnxpyx",
@@ -338,7 +338,7 @@
       "fieldId": "api_config",
       "name": "api_config API",
       "method": "GET",
-      "url": "https://sarv.freshdesk.com/api/v2/companies",
+      "url": "https://{{company_subdomain}}.freshdesk.com/api/v2/companies",
       "headers": [],
       "queryParams": [],
       "bodyType": "none",
@@ -383,7 +383,7 @@
         ],
         "canonicalTemplate": {
           "scope": "organization",
-          "rawTemplate": "[\n  {\n    \"id\": \"{{canonical.organization.unique_id}}\",\n    \"name\": \"{{canonical.organization.name}}\",\n    \"description\": \"{{canonical.organization.description}}\"  \n  }\n]",
+          "rawTemplate": "[\n  {\n    \"id\": \"{{canonical.organization.unique_id}}\",\n    \"name\": \"{{canonical.organization.name}}\",\n    \"description\": \"{{canonical.organization.description}}\"\n  }\n]",
           "processedTemplate": [
             {
               "path": "[0].id",
@@ -402,7 +402,7 @@
         }
       },
       "createdAt": "2026-01-20T07:22:44.852Z",
-      "updatedAt": "2026-01-20T08:06:39.576Z"
+      "updatedAt": "2026-01-27T12:34:58.908Z"
     }
   ]
 }

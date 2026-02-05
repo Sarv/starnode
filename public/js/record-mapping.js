@@ -11,8 +11,11 @@ let selectedRecords = {
   A: [],  // Array for multi-select support
   B: [],
 };
-let mappings = [];
-let existingMappingDocument = null;  // Stores existing mapping document from Elasticsearch
+
+// NEW: Individual document model - each mapping is a separate document
+let mappings = [];  // Array of mapping objects with their own IDs
+let pendingPairs = [];  // Pairs waiting to be saved (not yet in Elasticsearch)
+let existingSideConfig = null;  // { sideAIntegration, sideBIntegration } if mappings exist
 
 const sideState = {
   A: {
@@ -158,7 +161,8 @@ function onTemplateChange(e) {
   resetSideState('A');
   resetSideState('B');
   mappings = [];
-  existingMappingDocument = null;  // Reset existing document reference
+  pendingPairs = [];
+  existingSideConfig = null;
   renderMappingsList();
 }
 
@@ -223,7 +227,7 @@ async function onIntegrationChange(side) {
 
 /**
  * Load existing mappings for the current template + integration combination
- * This ensures we update existing document instead of creating new ones
+ * NEW: Uses the v2 API which returns individual mapping documents
  * Also prevents side swapping - integrations must be selected in the same order as originally saved
  */
 async function checkAndLoadExistingMappings() {
@@ -235,19 +239,16 @@ async function checkAndLoadExistingMappings() {
   }
 
   try {
-    // Query for existing mapping document with this template and integration combination
+    // Check if there are existing mappings and get the side configuration
     const response = await fetch(
-      `/api/record-mappings?templateId=${selectedTemplate.id}&integrationIds=${integrationA}&integrationIds=${integrationB}`
+      `/api/record-mappings/v2/check-config?templateId=${selectedTemplate.id}&integrationA=${integrationA}&integrationB=${integrationB}`
     );
     const data = await response.json();
 
-    if (data.success && data.mappings && data.mappings.length > 0) {
-      // Found existing mapping document
-      const existingDoc = data.mappings[0];
-
+    if (data.success && data.hasExistingMappings) {
       // Check if sides are swapped compared to the stored mapping
-      const storedSideA = existingDoc.sideAIntegration;
-      const storedSideB = existingDoc.sideBIntegration;
+      const storedSideA = data.sideAIntegration;
+      const storedSideB = data.sideBIntegration;
 
       if (storedSideA && storedSideB) {
         // Verify the sides match
@@ -266,38 +267,85 @@ async function checkAndLoadExistingMappings() {
             'error'
           );
 
-          // Reset the last selected integration dropdown
-          // Determine which side was just selected (the one that caused the mismatch)
-          // We reset side B since that's typically selected second
+          // Reset side B since that's typically selected second
           document.getElementById('integrationB').value = '';
           sideState.B.integrationId = null;
           resetSideState('B');
 
-          existingMappingDocument = null;
+          existingSideConfig = null;
           mappings = [];
+          pendingPairs = [];
           renderMappingsList();
           return;
         }
       }
 
-      // Sides match - load the existing mappings
-      existingMappingDocument = existingDoc;
-      mappings = existingMappingDocument.mappings || [];
+      // Sides match - store config and note that existing mappings exist
+      existingSideConfig = {
+        sideAIntegration: storedSideA,
+        sideBIntegration: storedSideB,
+      };
 
-      // Render the existing mappings
-      renderMappingsList();
-
-      const count = mappings.length;
-      showToast(`Loaded ${count} existing mapping(s) for this template`, 'info');
+      showToast(`Found ${data.count} existing mapping(s) for this template`, 'info');
     } else {
-      // No existing mappings
-      existingMappingDocument = null;
+      // No existing mappings - this will be a new mapping session
+      existingSideConfig = null;
+    }
+
+    // Clear local state - mappings will be loaded after connection/feature selection
+    mappings = [];
+    pendingPairs = [];
+    renderMappingsList();
+  } catch (error) {
+    console.error('Error checking existing mappings:', error);
+    existingSideConfig = null;
+    mappings = [];
+    pendingPairs = [];
+  }
+}
+
+/**
+ * Load existing mappings for the current template + connection combination
+ * Called after both connections are selected
+ */
+async function loadExistingMappingsForConnections() {
+  const integrationA = sideState.A.integrationId;
+  const integrationB = sideState.B.integrationId;
+  const connectionA = sideState.A.connectionId;
+  const connectionB = sideState.B.connectionId;
+
+  if (!selectedTemplate || !integrationA || !integrationB || !connectionA || !connectionB) {
+    return;
+  }
+
+  try {
+    const connectionKeyA = `${integrationA}:${connectionA}`;
+    const connectionKeyB = `${integrationB}:${connectionB}`;
+
+    const response = await fetch(
+      `/api/record-mappings/v2?templateId=${selectedTemplate.id}&connectionKeyA=${encodeURIComponent(connectionKeyA)}&connectionKeyB=${encodeURIComponent(connectionKeyB)}`
+    );
+    const data = await response.json();
+
+    if (data.success && data.mappings && data.mappings.length > 0) {
+      // Transform individual documents to display format
+      mappings = data.mappings.map(doc => ({
+        id: doc.id,
+        sideARecordId: doc.integrations[integrationA]?.recordId,
+        sideBRecordId: doc.integrations[integrationB]?.recordId,
+        sideARecordData: doc.integrations[integrationA]?.recordData,
+        sideBRecordData: doc.integrations[integrationB]?.recordData,
+        createdAt: doc.createdAt,
+      }));
+
+      renderMappingsList();
+      showToast(`Loaded ${mappings.length} existing mapping(s)`, 'info');
+    } else {
       mappings = [];
       renderMappingsList();
     }
   } catch (error) {
-    console.error('Error loading existing mappings:', error);
-    existingMappingDocument = null;
+    console.error('Error loading mappings for connections:', error);
     mappings = [];
   }
 }
@@ -391,12 +439,17 @@ async function autoFindFeature(side, integrationId) {
   }
 }
 
-function onConnectionChange(side) {
+async function onConnectionChange(side) {
   const connectionId = document.getElementById(`connection${side}`).value;
   sideState[side].connectionId = connectionId;
 
   // Check if we can enable load button
   updateLoadButtonState(side);
+
+  // Load existing mappings when both connections are selected
+  if (sideState.A.connectionId && sideState.B.connectionId) {
+    await loadExistingMappingsForConnections();
+  }
 }
 
 async function onFeatureChange(side) {
@@ -706,13 +759,17 @@ function isConstrainedSide(side) {
  */
 function validateSelection(side, newRecords, otherSideRecords) {
   const relType = selectedTemplate?.relationshipType || 'one-to-one';
-  const integrationA = sideState.A.integrationId;
-  const integrationB = sideState.B.integrationId;
 
   // For N:N, no validation needed
   if (relType === 'many-to-many') {
     return { valid: true, error: null, conflictingRecords: [] };
   }
+
+  // Combine existing mappings + pending pairs for constraint validation
+  const allMappings = [
+    ...mappings.map(m => ({ sideA: m.sideARecordId, sideB: m.sideBRecordId })),
+    ...pendingPairs.map(p => ({ sideA: p.sideARecordId, sideB: p.sideBRecordId })),
+  ];
 
   const conflictingRecords = [];
 
@@ -723,10 +780,10 @@ function validateSelection(side, newRecords, otherSideRecords) {
     if (relType === 'one-to-one' || relType === 'many-to-one') {
       for (const recA of newRecords) {
         // Check if this A record is already mapped to a DIFFERENT B
-        const existingMapping = mappings.find(m => m[integrationA] === recA.primaryKeyValue);
+        const existingMapping = allMappings.find(m => m.sideA === recA.primaryKeyValue);
         if (existingMapping) {
           // Check if any of the selected B records match the existing mapping
-          const existingB = existingMapping[integrationB];
+          const existingB = existingMapping.sideB;
           const selectedBValues = otherSideRecords.map(r => r.primaryKeyValue);
           if (!selectedBValues.includes(existingB)) {
             conflictingRecords.push({
@@ -744,10 +801,10 @@ function validateSelection(side, newRecords, otherSideRecords) {
     if (relType === 'one-to-one' || relType === 'one-to-many') {
       for (const recB of newRecords) {
         // Check if this B record is already mapped to a DIFFERENT A
-        const existingMapping = mappings.find(m => m[integrationB] === recB.primaryKeyValue);
+        const existingMapping = allMappings.find(m => m.sideB === recB.primaryKeyValue);
         if (existingMapping) {
           // Check if any of the selected A records match the existing mapping
-          const existingA = existingMapping[integrationA];
+          const existingA = existingMapping.sideA;
           const selectedAValues = otherSideRecords.map(r => r.primaryKeyValue);
           if (!selectedAValues.includes(existingA)) {
             conflictingRecords.push({
@@ -800,12 +857,13 @@ function selectRecord(side, index) {
     return;
   }
 
-  // For selection, validate against existing mappings
+  // For selection, validate against existing mappings and pending pairs
   const newRecord = { index, primaryKeyValue, record };
   const otherSideRecords = selectedRecords[otherSide] || [];
 
-  // Only validate if there are existing mappings and other side has selections
-  if (mappings.length > 0 && otherSideRecords.length > 0) {
+  // Only validate if there are existing mappings/pending pairs and other side has selections
+  const totalMappings = mappings.length + pendingPairs.length;
+  if (totalMappings > 0 && otherSideRecords.length > 0) {
     const validation = validateSelection(side, [newRecord], otherSideRecords);
     if (!validation.valid) {
       showToast(validation.error, 'error');
@@ -877,18 +935,24 @@ function createMapping() {
     return;
   }
 
+  // Combine existing mappings + pending pairs for constraint validation
+  const allMappings = [
+    ...mappings.map(m => ({ sideA: m.sideARecordId, sideB: m.sideBRecordId })),
+    ...pendingPairs.map(p => ({ sideA: p.sideARecordId, sideB: p.sideBRecordId })),
+  ];
+
   // Validate relationship constraints before creating mappings
   const constraintViolations = [];
 
-  // Generate mappings for all combinations (cartesian product)
-  const newMappings = [];
+  // Generate mappings for all combinations (user-provided pairs = cartesian product of selections)
+  const newPairs = [];
   let duplicateCount = 0;
 
   for (const recA of recordsA) {
     for (const recB of recordsB) {
-      // Check if mapping already exists
-      const exists = mappings.some(
-        m => m[integrationA] === recA.primaryKeyValue && m[integrationB] === recB.primaryKeyValue,
+      // Check if mapping already exists (in saved mappings or pending pairs)
+      const exists = allMappings.some(
+        m => m.sideA === recA.primaryKeyValue && m.sideB === recB.primaryKeyValue,
       );
 
       if (exists) {
@@ -904,12 +968,12 @@ function createMapping() {
 
         if (relType === 'one-to-one' || relType === 'many-to-one') {
           // Check if A is already mapped to a different B
-          const existingForA = mappings.find(m => m[integrationA] === recA.primaryKeyValue);
-          if (existingForA && existingForA[integrationB] !== recB.primaryKeyValue) {
+          const existingForA = allMappings.find(m => m.sideA === recA.primaryKeyValue);
+          if (existingForA && existingForA.sideB !== recB.primaryKeyValue) {
             constraintViolations.push({
               type: 'A-constraint',
               recordA: recA.primaryKeyValue,
-              existingB: existingForA[integrationB],
+              existingB: existingForA.sideB,
               newB: recB.primaryKeyValue
             });
             continue;
@@ -918,12 +982,12 @@ function createMapping() {
 
         if (relType === 'one-to-one' || relType === 'one-to-many') {
           // Check if B is already mapped to a different A
-          const existingForB = mappings.find(m => m[integrationB] === recB.primaryKeyValue);
-          if (existingForB && existingForB[integrationA] !== recA.primaryKeyValue) {
+          const existingForB = allMappings.find(m => m.sideB === recB.primaryKeyValue);
+          if (existingForB && existingForB.sideA !== recA.primaryKeyValue) {
             constraintViolations.push({
               type: 'B-constraint',
               recordB: recB.primaryKeyValue,
-              existingA: existingForB[integrationA],
+              existingA: existingForB.sideA,
               newA: recA.primaryKeyValue
             });
             continue;
@@ -931,12 +995,17 @@ function createMapping() {
         }
       }
 
-      // Create mapping
-      newMappings.push({
-        [integrationA]: recA.primaryKeyValue,
-        [integrationB]: recB.primaryKeyValue,
+      // Create pending pair with record data
+      newPairs.push({
+        sideARecordId: recA.primaryKeyValue,
+        sideBRecordId: recB.primaryKeyValue,
+        sideARecordData: getFilteredRecordData('A', recA.record),
+        sideBRecordData: getFilteredRecordData('B', recB.record),
         createdAt: new Date().toISOString(),
       });
+
+      // Add to allMappings for subsequent constraint checks within this batch
+      allMappings.push({ sideA: recA.primaryKeyValue, sideB: recB.primaryKeyValue });
     }
   }
 
@@ -961,20 +1030,20 @@ function createMapping() {
     showToast(errorMsg.trim(), 'error');
 
     // Don't clear selections on constraint violation - let user fix it
-    if (newMappings.length === 0) {
+    if (newPairs.length === 0) {
       return;
     }
   }
 
-  if (newMappings.length === 0) {
+  if (newPairs.length === 0) {
     if (duplicateCount > 0) {
       showToast(`All ${duplicateCount} mapping(s) already exist`, 'error');
     }
     return;
   }
 
-  // Add all new mappings
-  mappings.push(...newMappings);
+  // Add to pending pairs (will be saved when user clicks Save)
+  pendingPairs.push(...newPairs);
   renderMappingsList();
 
   // Clear selections
@@ -993,19 +1062,41 @@ function createMapping() {
   updateSelectionInfo('A');
   updateSelectionInfo('B');
 
-  // Enable save button
-  document.getElementById('saveMappingsBtn').disabled = mappings.length === 0;
+  // Enable save button if there are pending pairs
+  document.getElementById('saveMappingsBtn').disabled = pendingPairs.length === 0;
 
-  const msg = newMappings.length === 1
-    ? 'Mapping created'
-    : `${newMappings.length} mappings created`;
+  const msg = newPairs.length === 1
+    ? 'Mapping added (pending save)'
+    : `${newPairs.length} mappings added (pending save)`;
   showToast(msg, 'success');
+}
+
+/**
+ * Get filtered record data for saving (only selected canonical variable fields)
+ */
+function getFilteredRecordData(side, record) {
+  const selectedVars = sideState[side].selectedVariables || [];
+  const primaryKeyField = sideState[side].primaryKeyField;
+
+  const selectedKeys = selectedVars.map(v => v.key || v.field);
+  if (primaryKeyField && !selectedKeys.includes(primaryKeyField)) {
+    selectedKeys.unshift(primaryKeyField);
+  }
+
+  const filtered = {};
+  for (const key of selectedKeys) {
+    if (record.hasOwnProperty(key)) {
+      filtered[key] = record[key];
+    }
+  }
+  return filtered;
 }
 
 function renderMappingsList() {
   const container = document.getElementById('mappingsList');
 
-  if (mappings.length === 0) {
+  const totalCount = mappings.length + pendingPairs.length;
+  if (totalCount === 0) {
     container.innerHTML =
       '<div class="empty-mappings">Click records from both sides to create mappings</div>';
     document.getElementById('saveMappingsBtn').disabled = true;
@@ -1015,102 +1106,117 @@ function renderMappingsList() {
   const integrationA = sideState.A.integrationId;
   const integrationB = sideState.B.integrationId;
 
-  container.innerHTML = mappings
-    .map(
-      (mapping, index) => `
-    <div class="mapping-item">
-      <div class="mapping-info">
-        <div class="mapping-side">
-          ${integrationA}: <code>${escapeHtml(mapping[integrationA])}</code>
-        </div>
-        <span class="mapping-arrow-small">↔</span>
-        <div class="mapping-side">
-          ${integrationB}: <code>${escapeHtml(mapping[integrationB])}</code>
-        </div>
-      </div>
-      <button class="btn-remove" onclick="removeMapping(${index})" title="Remove">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </div>
-  `,
-    )
-    .join('');
+  let html = '';
 
-  document.getElementById('saveMappingsBtn').disabled = false;
+  // Render existing (saved) mappings
+  if (mappings.length > 0) {
+    html += `<div class="mappings-section-header">Saved Mappings (${mappings.length})</div>`;
+    html += mappings
+      .map(
+        (mapping, index) => `
+      <div class="mapping-item mapping-saved">
+        <div class="mapping-info">
+          <div class="mapping-side">
+            ${integrationA}: <code>${escapeHtml(mapping.sideARecordId)}</code>
+          </div>
+          <span class="mapping-arrow-small">↔</span>
+          <div class="mapping-side">
+            ${integrationB}: <code>${escapeHtml(mapping.sideBRecordId)}</code>
+          </div>
+        </div>
+        <button class="btn-remove" onclick="deleteSavedMapping('${escapeHtml(mapping.id)}', ${index})" title="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    `,
+      )
+      .join('');
+  }
+
+  // Render pending pairs (not yet saved)
+  if (pendingPairs.length > 0) {
+    html += `<div class="mappings-section-header pending">Pending Mappings (${pendingPairs.length}) - Click Save to commit</div>`;
+    html += pendingPairs
+      .map(
+        (pair, index) => `
+      <div class="mapping-item mapping-pending">
+        <div class="mapping-info">
+          <div class="mapping-side">
+            ${integrationA}: <code>${escapeHtml(pair.sideARecordId)}</code>
+          </div>
+          <span class="mapping-arrow-small">↔</span>
+          <div class="mapping-side">
+            ${integrationB}: <code>${escapeHtml(pair.sideBRecordId)}</code>
+          </div>
+        </div>
+        <button class="btn-remove" onclick="removePendingPair(${index})" title="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    `,
+      )
+      .join('');
+  }
+
+  container.innerHTML = html;
+
+  // Enable save button only if there are pending pairs
+  document.getElementById('saveMappingsBtn').disabled = pendingPairs.length === 0;
 }
 
-function removeMapping(index) {
-  mappings.splice(index, 1);
+/**
+ * Remove a pending pair (not yet saved to Elasticsearch)
+ */
+function removePendingPair(index) {
+  pendingPairs.splice(index, 1);
   renderMappingsList();
-  showToast('Mapping removed', 'info');
+  showToast('Pending mapping removed', 'info');
+}
+
+/**
+ * Delete a saved mapping from Elasticsearch
+ */
+async function deleteSavedMapping(mappingId, index) {
+  try {
+    const response = await fetch(`/api/record-mappings/v2/${mappingId}`, {
+      method: 'DELETE',
+    });
+    const result = await response.json();
+
+    if (result.success) {
+      mappings.splice(index, 1);
+      renderMappingsList();
+      showToast('Mapping deleted', 'success');
+    } else {
+      showToast(result.error || 'Failed to delete mapping', 'error');
+    }
+  } catch (error) {
+    console.error('Error deleting mapping:', error);
+    showToast('Failed to delete mapping', 'error');
+  }
+}
+
+// Legacy function for backwards compatibility
+function removeMapping(index) {
+  removePendingPair(index);
 }
 
 // ===== Phase 2G: Save to Elasticsearch =====
 
 async function saveMappings() {
-  if (mappings.length === 0) {
-    showToast('No mappings to save', 'error');
+  if (pendingPairs.length === 0) {
+    showToast('No pending mappings to save', 'error');
     return;
   }
 
   const integrationA = sideState.A.integrationId;
   const integrationB = sideState.B.integrationId;
-  const primaryKeyFieldA = sideState.A.primaryKeyField;
-  const primaryKeyFieldB = sideState.B.primaryKeyField;
-
-  // Get selected canonical variable keys for each side
-  const selectedKeysA = (sideState.A.selectedVariables || []).map(v => v.key || v.field);
-  const selectedKeysB = (sideState.B.selectedVariables || []).map(v => v.key || v.field);
-
-  // Always include primary key field
-  if (primaryKeyFieldA && !selectedKeysA.includes(primaryKeyFieldA)) {
-    selectedKeysA.unshift(primaryKeyFieldA);
-  }
-  if (primaryKeyFieldB && !selectedKeysB.includes(primaryKeyFieldB)) {
-    selectedKeysB.unshift(primaryKeyFieldB);
-  }
-
-  // Build deduplicated record data for each integration
-  // Records are keyed by their primary key value
-  // Only store fields that are mapped to selected canonical variables
-  const recordsA = {};
-  const recordsB = {};
-
-  // Helper to filter record to only selected canonical keys
-  function filterRecordToSelectedKeys(record, selectedKeys) {
-    const filtered = {};
-    for (const key of selectedKeys) {
-      if (record.hasOwnProperty(key)) {
-        filtered[key] = record[key];
-      }
-    }
-    return filtered;
-  }
-
-  // Collect all unique records that are part of mappings
-  mappings.forEach(mapping => {
-    const pkA = mapping[integrationA];
-    const pkB = mapping[integrationB];
-
-    // Find and store record A data (if not already stored)
-    if (!recordsA[pkA]) {
-      const record = sideState.A.data.find(r => r[primaryKeyFieldA] === pkA);
-      if (record) {
-        recordsA[pkA] = filterRecordToSelectedKeys(record, selectedKeysA);
-      }
-    }
-
-    // Find and store record B data (if not already stored)
-    if (!recordsB[pkB]) {
-      const record = sideState.B.data.find(r => r[primaryKeyFieldB] === pkB);
-      if (record) {
-        recordsB[pkB] = filterRecordToSelectedKeys(record, selectedKeysB);
-      }
-    }
-  });
 
   // Build canonical variable mappings (field -> canonical variable)
   const canonicalMappingsA = {};
@@ -1125,62 +1231,33 @@ async function saveMappings() {
     canonicalMappingsB[key] = v.variable;
   });
 
-  // Merge with existing records if updating an existing document
-  // This preserves record data for mappings that weren't loaded in current session
-  if (existingMappingDocument) {
-    const existingRecordsA = existingMappingDocument.integrations?.[integrationA]?.records || {};
-    const existingRecordsB = existingMappingDocument.integrations?.[integrationB]?.records || {};
-
-    // Merge existing records (existing + new, new takes precedence)
-    Object.keys(existingRecordsA).forEach(pk => {
-      if (!recordsA[pk]) {
-        recordsA[pk] = existingRecordsA[pk];
-      }
-    });
-    Object.keys(existingRecordsB).forEach(pk => {
-      if (!recordsB[pk]) {
-        recordsB[pk] = existingRecordsB[pk];
-      }
-    });
-  }
-
   const payload = {
     templateId: selectedTemplate.id,
     relationshipType: selectedTemplate.relationshipType || 'one-to-one',
-    // Track which integration is sideA (one side in 1:N) and which is sideB (many side in 1:N)
     sideAIntegration: integrationA,
     sideBIntegration: integrationB,
-    integrations: {
-      [integrationA]: {
-        side: 'A',  // Explicitly mark which side this integration is
-        connectionId: sideState.A.connectionId,
-        featureId: sideState.A.featureId,
-        primaryKeyField: sideState.A.primaryKeyField,
-        primaryKeyCanonical: selectedTemplate.sideA.primaryKeyCanonical,
-        canonicalMappings: canonicalMappingsA,  // field -> canonical variable mapping
-        records: recordsA,  // Deduplicated record data (only selected canonical fields)
-      },
-      [integrationB]: {
-        side: 'B',  // Explicitly mark which side this integration is
-        connectionId: sideState.B.connectionId,
-        featureId: sideState.B.featureId,
-        primaryKeyField: sideState.B.primaryKeyField,
-        primaryKeyCanonical: selectedTemplate.sideB.primaryKeyCanonical,
-        canonicalMappings: canonicalMappingsB,  // field -> canonical variable mapping
-        records: recordsB,  // Deduplicated record data (only selected canonical fields)
-      },
+    sideAConnectionId: sideState.A.connectionId,
+    sideBConnectionId: sideState.B.connectionId,
+    featureAId: sideState.A.featureId,
+    featureBId: sideState.B.featureId,
+    sideAMetadata: {
+      primaryKeyField: sideState.A.primaryKeyField,
+      primaryKeyCanonical: selectedTemplate.sideA.primaryKeyCanonical,
+      canonicalMappings: canonicalMappingsA,
     },
-    mappings: mappings,
+    sideBMetadata: {
+      primaryKeyField: sideState.B.primaryKeyField,
+      primaryKeyCanonical: selectedTemplate.sideB.primaryKeyCanonical,
+      canonicalMappings: canonicalMappingsB,
+    },
+    pairs: pendingPairs,
   };
 
-  // If updating existing document, include the ID
-  if (existingMappingDocument && existingMappingDocument.id) {
-    payload.id = existingMappingDocument.id;
-  }
-
   try {
-    const response = await fetch('/api/record-mappings', {
-      method: 'POST',  // Server handles upsert based on ID presence
+    showToast('Saving mappings...', 'info');
+
+    const response = await fetch('/api/record-mappings/v2', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -1188,10 +1265,61 @@ async function saveMappings() {
     const result = await response.json();
 
     if (result.success) {
-      // Update local reference to the document
-      existingMappingDocument = result.mapping;
-      const action = payload.id ? 'updated' : 'saved';
-      showToast(`Successfully ${action} ${mappings.length} mappings!`, 'success');
+      // Move saved pairs to mappings list
+      const savedCount = result.summary.saved;
+      const violationCount = result.summary.violations;
+      const duplicateCount = result.summary.duplicates;
+
+      // Add saved mappings to the local mappings array
+      result.saved.forEach(doc => {
+        mappings.push({
+          id: doc.id,
+          sideARecordId: doc.integrations[integrationA]?.recordId,
+          sideBRecordId: doc.integrations[integrationB]?.recordId,
+          sideARecordData: doc.integrations[integrationA]?.recordData,
+          sideBRecordData: doc.integrations[integrationB]?.recordData,
+          createdAt: doc.createdAt,
+        });
+      });
+
+      // Clear pending pairs that were saved
+      if (violationCount === 0 && duplicateCount === 0) {
+        pendingPairs = [];
+      } else {
+        // Keep only the pairs that had violations
+        const violatedPairKeys = new Set(
+          result.violations.map(v => `${v.pair.sideARecordId}:${v.pair.sideBRecordId}`)
+        );
+        pendingPairs = pendingPairs.filter(p =>
+          violatedPairKeys.has(`${p.sideARecordId}:${p.sideBRecordId}`)
+        );
+      }
+
+      // Update side config for future sessions
+      if (!existingSideConfig) {
+        existingSideConfig = {
+          sideAIntegration: integrationA,
+          sideBIntegration: integrationB,
+        };
+      }
+
+      renderMappingsList();
+
+      // Build result message
+      let msg = `Saved ${savedCount} mapping(s)`;
+      if (violationCount > 0) {
+        msg += `, ${violationCount} constraint violation(s)`;
+      }
+      if (duplicateCount > 0) {
+        msg += `, ${duplicateCount} duplicate(s) skipped`;
+      }
+
+      showToast(msg, violationCount > 0 ? 'error' : 'success');
+
+      // Show detailed violations if any
+      if (result.violations && result.violations.length > 0) {
+        console.log('Constraint violations:', result.violations);
+      }
     } else {
       showToast(result.error || 'Failed to save mappings', 'error');
     }

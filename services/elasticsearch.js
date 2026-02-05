@@ -172,6 +172,43 @@ async function initializeIndexes() {
       console.log('✅ Created integration_feature_configs index');
     }
 
+    // Create record_mappings index
+    const recordMappingExists = await client.indices.exists({
+      index: INDEXES.RECORD_MAPPINGS,
+    });
+    if (!recordMappingExists) {
+      await client.indices.create({
+        index: INDEXES.RECORD_MAPPINGS,
+        body: {
+          mappings: {
+            properties: {
+              id: { type: 'keyword' },
+              templateId: { type: 'keyword' },
+              relationshipType: { type: 'keyword' },
+
+              // Relationship direction (for constraint validation)
+              sideAIntegration: { type: 'keyword' },
+              sideBIntegration: { type: 'keyword' },
+
+              // Side-agnostic indexed lookup fields
+              integrationIds: { type: 'keyword' }, // ["deepcall", "freshdesk"]
+              connectionKeys: { type: 'keyword' }, // ["deepcall:conn_1", "freshdesk:conn_2"]
+              recordKeys: { type: 'keyword' }, // ["deepcall:conn_1:7", "freshdesk:conn_2:112000..."]
+
+              // Full data (not indexed for search)
+              integrations: { type: 'object', enabled: false },
+
+              createdAt: { type: 'date' },
+              updatedAt: { type: 'date' },
+            },
+          },
+        },
+      });
+      console.log(
+        '✅ Created canonical_record_mappings index (individual document model)',
+      );
+    }
+
     return true;
   } catch (error) {
     console.error('❌ Error initializing Elasticsearch indexes:', error);
@@ -603,61 +640,50 @@ async function deleteConnection(connectionId) {
 // ===== Record Mappings Functions =====
 
 /**
- * Create record mappings index if it doesn't exist
+ * Save a single individual mapping document
+ * Each mapping is stored as a separate document with side-agnostic indexed fields
+ * @param {Object} mappingData - The mapping data
+ * @param {string} mappingData.templateId - Template ID
+ * @param {string} mappingData.relationshipType - Relationship type (one-to-one, etc.)
+ * @param {string} mappingData.sideAIntegration - Side A integration ID
+ * @param {string} mappingData.sideBIntegration - Side B integration ID
+ * @param {Object} mappingData.integrations - Full integration data (not indexed)
  */
-async function createRecordMappingsIndex() {
+async function saveIndividualMapping(mappingData) {
   try {
-    const exists = await client.indices.exists({
-      index: INDEXES.RECORD_MAPPINGS,
-    });
-    if (!exists) {
-      await client.indices.create({
-        index: INDEXES.RECORD_MAPPINGS,
-        body: {
-          mappings: {
-            properties: {
-              id: { type: 'keyword' },
-              templateId: { type: 'keyword' },
-              integrationIds: { type: 'keyword' }, // Array for order-independent lookup
-              integrations: {
-                type: 'object',
-                enabled: true,
-              },
-              mappings: {
-                type: 'nested', // For efficient querying of individual mappings
-              },
-              createdAt: { type: 'date' },
-              updatedAt: { type: 'date' },
-            },
-          },
-        },
-      });
-      console.log('✅ Created canonical_record_mappings index');
-    }
-  } catch (error) {
-    console.error('Error creating record mappings index:', error);
-    throw error;
-  }
-}
+    const now = new Date().toISOString();
+    const id =
+      mappingData.id ||
+      `mapping_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-/**
- * Save or update record mapping
- */
-async function saveRecordMapping(mapping) {
-  try {
-    await createRecordMappingsIndex();
+    const intA = mappingData.sideAIntegration;
+    const intB = mappingData.sideBIntegration;
+    const connA = mappingData.integrations[intA]?.connectionId;
+    const connB = mappingData.integrations[intB]?.connectionId;
+    const recA = mappingData.integrations[intA]?.recordId;
+    const recB = mappingData.integrations[intB]?.recordId;
 
     const document = {
-      ...mapping,
-      updatedAt: new Date().toISOString(),
-    };
+      id,
+      templateId: mappingData.templateId,
+      relationshipType: mappingData.relationshipType || 'one-to-one',
+      sideAIntegration: intA,
+      sideBIntegration: intB,
 
-    if (!mapping.id) {
-      document.id = `mapping_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
-      document.createdAt = document.updatedAt;
-    }
+      // Side-agnostic indexed lookup fields
+      integrationIds: [intA, intB].sort(),
+      connectionKeys: [`${intA}:${connA}`, `${intB}:${connB}`].sort(),
+      recordKeys: [
+        `${intA}:${connA}:${recA}`,
+        `${intB}:${connB}:${recB}`,
+      ].sort(),
+
+      // Full data (not indexed)
+      integrations: mappingData.integrations,
+
+      createdAt: mappingData.createdAt || now,
+      updatedAt: now,
+    };
 
     await client.index({
       index: INDEXES.RECORD_MAPPINGS,
@@ -668,23 +694,253 @@ async function saveRecordMapping(mapping) {
 
     return document;
   } catch (error) {
-    console.error('Error saving record mapping:', error);
+    console.error('Error saving individual mapping:', error);
     throw error;
   }
 }
 
 /**
- * Get record mappings
+ * Bulk save multiple individual mapping documents
+ * @param {Array} mappingsData - Array of mapping data objects
+ * @returns {Promise<Object>} Result with saved documents and any errors
+ */
+async function bulkSaveIndividualMappings(mappingsData) {
+  try {
+    if (!mappingsData || mappingsData.length === 0) {
+      return { success: true, saved: [], errors: [] };
+    }
+
+    const now = new Date().toISOString();
+    const operations = [];
+    const documents = [];
+
+    for (const mappingData of mappingsData) {
+      const id =
+        mappingData.id ||
+        `mapping_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const intA = mappingData.sideAIntegration;
+      const intB = mappingData.sideBIntegration;
+      const connA = mappingData.integrations[intA]?.connectionId;
+      const connB = mappingData.integrations[intB]?.connectionId;
+      const recA = mappingData.integrations[intA]?.recordId;
+      const recB = mappingData.integrations[intB]?.recordId;
+
+      const document = {
+        id,
+        templateId: mappingData.templateId,
+        relationshipType: mappingData.relationshipType || 'one-to-one',
+        sideAIntegration: intA,
+        sideBIntegration: intB,
+        integrationIds: [intA, intB].sort(),
+        connectionKeys: [`${intA}:${connA}`, `${intB}:${connB}`].sort(),
+        recordKeys: [
+          `${intA}:${connA}:${recA}`,
+          `${intB}:${connB}:${recB}`,
+        ].sort(),
+        integrations: mappingData.integrations,
+        createdAt: mappingData.createdAt || now,
+        updatedAt: now,
+      };
+
+      operations.push({ index: { _index: INDEXES.RECORD_MAPPINGS, _id: id } });
+      operations.push(document);
+      documents.push(document);
+    }
+
+    const bulkResponse = await client.bulk({
+      refresh: true,
+      operations,
+    });
+
+    // Check for errors
+    const errors = [];
+    if (bulkResponse.errors) {
+      bulkResponse.items.forEach((item, idx) => {
+        if (item.index && item.index.error) {
+          errors.push({
+            index: idx,
+            error: item.index.error,
+            document: documents[idx],
+          });
+        }
+      });
+    }
+
+    return {
+      success: errors.length === 0,
+      saved: documents.filter((_, idx) => !errors.find(e => e.index === idx)),
+      errors,
+    };
+  } catch (error) {
+    console.error('Error bulk saving mappings:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get mappings for constraint validation
+ * Efficiently fetches only the relevant mappings based on recordKeys
+ * @param {string} templateId - Template ID
+ * @param {string} connectionKeyA - Connection key for side A (format: "integration:connectionId")
+ * @param {string} connectionKeyB - Connection key for side B (format: "integration:connectionId")
+ * @param {Array<string>} recordKeysToCheck - Record keys to check for existing mappings
+ * @returns {Promise<Array>} Array of existing mappings matching the criteria
+ */
+async function getValidationMappings(
+  templateId,
+  connectionKeyA,
+  connectionKeyB,
+  recordKeysToCheck = [],
+) {
+  try {
+    const must = [
+      { term: { templateId } },
+      { term: { connectionKeys: connectionKeyA } },
+      { term: { connectionKeys: connectionKeyB } },
+    ];
+
+    const query = {
+      bool: {
+        must,
+      },
+    };
+
+    // If specific recordKeys provided, filter to only those
+    if (recordKeysToCheck && recordKeysToCheck.length > 0) {
+      query.bool.filter = {
+        terms: { recordKeys: [...new Set(recordKeysToCheck)] },
+      };
+    }
+
+    const result = await client.search({
+      index: INDEXES.RECORD_MAPPINGS,
+      body: {
+        query,
+        _source: ['id', 'recordKeys', 'sideAIntegration', 'sideBIntegration'],
+        size: 10000, // Get all matching
+      },
+    });
+
+    return result.hits.hits.map(hit => hit._source);
+  } catch (error) {
+    if (error.meta?.body?.error?.type === 'index_not_found_exception') {
+      return [];
+    }
+    console.error('Error getting validation mappings:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check if a specific mapping already exists (exact record pair match)
+ * @param {string} templateId - Template ID
+ * @param {string} recordKeyA - Record key for side A (format: "integration:connectionId:recordId")
+ * @param {string} recordKeyB - Record key for side B (format: "integration:connectionId:recordId")
+ * @returns {Promise<Object|null>} Existing mapping or null
+ */
+async function checkMappingExists(templateId, recordKeyA, recordKeyB) {
+  try {
+    const result = await client.search({
+      index: INDEXES.RECORD_MAPPINGS,
+      body: {
+        query: {
+          bool: {
+            must: [
+              { term: { templateId } },
+              { term: { recordKeys: recordKeyA } },
+              { term: { recordKeys: recordKeyB } },
+            ],
+          },
+        },
+        size: 1,
+      },
+    });
+
+    if (result.hits.hits.length > 0) {
+      return result.hits.hits[0]._source;
+    }
+    return null;
+  } catch (error) {
+    if (error.meta?.body?.error?.type === 'index_not_found_exception') {
+      return null;
+    }
+    console.error('Error checking mapping exists:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a single mapping by ID
+ * @param {string} mappingId - The mapping document ID
+ */
+async function deleteIndividualMapping(mappingId) {
+  try {
+    await client.delete({
+      index: INDEXES.RECORD_MAPPINGS,
+      id: mappingId,
+      refresh: true,
+    });
+    return { success: true };
+  } catch (error) {
+    if (error.meta?.statusCode === 404) {
+      return { success: false, error: 'Mapping not found' };
+    }
+    console.error('Error deleting mapping:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all mappings for a template + connection pair
+ * @param {string} templateId - Template ID
+ * @param {string} connectionKeyA - Connection key for side A
+ * @param {string} connectionKeyB - Connection key for side B
+ * @returns {Promise<Array>} Array of mapping documents
+ */
+async function getMappingsByConnection(
+  templateId,
+  connectionKeyA,
+  connectionKeyB,
+) {
+  try {
+    const result = await client.search({
+      index: INDEXES.RECORD_MAPPINGS,
+      body: {
+        query: {
+          bool: {
+            must: [
+              { term: { templateId } },
+              { term: { connectionKeys: connectionKeyA } },
+              { term: { connectionKeys: connectionKeyB } },
+            ],
+          },
+        },
+        sort: [{ createdAt: 'desc' }],
+        size: 10000,
+      },
+    });
+
+    return result.hits.hits.map(hit => hit._source);
+  } catch (error) {
+    if (error.meta?.body?.error?.type === 'index_not_found_exception') {
+      return [];
+    }
+    console.error('Error getting mappings by connection:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get record mappings (individual document model)
  * @param {Object} query - Query parameters
  * @param {string} query.templateId - Filter by template ID
  * @param {Array<string>} query.integrationIds - Filter by integration IDs (order-independent)
- * @param {string} query.recordId - Find mapping for specific record (with integration ID)
- * @param {string} query.integrationId - Integration ID for recordId lookup
+ * @param {string} query.recordKey - Find by recordKey (format: integration:connection:recordId)
+ * @param {Array<string>} query.connectionKeys - Filter by connection keys
  */
 async function getRecordMappings(query = {}) {
   try {
-    await createRecordMappingsIndex();
-
     const must = [];
 
     if (query.templateId) {
@@ -693,19 +949,22 @@ async function getRecordMappings(query = {}) {
 
     if (query.integrationIds && query.integrationIds.length > 0) {
       // Order-independent lookup using terms query
-      must.push({ terms: { integrationIds: query.integrationIds } });
+      // All specified integrationIds must be present
+      for (const intId of query.integrationIds) {
+        must.push({ term: { integrationIds: intId } });
+      }
     }
 
-    if (query.recordId && query.integrationId) {
-      // Find mapping containing specific record
-      must.push({
-        nested: {
-          path: 'mappings',
-          query: {
-            term: { [`mappings.${query.integrationId}`]: query.recordId },
-          },
-        },
-      });
+    if (query.connectionKeys && query.connectionKeys.length > 0) {
+      // Connection-based filtering - all connection keys must be present
+      for (const connKey of query.connectionKeys) {
+        must.push({ term: { connectionKeys: connKey } });
+      }
+    }
+
+    if (query.recordKey) {
+      // Find mappings containing this recordKey
+      must.push({ term: { recordKeys: query.recordKey } });
     }
 
     const searchQuery = {
@@ -713,6 +972,7 @@ async function getRecordMappings(query = {}) {
       body: {
         query: must.length > 0 ? { bool: { must } } : { match_all: {} },
         sort: [{ createdAt: 'desc' }],
+        size: 10000,
       },
     };
 
@@ -727,87 +987,6 @@ async function getRecordMappings(query = {}) {
       return [];
     }
     console.error('Error getting record mappings:', error);
-    throw error;
-  }
-}
-
-/**
- * Get mapped record IDs bidirectionally
- * Given a source record, find all target records it's mapped to
- * @param {string} templateId - The mapping template ID
- * @param {string} sourceIntegration - The source integration ID
- * @param {any} sourceRecordId - The source record's primary key value
- * @param {string} targetIntegration - The target integration ID
- * @returns {Promise<Array>} Array of target record IDs
- */
-async function getMappedRecordIds(templateId, sourceIntegration, sourceRecordId, targetIntegration) {
-  try {
-    const results = await getRecordMappings({
-      templateId,
-      integrationId: sourceIntegration,
-      recordId: sourceRecordId,
-    });
-
-    if (results.length === 0) return [];
-
-    // Extract target IDs from mappings where source matches
-    const targetIds = [];
-    for (const doc of results) {
-      for (const mapping of doc.mappings || []) {
-        if (mapping[sourceIntegration] === sourceRecordId && mapping[targetIntegration] !== undefined) {
-          targetIds.push(mapping[targetIntegration]);
-        }
-      }
-    }
-
-    // Return unique IDs
-    return [...new Set(targetIds)];
-  } catch (error) {
-    console.error('Error getting mapped record IDs:', error);
-    throw error;
-  }
-}
-
-/**
- * Get mapped record with full data bidirectionally
- * Given a source record, find all target records with their stored data
- * @param {string} templateId - The mapping template ID
- * @param {string} sourceIntegration - The source integration ID
- * @param {any} sourceRecordId - The source record's primary key value
- * @param {string} targetIntegration - The target integration ID
- * @returns {Promise<Array>} Array of target records with their data
- */
-async function getMappedRecordsWithData(templateId, sourceIntegration, sourceRecordId, targetIntegration) {
-  try {
-    const results = await getRecordMappings({
-      templateId,
-      integrationId: sourceIntegration,
-      recordId: sourceRecordId,
-    });
-
-    if (results.length === 0) return [];
-
-    const targetRecords = [];
-    for (const doc of results) {
-      const targetRecordStore = doc.integrations?.[targetIntegration]?.records || {};
-
-      for (const mapping of doc.mappings || []) {
-        if (mapping[sourceIntegration] === sourceRecordId && mapping[targetIntegration] !== undefined) {
-          const targetId = mapping[targetIntegration];
-          const recordData = targetRecordStore[targetId] || null;
-
-          targetRecords.push({
-            id: targetId,
-            data: recordData,
-            mappingCreatedAt: mapping.createdAt,
-          });
-        }
-      }
-    }
-
-    return targetRecords;
-  } catch (error) {
-    console.error('Error getting mapped records with data:', error);
     throw error;
   }
 }
@@ -837,8 +1016,11 @@ module.exports = {
   updateConnection,
   deleteConnection,
   // Record mapping functions
-  saveRecordMapping,
   getRecordMappings,
-  getMappedRecordIds,
-  getMappedRecordsWithData,
+  saveIndividualMapping,
+  bulkSaveIndividualMappings,
+  getValidationMappings,
+  checkMappingExists,
+  deleteIndividualMapping,
+  getMappingsByConnection,
 };

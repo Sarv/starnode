@@ -114,17 +114,35 @@
               />
             </div>
 
-            <!-- Relationship Type -->
-            <div class="form-group">
-              <label for="relationshipType">Relationship Type</label>
-              <select id="relationshipType" class="form-control">
-                <option value="one-to-one">One to One (1:1)</option>
-                <option value="one-to-many">One to Many (1:N) - Side A has many Side B</option>
-                <option value="many-to-one">Many to One (N:1) - Many Side A to one Side B</option>
-                <option value="many-to-many">Many to Many (N:N)</option>
-              </select>
-              <small class="help-text">Defines how records relate between integrations</small>
+            <!-- Relationship Type - Two Questions Approach -->
+            <div class="relationship-config">
+              <label class="section-label">Relationship Configuration</label>
+              <div class="relationship-questions">
+                <div class="relationship-question">
+                  <label for="aToBRelation">Side A → Side B</label>
+                  <select id="aToBRelation" class="form-control" onchange="updateRelationshipDisplay()">
+                    <option value="1">One (each A maps to at most one B)</option>
+                    <option value="M">Many (each A can map to multiple B)</option>
+                  </select>
+                  <small class="help-text">Can one Side A record link to multiple Side B records?</small>
+                </div>
+                <div class="relationship-question">
+                  <label for="bToARelation">Side B → Side A</label>
+                  <select id="bToARelation" class="form-control" onchange="updateRelationshipDisplay()">
+                    <option value="1">One (each B maps to at most one A)</option>
+                    <option value="M">Many (each B can map to multiple A)</option>
+                  </select>
+                  <small class="help-text">Can one Side B record link to multiple Side A records?</small>
+                </div>
+              </div>
+              <div id="relationshipResult" class="relationship-result">
+                <span class="result-label">Resulting Relationship:</span>
+                <span id="relationshipBadge" class="relationship-badge rel-one-to-one">1:1</span>
+                <span id="relationshipDescription" class="result-description">Each record maps to exactly one record on the other side</span>
+              </div>
             </div>
+            <!-- Hidden field to store the computed relationship type -->
+            <input type="hidden" id="relationshipType" value="one-to-one" />
 
             <!-- Integration Panels Grid -->
             <div class="integrations-grid">

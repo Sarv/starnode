@@ -1,7 +1,7 @@
 [
   {
-    "id": "template_1768457809260_b68zlahun",
-    "name": "Agent Mapping template",
+    "id": "template_1770271636174_l06jzbxe3",
+    "name": "employee-empolyee_1_1_mapping",
     "relationshipType": "one-to-one",
     "sideA": {
       "scope": "employee",
@@ -13,12 +13,12 @@
       "operation": "list",
       "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
     },
-    "createdAt": "2026-01-15T06:16:49.260Z",
-    "updatedAt": "2026-01-15T06:16:49.260Z"
+    "createdAt": "2026-02-05T06:07:16.174Z",
+    "updatedAt": "2026-02-05T06:07:16.174Z"
   },
   {
-    "id": "template_1768852096112_h9rdf106g",
-    "name": "agent contact 1_to_many",
+    "id": "template_1770273546720_f296mtymh",
+    "name": "employee-empolyee_1_N_mapping",
     "relationshipType": "one-to-many",
     "sideA": {
       "scope": "employee",
@@ -30,58 +30,7 @@
       "operation": "list",
       "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
     },
-    "createdAt": "2026-01-19T19:48:16.112Z",
-    "updatedAt": "2026-01-19T19:48:16.112Z"
-  },
-  {
-    "id": "template_1768854302336_74rvwco3w",
-    "name": "agent many-many mapping",
-    "relationshipType": "many-to-many",
-    "sideA": {
-      "scope": "employee",
-      "operation": "list",
-      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
-    },
-    "sideB": {
-      "scope": "employee",
-      "operation": "list",
-      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
-    },
-    "createdAt": "2026-01-19T20:25:02.336Z",
-    "updatedAt": "2026-01-19T20:25:02.336Z"
-  },
-  {
-    "id": "template_1768857541111_2c8s4vqj6",
-    "name": "Agent Mapping 1_to_1",
-    "relationshipType": "one-to-one",
-    "sideA": {
-      "scope": "employee",
-      "operation": "list",
-      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
-    },
-    "sideB": {
-      "scope": "employee",
-      "operation": "list",
-      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
-    },
-    "createdAt": "2026-01-19T21:19:01.111Z",
-    "updatedAt": "2026-01-19T21:19:01.111Z"
-  },
-  {
-    "id": "template_1768899197536_eqhw1k1bf",
-    "name": "agent many_to_1 mapping",
-    "relationshipType": "many-to-one",
-    "sideA": {
-      "scope": "employee",
-      "operation": "list",
-      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
-    },
-    "sideB": {
-      "scope": "employee",
-      "operation": "list",
-      "primaryKeyCanonical": "{{canonical.employee.unique_id}}"
-    },
-    "createdAt": "2026-01-20T08:53:17.537Z",
-    "updatedAt": "2026-01-20T08:53:17.537Z"
+    "createdAt": "2026-02-05T06:39:06.720Z",
+    "updatedAt": "2026-02-05T06:39:06.720Z"
   }
 ]

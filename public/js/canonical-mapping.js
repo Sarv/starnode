@@ -196,10 +196,88 @@ function resetSideState(side) {
   document.getElementById(`loadedDataSection${side}`).style.display = 'none';
   document.getElementById('mappingSummary').style.display = 'none';
 
-  // Reset relationship type dropdown
+  // Reset relationship type dropdowns
   if (side === 'A') {
-    document.getElementById('relationshipType').value = 'one-to-one';
+    document.getElementById('aToBRelation').value = '1';
+    document.getElementById('bToARelation').value = '1';
+    updateRelationshipDisplay();
   }
+}
+
+/**
+ * Update the relationship display based on the A→B and B→A selections
+ * Derives the relationship type from the combination
+ */
+function updateRelationshipDisplay() {
+  const aToB = document.getElementById('aToBRelation').value;
+  const bToA = document.getElementById('bToARelation').value;
+
+  // Derive relationship type from the two selections
+  let relationshipType, badgeText, description;
+
+  if (aToB === '1' && bToA === '1') {
+    relationshipType = 'one-to-one';
+    badgeText = '1:1';
+    description = 'Each record maps to exactly one record on the other side';
+  } else if (aToB === 'M' && bToA === '1') {
+    relationshipType = 'one-to-many';
+    badgeText = '1:N';
+    description = 'One Side A can link to many Side B, but each Side B links to only one Side A';
+  } else if (aToB === '1' && bToA === 'M') {
+    relationshipType = 'many-to-one';
+    badgeText = 'N:1';
+    description = 'Each Side A links to one Side B, but one Side B can link to many Side A';
+  } else {
+    relationshipType = 'many-to-many';
+    badgeText = 'N:N';
+    description = 'Records on both sides can link to multiple records';
+  }
+
+  // Update hidden field
+  document.getElementById('relationshipType').value = relationshipType;
+
+  // Update visual display
+  const badge = document.getElementById('relationshipBadge');
+  badge.textContent = badgeText;
+  badge.className = `relationship-badge rel-${relationshipType}`;
+
+  document.getElementById('relationshipDescription').textContent = description;
+}
+
+/**
+ * Set the relationship dropdowns based on a stored relationship type
+ * Used when editing an existing template
+ */
+function setRelationshipDropdownsFromType(relationshipType) {
+  let aToB, bToA;
+
+  switch (relationshipType) {
+    case 'one-to-one':
+      aToB = '1';
+      bToA = '1';
+      break;
+    case 'one-to-many':
+      aToB = 'M';
+      bToA = '1';
+      break;
+    case 'many-to-one':
+      aToB = '1';
+      bToA = 'M';
+      break;
+    case 'many-to-many':
+      aToB = 'M';
+      bToA = 'M';
+      break;
+    default:
+      aToB = '1';
+      bToA = '1';
+  }
+
+  document.getElementById('aToBRelation').value = aToB;
+  document.getElementById('bToARelation').value = bToA;
+
+  // Update the display
+  updateRelationshipDisplay();
 }
 
 // Populate integration dropdowns
@@ -1017,7 +1095,10 @@ async function editTemplate(templateId) {
 
     // Populate form fields
     document.getElementById('mappingName').value = template.name;
-    document.getElementById('relationshipType').value = template.relationshipType || 'one-to-one';
+
+    // Set the relationship dropdowns based on stored relationship type
+    const relType = template.relationshipType || 'one-to-one';
+    setRelationshipDropdownsFromType(relType);
 
     // Populate Side A
     const scopeA = document.getElementById('scopeA');
